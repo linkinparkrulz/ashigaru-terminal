@@ -1,0 +1,326 @@
+.copyable-label, .copyable-label:focused {
+    -fx-background-color: transparent ;
+    -fx-background-insets: 0px ;
+    -fx-border :none;
+    -fx-padding: 5 0 5 0;
+}
+
+.form .wideLabelFieldSet.fieldset:horizontal .label-container {
+    -fx-pref-width: 170px;
+    -fx-pref-height: 25px;
+}
+
+.form .relaxedLabelFieldSet.fieldset:horizontal .label-container {
+    -fx-pref-width: 130px;
+    -fx-pref-height: 25px;
+}
+
+.form .fieldset:horizontal .label-container {
+    -fx-pref-width: 110px;
+    -fx-pref-height: 25px;
+}
+
+.form .fieldset:horizontal .input-container {
+    -fx-alignment: center-left;
+}
+
+.form .input-container {
+    -fx-spacing: 2;
+}
+
+.form .label-button .input-container {
+    -fx-spacing: 10;
+}
+
+.form .field {
+    -fx-padding: 3 5;
+}
+
+.form .fieldset.header .legend {
+    -fx-padding: 0 0 15px 0;
+}
+
+.id, .fixed-width {
+    -fx-font-size: 13px;
+    -fx-font-family: 'Roboto Mono';
+}
+
+.form-separator {
+    -fx-padding: -20 0 0 0;
+}
+
+.form .field .toggle-switch {
+    -fx-padding: 5 0 2 0;
+}
+
+.tab-error > .tab-container {
+    -fx-effect: dropshadow(three-pass-box, rgba(202, 18, 67, .6), 7, 0, 0, 0);
+}
+
+.error {
+    -fx-effect: dropshadow(three-pass-box, rgb(202, 18, 67), 7, 0, 0, 0);
+}
+
+.warning {
+    -fx-effect: dropshadow(three-pass-box, gold, 14, 0, 0, 0);
+}
+
+.dialog-pane .header-panel {
+    -fx-padding: 20;
+}
+
+.titled-description-pane > .title {
+    -fx-background-color: white;
+    -fx-padding: 0;
+    -fx-border-color: #e5e5e6;
+    /*-fx-border-width: 1;*/
+}
+
+.titled-description-pane > .title > .arrow-button {
+    -fx-padding: 0;
+}
+
+.titled-description-pane > .title > .arrow-button > .arrow {
+    visibility: hidden;
+    -fx-translate-x: -1000;
+    -fx-padding: 0;
+}
+
+.titled-description-pane .main-label .text {
+
+}
+
+.titled-description-pane .status-label .text, .titled-description-pane .description-label .text {
+    -fx-fill: #a0a1a7;
+}
+
+.titled-description-pane .status-error .text, .titled-description-pane .description-error .text {
+    -fx-fill: #ca1243;
+}
+
+.titled-description-pane .description-label, .titled-description-pane .description-error {
+    -fx-border-width: 0px;
+    -fx-border-color: transparent;
+}
+
+.hyperlink {
+    -fx-padding: 0;
+    -fx-border-width: 0;
+    -fx-fill: #1e88cf;
+}
+
+.hyperlink:visited {
+    -fx-text-fill: #1e88cf;
+    -fx-underline: false;
+}
+
+.failure.hyperlink:visited {
+    -fx-text-fill: rgb(202, 18, 67);
+}
+
+.hyperlink:hover:visited {
+    -fx-underline: true;
+}
+
+.copyable-text-field .copy-button {
+    -fx-padding: 0 3 0 0;
+}
+
+.copyable-text-field .copy-button > .graphic {
+    -fx-background-color: #949494;
+    -fx-scale-shape: false;
+    -fx-padding: 4.5 4.5 4.5 4.5; /* Graphic is 9x9 px */
+    -fx-shape: "M 6.429688 7.875 L 6.429688 8.578125 C 6.429688 8.8125 6.210938 9 5.945312 9 L 0.480469 9 C 0.214844 9 0 8.8125 0 8.578125 L 0 2.109375 C 0 1.875 0.214844 1.6875 0.480469 1.6875 L 1.929688 1.6875 L 1.929688 6.890625 C 1.929688 7.433594 2.433594 7.875 3.054688 7.875 Z M 6.429688 1.828125 L 6.429688 0 L 3.054688 0 C 2.789062 0 2.570312 0.1875 2.570312 0.421875 L 2.570312 6.890625 C 2.570312 7.125 2.789062 7.3125 3.054688 7.3125 L 8.519531 7.3125 C 8.785156 7.3125 9 7.125 9 6.890625 L 9 2.25 L 6.910156 2.25 C 6.644531 2.25 6.429688 2.058594 6.429688 1.828125 Z M 8.859375 1.28125 L 7.535156 0.125 C 7.445312 0.0429688 7.320312 0 7.191406 0 L 7.070312 0 L 7.070312 1.6875 L 9 1.6875 L 9 1.582031 C 9 1.46875 8.949219 1.363281 8.859375 1.28125 Z M 8.859375 1.28125 ";
+}
+
+.copyable-text-field .copy-button:hover > .graphic {
+    -fx-background-color: #0184bc;
+}
+
+.copyable-text-field .copy-button:pressed > .graphic {
+    -fx-background-color: #116a8d;
+}
+
+.combo-text-field .combo-button {
+    -fx-padding: 0 3 0 0;
+}
+
+.combo-text-field .combo-button > .graphic {
+    -fx-background-color: #949494;
+    -fx-scale-shape: false;
+    -fx-padding: 4.5 6 4.5 4.5;
+    -fx-shape: "M11.8513+192L19.004+192C19.4989+192+19.7463+192.554+19.396+192.878L15.821+196.191C15.6042+196.392+15.2511+196.392+15.0343+196.191L11.4594+192.878C11.1091+192.554+11.3565+192+11.8513+192Z ";
+}
+
+.combo-text-field .combo-button:hover > .graphic {
+    -fx-background-color: #0184bc;
+}
+
+.combo-text-field .combo-button:pressed > .graphic {
+    -fx-background-color: #116a8d;
+}
+
+.view-password-text-field .view-password-button > .graphic {
+    -fx-background-color: #949494;
+    -fx-scale-shape: false;
+    -fx-padding: 0 25 0 0;
+    -fx-shape: "M10.4617+4.5C6.16092+4.5+2.48807+7.02125+1+10.5802C2.48807+14.1391+6.16092+16.6604+10.4617+16.6604C14.7625+16.6604+18.4353+14.1391+19.9234+10.5802C18.4353+7.02125+14.7625+4.5+10.4617+4.5ZM10.4617+14.6336C8.08767+14.6336+6.16092+12.8177+6.16092+10.5802C6.16092+8.34268+8.08767+6.52673+10.4617+6.52673C12.8357+6.52673+14.7625+8.34268+14.7625+10.5802C14.7625+12.8177+12.8357+14.6336+10.4617+14.6336ZM10.4617+8.14811C9.03384+8.14811+7.88123+9.23444+7.88123+10.5802C7.88123+11.9259+9.03384+13.0123+10.4617+13.0123C11.8896+13.0123+13.0422+11.9259+13.0422+10.5802C13.0422+9.23444+11.8896+8.14811+10.4617+8.14811Z";
+}
+
+.view-password-text-field .hide-password-button > .graphic {
+    -fx-background-color: #949494;
+    -fx-scale-shape: false;
+    -fx-padding: 0 25 0 0;
+    -fx-shape: "M10.6168+6.26674C13.9302+6.26674+16.8852+7.95776+18.3277+10.6332C17.8119+11.6018+17.0863+12.4354+16.2208+13.1102L17.4535+14.2296C18.6687+13.2531+19.6304+12.0305+20.2336+10.6332C18.7212+7.14798+14.9881+4.67893+10.6168+4.67893C9.50651+4.67893+8.43991+4.83772+7.43452+5.13146L8.87704+6.4414C9.44531+6.3382+10.0223+6.26674+10.6168+6.26674ZM9.68136+7.1718L11.4911+8.81518C11.9894+9.01366+12.3915+9.37885+12.6101+9.83138L14.4198+11.4748C14.4898+11.2048+14.5422+10.919+14.5422+10.6253C14.551+8.6564+12.785+7.06065+10.6168+7.06065C10.2933+7.06065+9.98735+7.10034+9.68136+7.1718ZM1.883+4.57573L4.226+6.70339C2.80097+7.71959+1.67318+9.06923+1+10.6332C2.51246+14.1185+6.24553+16.5875+10.6168+16.5875C11.9457+16.5875+13.2221+16.3573+14.3936+15.9365L17.3835+18.6517L18.6162+17.5323L3.1157+3.44838L1.883+4.57573ZM8.43991+10.53L10.7217+12.6021C10.6868+12.61+10.6518+12.618+10.6168+12.618C9.41034+12.618+8.43117+11.7288+8.43117+10.6332C8.43117+10.5935+8.43991+10.5697+8.43991+10.53ZM5.46745+7.83074L6.99739+9.22007C6.79631+9.65672+6.68266+10.1331+6.68266+10.6332C6.68266+12.6021+8.44866+14.2058+10.6168+14.2058C11.1676+14.2058+11.6921+14.1026+12.1642+13.92L13.021+14.698C12.2517+14.8886+11.4474+14.9997+10.6168+14.9997C7.30338+14.9997+4.3484+13.3087+2.90588+10.6332C3.51786+9.49794+4.4096+8.56113+5.46745+7.83074Z";
+}
+
+.view-password-text-field .view-password-button:hover > .graphic, .view-password-text-field .hide-password-button:hover > .graphic {
+    -fx-background-color: #0184bc;
+}
+
+.view-password-text-field .view-password-button:pressed > .graphic, .view-password-text-field .hide-password-button:pressed > .graphic {
+    -fx-background-color: #116a8d;
+}
+
+.readonly.text-input {
+    -fx-text-fill: derive(-fx-text-inner-color, 40%);
+}
+
+.help-label {
+    -fx-padding: 0 0 0 10;
+}
+
+.default-button {
+    -fx-base: -fx-default-button;
+}
+
+.etched-raised-border {
+    -fx-border-color: #ffffff, #a9a9a9;
+    -fx-border-style: solid, solid;
+    -fx-border-width: 1px, 1px;
+}
+
+.line-border {
+    -fx-border-color: #a9a9a9;
+    -fx-border-style: solid;
+    -fx-border-width: 1px;
+}
+
+.success {
+    -fx-text-fill: rgb(80, 161, 79);
+}
+
+.failure {
+    -fx-text-fill: rgb(202, 18, 67);
+}
+
+.warn-icon {
+    -fx-text-fill: rgb(238, 210, 2);
+}
+
+.root .header-panel {
+    -fx-background-color: -fx-box-border, derive(-fx-background, 10%);
+}
+
+.box-overlay {
+    -fx-background-color: -fx-box-border, derive(-fx-background, 10%);
+    -fx-effect: dropshadow(three-pass-box, #a0a1a7, 14, 0, 0, 0);
+}
+
+.alert .content.label {
+    -fx-padding: 20px 20px 20px 20px;
+}
+
+.icon-button {
+    -fx-border-style: none;
+    -fx-border-width: 0;
+    -fx-border-insets: 0;
+    -fx-background-color: transparent;
+}
+
+.icon-button .glyph-font {
+    -fx-text-fill: #1e88cf;
+}
+
+.icon-button:hover .glyph-font {
+    -fx-text-fill: #259cf5;
+}
+
+.number-field {
+    -fx-font-family: 'Helvetica Neue', 'System Regular';
+}
+
+VerticalHeader > Label.selected {
+    -fx-background-color: -fx-accent;
+    -fx-text-fill : white;
+}
+
+HorizontalHeaderColumn > TableColumnHeader.column-header.table-column.selected,
+HorizontalHeaderColumn > TableColumnHeader.column-header.table-column.selected > Label {
+    -fx-background-color: -fx-accent;
+    -fx-text-fill : white;
+}
+
+.spreadsheet-cell:filled:selected,
+.spreadsheet-cell:filled:focused:selected,
+.spreadsheet-cell:filled:focused:selected:hover {
+    -fx-background-color: transparent;
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+.spreadsheet-cell:hover,
+.spreadsheet-cell:filled:focused {
+    -fx-background-color: transparent;
+}
+
+.spreadsheet-cell {
+    -fx-border-color: #a9a9a9;
+}
+
+.table-column > .number-value {
+    -fx-alignment: right;
+}
+
+.selection-rectangle{
+    -fx-fill: transparent;
+    -fx-stroke: -fx-accent;
+    -fx-stroke-width: 1;
+}
+
+CellView > .text-input.text-field {
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+.progress-indicator.progress-timer .percentage, .progress-indicator.button-progress .percentage {
+    -fx-fill: null;
+}
+
+.progress-indicator.progress-timer, .progress-indicator.button-progress {
+    -fx-padding: 0 0 -16 0;
+}
+
+.progress-indicator.button-progress {
+    -fx-scale-x: 0.6;
+    -fx-scale-y: 0.6;
+}
+
+.progress-indicator.progress-timer > .determinate-indicator > .tick {
+    visibility: hidden;
+}
+
+.progress-indicator.progress-timer > .determinate-indicator > .indicator {
+    -fx-background-color: -fx-box-border, radial-gradient(center 50% 50%, radius 50%, -fx-accent 70%, derive(-fx-control-inner-background, -9%) 100%);
+}
+
+.progress-indicator.progress-timer.warn > .determinate-indicator > .indicator {
+    -fx-background-color: -fx-box-border, radial-gradient(center 50% 50%, radius 50%, rgb(202, 18, 67) 70%, derive(-fx-control-inner-background, -9%) 100%);
+}
+
+.progress-indicator.progress-timer > .determinate-indicator > .progress {
+    -fx-background-color: -fx-control-inner-background;
+}
+
+.field-warning {
+    -fx-text-fill: rgb(238, 210, 2);
+    -fx-padding: 0 0 0 12;
+}

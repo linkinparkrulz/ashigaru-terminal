@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?import tornadofx.control.Form?>
+<?import tornadofx.control.Fieldset?>
+<?import tornadofx.control.Field?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import com.sparrowwallet.sparrow.net.ExchangeSource?>
+<?import com.sparrowwallet.sparrow.control.UnlabeledToggleSwitch?>
+<?import com.sparrowwallet.sparrow.control.HelpLabel?>
+<?import com.sparrowwallet.sparrow.net.FeeRatesSource?>
+<?import org.controlsfx.glyphfont.Glyph?>
+
+<GridPane hgap="10.0" vgap="10.0" stylesheets="@preferences.css, @../general.css" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sparrowwallet.sparrow.preferences.GeneralPreferencesController">
+    <padding>
+        <Insets left="25.0" right="25.0" top="25.0" />
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" />
+    </columnConstraints>
+    <rowConstraints>
+        <RowConstraints />
+    </rowConstraints>
+
+    <Form GridPane.columnIndex="0" GridPane.rowIndex="0">
+        <Fieldset inputGrow="SOMETIMES" text="Bitcoin" styleClass="wideLabelFieldSet">
+            <Field text="Fee rates source:">
+                <ComboBox fx:id="feeRatesSource">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <FeeRatesSource fx:constant="ELECTRUM_SERVER" />
+                            <FeeRatesSource fx:constant="MEMPOOL_SPACE" />
+                            <FeeRatesSource fx:constant="OXT_ME" />
+                            <FeeRatesSource fx:constant="MINIMUM" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                <HelpLabel helpText="Recommended fee rates can be sourced from your connected Electrum server, or an external source."/>
+            </Field>
+            <Field text="Block explorer:">
+                <ComboBox fx:id="blockExplorers" />
+                <HelpLabel helpText="An external block explorer can be configured to open a transaction from any transaction tab."/>
+            </Field>
+        </Fieldset>
+        <Fieldset inputGrow="SOMETIMES" text="Fiat" styleClass="wideLabelFieldSet">
+            <Field text="Currency:">
+                <ComboBox fx:id="fiatCurrency" />
+            </Field>
+            <Field text="Exchange rate source:">
+                <ComboBox fx:id="exchangeSource">
+                    <items>
+                        <FXCollections fx:factory="observableArrayList">
+                            <ExchangeSource fx:constant="NONE" />
+                            <ExchangeSource fx:constant="COINBASE" />
+                            <ExchangeSource fx:constant="COINGECKO" />
+                        </FXCollections>
+                    </items>
+                </ComboBox>
+                <Label fx:id="currenciesLoadWarning" text="Error retrieving currencies">
+                    <graphic>
+                        <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="12" icon="EXCLAMATION_TRIANGLE" styleClass="field-warning" />
+                    </graphic>
+                </Label>
+            </Field>
+        </Fieldset>
+        <Fieldset inputGrow="SOMETIMES" text="Wallet" styleClass="wideLabelFieldSet">
+            <Field text="Load recent wallets:">
+                <UnlabeledToggleSwitch fx:id="loadRecentWallets" />
+                <HelpLabel helpText="Keep a record of open wallets, and reopen them on startup."/>
+            </Field>
+            <Field text="Validate derivations:">
+                <UnlabeledToggleSwitch fx:id="validateDerivationPaths" />
+                <HelpLabel helpText="Disallow keystores to have derivation paths that match the defaults for other script types and networks."/>
+            </Field>
+        </Fieldset>
+        <Fieldset inputGrow="SOMETIMES" text="Coin Selection" styleClass="wideLabelFieldSet">
+            <Field text="Group by address:">
+                <UnlabeledToggleSwitch fx:id="groupByAddress" />
+                <HelpLabel helpText="Group UTXOs by address when sending to improve privacy by only sending from an address once."/>
+            </Field>
+            <Field text="Allow unconfirmed:">
+                <UnlabeledToggleSwitch fx:id="includeMempoolOutputs" />
+                <HelpLabel helpText="Allow a wallet to spend UTXOs that are still in the mempool."/>
+            </Field>
+        </Fieldset>
+        <Fieldset inputGrow="SOMETIMES" text="Notifications" styleClass="wideLabelFieldSet">
+            <Field text="New transactions:">
+                <UnlabeledToggleSwitch fx:id="notifyNewTransactions" />
+                <HelpLabel helpText="Show system notifications on new wallet transactions?"/>
+            </Field>
+            <Field text="Software updates:">
+                <UnlabeledToggleSwitch fx:id="checkNewVersions" />
+                <HelpLabel helpText="Check for updates to Sparrow?"/>
+            </Field>
+        </Fieldset>
+    </Form>
+</GridPane>

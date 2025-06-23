@@ -1,0 +1,58 @@
+.dialog-pane .content {
+    -fx-padding: 0;
+}
+
+.list-menu {
+    -fx-pref-width: 160;
+    -fx-background-color: #3da0e3;
+}
+
+.list-item {
+    -fx-pref-width: 160;
+    -fx-padding: 0 20 0 20;
+    -fx-background-color: #3da0e3;
+}
+
+.list-item * {
+    -fx-fill: #fff;
+}
+
+.list-item:hover {
+    -fx-background-color: #4aa7e5;
+}
+
+.list-item:selected {
+    -fx-background-color: #1e88cf;
+}
+
+#preferencesPane {
+    -fx-background-color: -fx-background;
+}
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.public-warning {
+    -fx-text-fill: rgb(238, 210, 2);
+}
+
+.public-electrum {
+    -fx-text-fill: linear-gradient(to bottom, derive(rgb(238, 210, 2), 30%), rgb(238, 210, 2));
+}
+
+.bitcoin-core {
+    -fx-text-fill: linear-gradient(to bottom, derive(#50a14f, 30%), #50a14f);
+}
+
+.private-electrum {
+    -fx-text-fill: linear-gradient(to bottom, derive(#0b99c9, 30%), #0b99c9);
+}
+
+#electrumUseSsl {
+    -fx-padding: 4 0 2 0;
+}
+
+#coreHost .left-pane, #electrumHost .left-pane {
+    -fx-padding: 0 3 0 6;
+}

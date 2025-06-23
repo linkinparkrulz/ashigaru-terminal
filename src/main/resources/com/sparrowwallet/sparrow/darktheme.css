@@ -1,0 +1,337 @@
+.root {
+    -fx-accent: #166793;
+    -fx-focus-color: -fx-accent;
+    -fx-base: #1b1d1f;
+    -fx-control-inner-background: derive(-fx-base, 25%);
+    -fx-control-inner-background-alt: -fx-control-inner-background ;
+    -fx-default-button: #1e88cf;
+    -fx-box-border: ladder(-fx-color, black 20%, derive(-fx-color,40%) 30%);
+}
+
+.label {
+    -fx-text-fill: lightgray;
+}
+
+.text-field, .text-area {
+    -fx-prompt-text-fill: gray;
+}
+
+.titulo{
+    -fx-font-weight: bold;
+    -fx-font-size: 18px;
+}
+
+.button{
+    -fx-focus-traversable: false;
+}
+
+.button:hover{
+    -fx-text-fill: white;
+}
+
+.separator *.line {
+    -fx-background-color: #3C3C3C;
+    -fx-border-style: solid;
+    -fx-border-width: 1px;
+}
+
+.scroll-bar{
+    -fx-background-color: derive(-fx-base,45%)
+}
+
+.button:default {
+    -fx-base: -fx-default-button;
+}
+
+.split-menu-button.default-button > .label {
+    -fx-text-fill: white;
+}
+
+.table-view, .tree-view {
+    /*-fx-background-color: derive(-fx-base, 10%);*/
+    -fx-selection-bar-non-focused: derive(-fx-base, 50%);
+}
+
+.table-view .column-header .label{
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-weight: none;
+}
+
+.list-cell:even,
+.table-row-cell:even{
+    -fx-control-inner-background: derive(-fx-base, 15%);
+}
+
+.list-cell:odd,
+.table-row-cell:odd{
+    -fx-control-inner-background: derive(-fx-base, 20%);
+}
+
+.list-cell:empty,
+.table-row-cell:empty {
+    -fx-background-color: transparent;
+}
+
+.list-cell,
+.table-row-cell{
+    -fx-table-cell-border-color:transparent;
+}
+
+.list-view:focused > .virtual-flow > .clipped-container > .sheet > .list-cell:filled:selected,
+.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell:filled:selected,
+.tree-table-view:focused > .virtual-flow > .clipped-container > .sheet > .tree-table-row-cell .tree-table-cell:selected {
+    -fx-background: -fx-selection-bar;
+    -fx-table-cell-border-color: derive(-fx-selection-bar, 20%);
+}
+
+.list-cell:filled:selected,
+.tree-table-row-cell:filled:selected,
+.tree-table-row-cell:filled > .tree-table-cell:selected {
+    -fx-background: derive(-fx-selection-bar-non-focused, -60%);
+    -fx-table-cell-border-color: -fx-inner-border;
+}
+
+.spreadsheet-cell {
+    -fx-background-color: -fx-table-cell-border-color, derive(-fx-base, 25%);
+    -fx-text-fill: -fx-text-inner-color;
+}
+
+VerticalHeader > Label{
+    -fx-background-color: derive(-fx-box-border, 50%), -fx-base;
+}
+
+HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
+    -fx-background-color: derive(-fx-box-border, 50%), -fx-base;
+}
+
+.root #grid .spreadsheet-cell:selected,
+.root #grid .spreadsheet-cell:focused:selected,
+.root #grid .spreadsheet-cell:focused:selected:hover {
+    -fx-background-color: rgb(159, 142, 0);
+}
+
+.status-bar {
+    -fx-background-color: derive(-fx-color,-15%), -fx-body-color;
+}
+
+.chart .default-color0.chart-series-line {
+    -fx-stroke: rgba(135, 138, 149, 0.6);
+}
+
+.chart .chart-bar {
+    -fx-bar-fill: rgba(135, 138, 149, 0.5);
+}
+
+.tab-label .failure {
+    -fx-fill: #e06c75;
+}
+
+.status-bar .tor-status.failure .glyph-font {
+    -fx-text-fill: #e06c75;
+}
+
+.root .titled-description-pane .status-error .text, .root .titled-description-pane .description-error .text {
+    -fx-fill: #e06c75;
+}
+
+.root .list-menu {
+    -fx-background-color: #2284bb;
+}
+
+.root .list-item {
+    -fx-pref-width: 180;
+    -fx-background-color: #2284bb;
+}
+
+.root .list-item:hover {
+    -fx-background-color: linear-gradient(to right, #2284bb, derive(#388fc7, 10%));
+}
+
+.root .list-item:selected {
+    -fx-background-color: linear-gradient(to right, #2284bb, derive(#1479bb, -10%));
+}
+
+.root .list-item:disabled {
+    -fx-background-color: #626367;
+    -fx-border-color: #626367;
+}
+
+.root .wallet-subtabs > .tab-header-area .tab {
+    -fx-background-color: derive(#2284bb, 32%);
+}
+
+.root .wallet-subtabs > .tab-header-area .tab:selected {
+    -fx-background-color: #2284bb;
+}
+
+#inputsPie .default-color0.chart-pie {
+    -fx-pie-color: #e06c75;
+}
+
+#outputsPie .default-color3.chart-pie {
+    -fx-pie-color: #e06c75;
+}
+
+.root .descriptor-error {
+    -fx-fill: #e06c75;
+}
+
+.root #noWalletsWarning .glyph-font {
+    -fx-text-fill: #e06c75;
+}
+
+.root .coin-cell.negative-amount {
+    -fx-text-fill: #e09499;
+}
+
+.root .etched-raised-border {
+    -fx-border-color: #ffffff, derive(-fx-color,-15%);
+    -fx-border-style: solid, solid;
+    -fx-border-width: 1px, 1px;
+}
+
+.root .line-border {
+    -fx-border-color: derive(-fx-color,-15%);
+    -fx-border-style: solid;
+    -fx-border-width: 1px;
+}
+
+.root .duplicate-warning, .root #transactionDiagram .fee-warning-icon {
+    -fx-text-fill: #e06c75;
+}
+
+.root .unused-check {
+    -fx-text-fill: #98c379;
+}
+
+.root .script-nest { -fx-fill: #565c64 }
+.root .script-opcode { -fx-fill: #56b6c2 }
+.root .script-hash { -fx-fill: #d19a66 }
+.root .script-signature { -fx-fill: #98c379 }
+.root .script-pubkey { -fx-fill: #c678dd }
+.root .script-redeem, .root .script-controlblock { -fx-fill: derive(#e06c75, 20%) }
+.root .script-other { -fx-fill: #c8ccd4 }
+
+.root #txhex {
+    -fx-background-color: derive(-fx-control-inner-background, -50%);
+    color-0: #e06c75;
+    color-1: #e5c07b;
+    color-2: #d19a66;
+    color-3: #98c379;
+    color-4: #61afef;
+    color-5: #56b6c2;
+    color-6: #c678dd;
+    color-7: #be5046;
+    color-8: #c8ccd4;
+    color-grey: #3e4451;
+}
+
+.root .progress-bar {
+    -fx-accent: derive(-fx-default-button, -15%);
+}
+
+.root .segment1 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_3, -20%);
+}
+
+.root .segment2 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_7, -20%);
+}
+
+.root .segment3 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_5, -20%);
+}
+
+.root .segment4 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_6, -20%);
+}
+
+.root .segment5 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_2, -20%);
+}
+
+.root .segment6 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_1, -20%);
+}
+
+.root .segment7 .progress-bar {
+    -fx-accent: derive(CHART_COLOR_8, -20%);
+}
+
+.root .readonly.text-input {
+    -fx-text-fill: lightgray;
+}
+
+.root .descriptor-text {
+    -fx-fill: lightgray;
+}
+
+.root .success {
+    -fx-text-fill: #98c379;
+}
+
+.root .failure {
+    -fx-text-fill: #e06c75;
+}
+
+.root .failure.hyperlink:visited {
+    -fx-text-fill: #e06c75;
+}
+
+.root .titled-description-pane > .title {
+    -fx-background-color: derive(-fx-base, 10%);
+    -fx-padding: 0;
+    -fx-border-color: derive(-fx-base, -2%);
+    /*-fx-border-width: 1;*/
+}
+
+.root .multiple-tabs {
+    -fx-background-color: derive(-fx-background, -4%);
+    -fx-border-width: 1px 0px 1px 0px;
+    -fx-border-color: derive(-fx-background, -10%);
+}
+
+.root .placeholder .hyperlink {
+    -fx-text-fill: derive(#1e88cf, 20%);
+}
+
+.root .box-overlay {
+    -fx-effect: dropshadow(three-pass-box, black, 14, 0, 0, 0);
+}
+
+.root .box-overlay .label {
+    -fx-text-fill: white;
+}
+
+.root #loadingLog {
+    -fx-background-color: transparent;
+}
+
+.root #transactionDiagram .coins-icon, .root #transactionDiagram .user-icon {
+    -fx-text-fill: lightgray;
+}
+
+.root #transactionDiagram .size-indicator {
+    -fx-fill: lightgray;
+}
+
+.root #transactionDiagram .inputs-type, .root #transactionDiagram .input-line, .root #transactionDiagram .output-line {
+    -fx-text-fill: #696c77;
+    -fx-stroke: #696c77;
+}
+
+.root .progress-indicator.progress-timer.warn > .determinate-indicator > .indicator {
+    -fx-background-color: -fx-box-border, radial-gradient(center 50% 50%, radius 50%, #e06c75 70%, derive(-fx-control-inner-background, -9%) 100%);
+}
+
+.root .hyperlink {
+    -fx-text-fill: #229df5;
+}
+
+.root .hyperlink:visited {
+    -fx-text-fill: #229df5;
+}
+
+#grid .spreadsheet-cell.selection {
+    -fx-text-fill: -fx-base;
+}

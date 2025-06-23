@@ -1,0 +1,27 @@
+
+.notification-bar > .pane {
+    -fx-padding: 0 7 7 7;
+}
+
+.notification-bar .close-button {
+    -fx-translate-y: 7;
+}
+
+.notification-bar > .pane .label.title {
+    -fx-font-size: 15px;
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-padding: 5 0 0 68;
+    -fx-translate-y: 10;
+}
+
+.notification-bar > .pane .label {
+    -fx-font-size: 1em;
+    -fx-text-fill: -fx-text-inner-color;
+    -fx-alignment: top-left;
+    -fx-padding: 0 0 0 10;
+    -fx-graphic-text-gap: 8;
+}
+
+.notification-bar > .pane .label .text {
+    -fx-translate-y: 12;
+}

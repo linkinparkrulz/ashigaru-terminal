@@ -1,0 +1,67 @@
+<configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
+    <logger name="com.github.sarxos.webcam.Webcam" level="OFF"/>
+    <logger name="com.github.sarxos.webcam.ds.cgt.WebcamOpenTask" level="OFF"/>
+    <logger name="com.github.sarxos.webcam.ds.cgt.WebcamCloseTask" level="OFF"/>
+    <logger name="javafx.css" level="ERROR"/>
+    <logger name="javafx.scene.focus" level="INFO"/>
+    <logger name="sun.net.www.protocol.http.HttpURLConnection" level="INFO" />
+    <logger name="h2database" level="ERROR" />
+    <logger name="com.zaxxer.hikari.HikariDataSource" level="WARN" />
+    <logger name="com.zaxxer.hikari.pool.HikariPool" level="ERROR" />
+    <logger name="org.flywaydb.core.internal.command.DbValidate" level="WARN" />
+    <logger name="org.flywaydb.core.internal.command.DbMigrate" level="WARN" />
+    <logger name="org.flywaydb.core.internal.command.DbClean" level="ERROR" />
+    <logger name="org.flywaydb.core.internal.database.base.BaseDatabaseType" level="WARN" />
+    <logger name="org.flywaydb.core.internal.database.base.Schema" level="WARN" />
+    <logger name="org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory" level="WARN" />
+    <logger name="org.flywaydb.core.internal.license.VersionPrinter" level="WARN" />
+    <logger name="org.eclipse.jetty.util.thread.ReservedThreadExecutor" level="OFF" />
+    <logger name="org.eclipse.jetty.util.thread.QueuedThreadPool" level="OFF" />
+    <logger name="org.eclipse.jetty.io.ManagedSelector" level="OFF" />
+    <logger name="org.eclipse.jetty.util.component.AbstractLifeCycle" level="OFF" />
+    <logger name="org.eclipse.jetty.io.ChannelEndPoint" level="OFF" />
+    <logger name="org.eclipse.jetty.io.ssl.SslConnection" level="OFF" />
+    <logger name="org.eclipse.jetty.client.HttpReceiver" level="OFF" />
+    <logger name="org.eclipse.jetty.client.TimeoutCompleteListener" level="OFF" />
+    <logger name="org.eclipse.jetty.client.AbstractConnectionPool" level="OFF" />
+    <logger name="org.eclipse.jetty.client.HttpDestination" level="OFF" />
+    <logger name="org.eclipse.jetty.client.HttpChannel" level="OFF" />
+    <logger name="org.eclipse.jetty.client.HttpExchange" level="OFF" />
+    <logger name="org.eclipse.jetty.client.HttpParser" level="OFF" />
+    <logger name="org.eclipse.jetty.http.HttpParser" level="OFF" />
+    <logger name="org.eclipse.jetty.util.log" level="OFF" />
+    <logger name="org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler" level="OFF" />
+    <logger name="org.bitcoinj.crypto.MnemonicCode" level="OFF" />
+    <logger name="org.springframework.core.KotlinDetector" level="OFF" />
+    <logger name="org.springframework.http.converter.json.Jackson2ObjectMapperBuilder" level="OFF" />
+    <logger name="org.springframework.web.HttpLogging" level="OFF" />
+    <logger name="org.springframework.web.socket.sockjs.client.SockJsClient" level="OFF" />
+    <logger name="org.springframework.web.socket.sockjs.client.DefaultTransportRequest" level="OFF" />
+    <logger name="com.sparrowwallet.nightjar.stomp.JavaStompClient" level="ERROR" />
+
+    <contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+
+    <define name="appDir" class="com.sparrowwallet.drongo.PropertyDefiner">
+        <application>ashigaru</application>
+    </define>
+
+    <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+        <file>${appDir}/ashigaru.log</file>
+        <encoder>
+            <pattern>%date [%thread] %level %logger.%method\(%file:%line\) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date [%thread] %highlight(%-5level) %cyan(%logger{36}.%method\(%line\)) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>

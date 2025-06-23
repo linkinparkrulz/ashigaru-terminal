@@ -1,0 +1,79 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+plugins {
+    id 'java-library'
+    id 'extra-java-module-info'
+}
+
+tasks.withType(AbstractArchiveTask) {
+    preserveFileTimestamps = false
+    reproducibleFileOrder = true
+}
+
+def os = org.gradle.internal.os.OperatingSystem.current()
+def osName = os.getFamilyName()
+if(os.macOsX) {
+    osName = "osx"
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation ('com.googlecode.json-simple:json-simple:1.1.1') {
+        exclude group: 'junit', module: 'junit'
+    }
+    implementation ('org.bouncycastle:bcprov-jdk18on:1.77')
+    implementation('org.pgpainless:pgpainless-core:1.6.6')
+    implementation ('de.mkammerer:argon2-jvm:2.11') {
+        exclude group: 'net.java.dev.jna', module: 'jna'
+    }
+    implementation ('net.java.dev.jna:jna:5.8.0')
+    implementation ('ch.qos.logback:logback-classic:1.4.14') {
+        exclude group: 'org.slf4j'
+    }
+    implementation ('org.slf4j:slf4j-api:2.0.12')
+    testImplementation('org.junit.jupiter:junit-jupiter-api:5.10.0')
+    testRuntimeOnly('org.junit.jupiter:junit-jupiter-engine:5.10.0')
+    testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    doLast {
+        delete fileTree("$buildDir/resources/main/native").matching {
+            exclude "${osName}/**"
+        }
+    }
+}
+
+extraJavaModuleInfo {
+    module('json-simple-1.1.1.jar', 'json.simple', '1.1.1') {
+        exports('org.json.simple')
+        exports('org.json.simple.parser')
+    }
+    module('jnacl-1.0.0.jar', 'eu.neilalexander.jnacl', '1.0.0')
+    module('pgpainless-core-1.6.6.jar', 'org.pgpainless.core', '1.6.6') {
+        exports('org.pgpainless')
+        exports('org.pgpainless.key')
+        exports('org.pgpainless.key.parsing')
+        exports('org.pgpainless.decryption_verification')
+        exports('org.pgpainless.exception')
+        exports('org.pgpainless.signature')
+        exports('org.pgpainless.util')
+        requires('org.bouncycastle.provider')
+        requires('org.bouncycastle.pg')
+        requires('org.slf4j')
+    }
+    module('jsr305-3.0.2.jar', 'com.google.code.findbugs.jsr305', '3.0.2')
+}
