@@ -4,19 +4,16 @@ import com.google.common.eventbus.Subscribe;
 import com.samourai.whirlpool.client.mix.listener.MixFailReason;
 import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.wallet.beans.MixProgress;
-import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.protocol.Sha256Hash;
 import com.sparrowwallet.drongo.wallet.*;
 import com.sparrowwallet.sparrow.AppServices;
-import com.sparrowwallet.sparrow.Theme;
 import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.UnitFormat;
 import com.sparrowwallet.sparrow.control.AshigaruMixesCell;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.Config;
-import com.sparrowwallet.sparrow.io.Storage;
 import com.sparrowwallet.sparrow.wallet.*;
 import com.sparrowwallet.sparrow.whirlpool.Whirlpool;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolException;
@@ -55,7 +52,6 @@ import java.util.stream.Collectors;
 public class AshigaruWalletController implements Initializable {
     private static final Logger log = LoggerFactory.getLogger(AshigaruWalletController.class);
 
-    @FXML private Label walletNameLabel;
     @FXML private Label accountNameLabel;
     @FXML private Button refreshBtn;
     @FXML private Button receiveBtn;
@@ -87,7 +83,6 @@ public class AshigaruWalletController implements Initializable {
     @FXML private Button mixToBtn;
     @FXML private Button selectAllUtxosBtn;
     @FXML private Button mixSelectedBtn;
-    @FXML private VBox accountPanel;
 
     private WalletForm currentWalletForm;   // master wallet form
     private WalletForm activeAccountForm;   // currently shown account form
@@ -250,7 +245,6 @@ public class AshigaruWalletController implements Initializable {
         this.currentWalletForm = masterForm;
         this.activeAccountForm = activeForm;
         // Wallet name label removed from UI - account is now shown in sidebar
-        // walletNameLabel.setText(masterForm.getWallet().getFullDisplayName());
 
         refreshAccountView();
     }
@@ -791,7 +785,9 @@ public class AshigaruWalletController implements Initializable {
                         .ifPresent(row -> {
                             if(event.getNextUtxo() != null) {
                                 row.utxoEntry.setNextMixUtxo(event.getNextUtxo());
-                            } else if(event.getMixFailReason() != null) {
+                            } else if(event.getMixFailReason() != null
+                                    && event.getMixFailReason() != MixFailReason.CANCEL
+                                    && event.getMixFailReason() != MixFailReason.STOP) {
                                 row.utxoEntry.setMixFailReason(event.getMixFailReason(), event.getMixError());
                             } else {
                                 row.utxoEntry.setMixProgress(event.getMixProgress());
@@ -863,8 +859,8 @@ public class AshigaruWalletController implements Initializable {
         }
 
         MixFailReason failReason = mixStatus.getMixFailReason();
-        if (failReason != null) {
-            return "FAILED - " + failReason.getMessage();
+        if (failReason != null && failReason != MixFailReason.CANCEL && failReason != MixFailReason.STOP) {
+            return "Failed - " + failReason.getMessage();
         }
 
         if (mixStatus.getNextMixUtxo() != null) {
