@@ -19,7 +19,7 @@
         <HBox styleClass="header-bar" alignment="CENTER_LEFT" spacing="12">
             <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
             <StackPane styleClass="header-logo-frame">
-                <ImageView fitWidth="24" fitHeight="24" preserveRatio="true">
+                <ImageView fitWidth="24" fitHeight="24" preserveRatio="true" smooth="true">
                     <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png"/></image>
                 </ImageView>
             </StackPane>
@@ -104,7 +104,7 @@
                     <VBox alignment="CENTER" spacing="20" styleClass="welcome-card" maxWidth="440" maxHeight="320">
                         <padding><Insets top="40" right="44" bottom="40" left="44"/></padding>
                         <StackPane styleClass="welcome-logo-frame">
-                            <ImageView fitWidth="72" fitHeight="72" preserveRatio="true">
+                            <ImageView fitWidth="72" fitHeight="72" preserveRatio="true" smooth="true">
                                 <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png"/></image>
                             </ImageView>
                         </StackPane>

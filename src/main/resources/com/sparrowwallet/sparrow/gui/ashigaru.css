@@ -217,7 +217,7 @@
 .refresh-btn { -fx-font-size: 11px; -fx-padding: 4 10 4 10; }
 .delete-btn {
     -fx-background-color: derive(-ag-accent, -70%);
-    -fx-text-fill: -ag-accent;
+    -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
     -fx-font-size: 11px;
     -fx-padding: 4 10 4 10;
