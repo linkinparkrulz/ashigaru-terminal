@@ -60,18 +60,8 @@
 
     <Separator/>
 
-    <!-- UTXO table -->
-    <TableView fx:id="utxoTable" styleClass="utxo-table" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colCheck"   text=""        prefWidth="40"  minWidth="40" resizable="false" sortable="false"/>
-            <TableColumn fx:id="colDate"    text="Date"    prefWidth="160" minWidth="120"/>
-            <TableColumn fx:id="colOutput"  text="Output"  prefWidth="220" minWidth="160"/>
-            <TableColumn fx:id="colAddress" text="Address" prefWidth="240" minWidth="160"/>
-            <TableColumn fx:id="colLabel"   text="Label"   prefWidth="160" minWidth="100"/>
-            <TableColumn fx:id="colMixes"   text="Mixes"   prefWidth="90"  minWidth="70"/>
-            <TableColumn fx:id="colMixStage" text="Stage"  prefWidth="180" minWidth="130"/>
-            <TableColumn fx:id="colValue"   text="Value"   prefWidth="160" minWidth="120"/>
-        </columns>
+    <!-- UTXO list — responsive card view -->
+    <ListView fx:id="utxoTable" styleClass="utxo-list" VBox.vgrow="ALWAYS">
         <placeholder>
             <VBox alignment="CENTER" spacing="14" styleClass="empty-state">
                 <Label text="▼" styleClass="empty-state-icon"/>
@@ -80,20 +70,14 @@
                         styleClass="primary-btn"/>
             </VBox>
         </placeholder>
-    </TableView>
+    </ListView>
 
-    <!-- Transaction history table (hidden by default) -->
-    <TableView fx:id="txnTable" styleClass="utxo-table" VBox.vgrow="ALWAYS" visible="false" managed="false">
-        <columns>
-            <TableColumn fx:id="colTxnDate"   text="Date"   prefWidth="160" minWidth="120"/>
-            <TableColumn fx:id="colTxnId"     text="TxID"   prefWidth="260" minWidth="160"/>
-            <TableColumn fx:id="colTxnLabel"  text="Label"  prefWidth="160" minWidth="100"/>
-            <TableColumn fx:id="colTxnAmount" text="Amount" prefWidth="160" minWidth="120"/>
-        </columns>
+    <!-- Transaction history list (hidden by default) -->
+    <ListView fx:id="txnTable" styleClass="utxo-list" VBox.vgrow="ALWAYS" visible="false" managed="false">
         <placeholder>
             <Label text="No transactions" styleClass="table-placeholder"/>
         </placeholder>
-    </TableView>
+    </ListView>
 
     <Separator/>
 

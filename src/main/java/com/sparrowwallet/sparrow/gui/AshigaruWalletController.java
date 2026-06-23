@@ -11,7 +11,6 @@ import com.sparrowwallet.drongo.wallet.*;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.UnitFormat;
-import com.sparrowwallet.sparrow.control.AshigaruMixesCell;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.wallet.*;
@@ -22,21 +21,15 @@ import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
@@ -64,20 +57,8 @@ public class AshigaruWalletController implements Initializable {
     @FXML private Label badbankInfoLabel;
     @FXML private ToggleButton utxoViewBtn;
     @FXML private ToggleButton txnViewBtn;
-    @FXML private TableView<UtxoRow> utxoTable;
-    @FXML private TableColumn<UtxoRow, Boolean> colCheck;
-    @FXML private TableColumn<UtxoRow, String> colDate;
-    @FXML private TableColumn<UtxoRow, String> colOutput;
-    @FXML private TableColumn<UtxoRow, String> colAddress;
-    @FXML private TableColumn<UtxoRow, String> colLabel;
-    @FXML private TableColumn<UtxoRow, UtxoEntry.MixStatus> colMixes;
-    @FXML private TableColumn<UtxoRow, String> colMixStage;
-    @FXML private TableColumn<UtxoRow, String> colValue;
-    @FXML private TableView<TxnRow> txnTable;
-    @FXML private TableColumn<TxnRow, String> colTxnDate;
-    @FXML private TableColumn<TxnRow, String> colTxnId;
-    @FXML private TableColumn<TxnRow, String> colTxnLabel;
-    @FXML private TableColumn<TxnRow, String> colTxnAmount;
+    @FXML private ListView<UtxoRow> utxoTable;
+    @FXML private ListView<TxnRow> txnTable;
     @FXML private HBox mixButtonBox;
     @FXML private Button startMixBtn;
     @FXML private Button mixToBtn;
@@ -90,134 +71,18 @@ public class AshigaruWalletController implements Initializable {
     private final ObservableList<UtxoRow> utxoRows = FXCollections.observableArrayList();
     private final ObservableList<TxnRow> txnRows   = FXCollections.observableArrayList();
 
+    // Whether the active account is a Whirlpool mix wallet (drives mix-status display in cells)
+    private final SimpleBooleanProperty showMixInfo = new SimpleBooleanProperty(false);
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // UTXO table
+        // UTXO list — responsive card view (one card per UTXO, never scrolls sideways)
         utxoTable.setItems(utxoRows);
-        utxoTable.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
-        colCheck.setCellValueFactory(d -> d.getValue().selected);
-        colCheck.setCellFactory(CheckBoxTableCell.forTableColumn(colCheck));
+        utxoTable.setCellFactory(lv -> new AshigaruUtxoCell(showMixInfo));
 
-        colDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().date));
-        colOutput.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().output));
-        colOutput.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null || item.isEmpty()) {
-                    setText(null); setGraphic(null);
-                } else {
-                    Label lbl = new Label(item);
-                    lbl.setMaxWidth(Double.MAX_VALUE);
-                    HBox.setHgrow(lbl, javafx.scene.layout.Priority.ALWAYS);
-                    HBox box = new HBox(4, lbl, makeCopyButton(item));
-                    box.setAlignment(Pos.CENTER_LEFT);
-                    setText(null); setGraphic(box);
-                }
-            }
-        });
-        colAddress.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().address));
-        colMixes.setCellValueFactory(d -> {
-            UtxoEntry e = d.getValue().utxoEntry;
-            return e != null ? e.mixStatusProperty() : new SimpleObjectProperty<>(null);
-        });
-        colMixes.setCellFactory(col -> new AshigaruMixesCell());
-        colMixStage.setCellValueFactory(d -> {
-            UtxoEntry e = d.getValue().utxoEntry;
-            return new SimpleStringProperty(e != null ? getMixStage(e.getMixStatus()) : "");
-        });
-        colValue.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().value));
-
-        colAddress.setCellFactory(col -> new TableCell<>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null || item.isEmpty()) {
-                    setText(null);
-                    setGraphic(null);
-                } else {
-                    Label lbl = new Label(item);
-                    lbl.setMaxWidth(Double.MAX_VALUE);
-                    HBox.setHgrow(lbl, javafx.scene.layout.Priority.ALWAYS);
-                    HBox box = new HBox(4, lbl, makeCopyButton(item));
-                    box.setAlignment(Pos.CENTER_LEFT);
-                    setText(null);
-                    setGraphic(box);
-                }
-            }
-        });
-
-        colLabel.setCellValueFactory(d -> d.getValue().utxoEntry.labelProperty());
-        colLabel.setCellFactory(TextFieldTableCell.forTableColumn());
-        colLabel.setEditable(true);
-        colLabel.setOnEditCommit(event ->
-                event.getRowValue().utxoEntry.labelProperty().set(event.getNewValue()));
-        utxoTable.setEditable(true);
-
-        txnTable.getSelectionModel().getSelectedItems().addListener(
-                (ListChangeListener<TxnRow>) c -> updateActionButtons());
-
-        // Transaction table
+        // Transaction list — responsive card view
         txnTable.setItems(txnRows);
-        txnTable.setEditable(true);
-        colTxnDate.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().date()));
-        colTxnId.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().txid()));
-        colTxnId.setCellFactory(col -> new TableCell<TxnRow, String>() {
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty || item == null || getIndex() >= getTableView().getItems().size()) {
-                    setGraphic(null); setText(null); return;
-                }
-                Label lbl = new Label(item);
-                lbl.setMaxWidth(Double.MAX_VALUE);
-                HBox.setHgrow(lbl, javafx.scene.layout.Priority.ALWAYS);
-                HBox hbox = new HBox(4, lbl, makeCopyButton(item));
-                hbox.setAlignment(Pos.CENTER_LEFT);
-                setGraphic(hbox); setText(null);
-            }
-        });
-        colTxnLabel.setCellValueFactory(d -> d.getValue().txnEntry().labelProperty());
-        colTxnLabel.setEditable(true);
-        colTxnLabel.setOnEditCommit(event -> {
-            TxnRow row = event.getRowValue();
-            if (row != null) {
-                row.txnEntry().labelProperty().set(
-                        event.getNewValue() != null ? event.getNewValue() : "");
-            }
-        });
-        colTxnLabel.setCellFactory(col -> new TableCell<TxnRow, String>() {
-            private final TextField textField = new TextField();
-            {
-                textField.setOnAction(e -> commitEdit(textField.getText()));
-                textField.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
-                    if (wasFocused && !isFocused && isEditing()) commitEdit(textField.getText());
-                });
-                textField.setOnKeyPressed(e -> { if (e.getCode() == KeyCode.ESCAPE) cancelEdit(); });
-                setOnMouseClicked(e -> { if (!isEmpty()) getTableView().edit(getIndex(), getTableColumn()); });
-            }
-            @Override protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) { setText(null); setGraphic(null); }
-                else if (isEditing()) { setText(null); setGraphic(textField); }
-                else { setText(item != null ? item : ""); setGraphic(null); }
-            }
-            @Override public void startEdit() {
-                super.startEdit();
-                textField.setText(getItem() != null ? getItem() : "");
-                setText(null); setGraphic(textField);
-                textField.requestFocus(); textField.selectAll();
-            }
-            @Override public void cancelEdit() {
-                super.cancelEdit();
-                setText(getItem() != null ? getItem() : ""); setGraphic(null);
-            }
-            @Override public void commitEdit(String newValue) {
-                super.commitEdit(newValue);
-                setText(newValue != null ? newValue : ""); setGraphic(null);
-            }
-        });
-        colTxnAmount.setCellValueFactory(d -> new SimpleStringProperty(d.getValue().amount()));
+        txnTable.setCellFactory(lv -> new AshigaruTxnCell());
 
         // View toggle group
         ToggleGroup viewGroup = new ToggleGroup();
@@ -372,8 +237,7 @@ public class AshigaruWalletController implements Initializable {
     }
 
     private void refreshUtxoTable(WalletUtxosEntry utxosEntry, boolean isMixWallet) {
-        colMixes.setVisible(isMixWallet);
-        colMixStage.setVisible(isMixWallet);
+        showMixInfo.set(isMixWallet);
 
         utxoRows.clear();
         if (utxosEntry.getChildren() == null) return;
@@ -825,7 +689,7 @@ public class AshigaruWalletController implements Initializable {
     // Helpers
     // -------------------------------------------------------------------------
 
-    private static Button makeCopyButton(String textToCopy) {
+    static Button makeCopyButton(String textToCopy) {
         final String defaultStyle = "-fx-text-fill: #A0A0A0; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;";
         final String successStyle = "-fx-text-fill: #4CAF50; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;";
         Button btn = new Button("⎘");
@@ -847,7 +711,7 @@ public class AshigaruWalletController implements Initializable {
         return btn;
     }
 
-    private static String getMixStage(UtxoEntry.MixStatus mixStatus) {
+    static String getMixStage(UtxoEntry.MixStatus mixStatus) {
         if (mixStatus == null) {
             return "";
         }

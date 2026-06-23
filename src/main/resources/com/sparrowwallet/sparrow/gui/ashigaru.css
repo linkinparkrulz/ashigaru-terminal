@@ -359,6 +359,59 @@
 }
 .table-placeholder { -fx-text-fill: -ag-text-faint; }
 
+/* ── UTXO / Transaction card lists ────────────────────────────────────────── */
+.utxo-list {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.utxo-list .list-cell {
+    -fx-background-color: -ag-bg;
+    -fx-text-fill: -ag-text;
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: transparent transparent -ag-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.utxo-list .list-cell:filled:hover    { -fx-background-color: -ag-bg-mid; }
+.utxo-list .list-cell:filled:selected { -fx-background-color: -ag-bg-light; }
+.utxo-list .list-cell:empty {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: transparent;
+}
+
+.card-value     { -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
+.card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
+
+/* Inline editable label inside a card */
+.card-label-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ag-text;
+    -fx-prompt-text-fill: -ag-text-faint;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
+    -fx-font-size: 12px;
+}
+.card-label-field:focused {
+    -fx-background-color: -ag-bg-light;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius-sm;
+    -fx-background-radius: -ag-radius-sm;
+    -fx-padding: 2 6 2 6;
+}
+
+/* Mix-status badge on the right of a UTXO card */
+.mix-badge {
+    -fx-padding: 3 9 3 9;
+    -fx-background-color: -ag-bg-raised;
+    -fx-background-radius: 999;
+}
+.mix-badge .mix-badge-text { -fx-text-fill: -ag-text-dim; -fx-font-size: 11px; -fx-font-weight: bold; }
+.mix-badge.active          { -fx-background-color: -ag-accent-faint; }
+.mix-badge.active .mix-badge-text { -fx-text-fill: -ag-accent; }
+.mix-badge.done            { -fx-background-color: derive(-ag-green, -65%); }
+.mix-badge.done .mix-badge-text   { -fx-text-fill: -ag-green; }
+
 /* ── Mix button row ───────────────────────────────────────────────────────── */
 .mix-button-row {
     -fx-background-color: -ag-bg-mid;
