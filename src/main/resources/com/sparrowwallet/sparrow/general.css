@@ -134,11 +134,11 @@
 }
 
 .copyable-text-field .copy-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .copyable-text-field .copy-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .combo-text-field .combo-button {
@@ -153,11 +153,11 @@
 }
 
 .combo-text-field .combo-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .combo-text-field .combo-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .view-password-text-field .view-password-button > .graphic {
@@ -175,11 +175,11 @@
 }
 
 .view-password-text-field .view-password-button:hover > .graphic, .view-password-text-field .hide-password-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .view-password-text-field .view-password-button:pressed > .graphic, .view-password-text-field .hide-password-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .readonly.text-input {

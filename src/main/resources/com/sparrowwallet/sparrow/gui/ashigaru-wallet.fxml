@@ -11,29 +11,27 @@
 
     <!-- ① Account header row: name + action buttons -->
     <HBox styleClass="account-header-row" alignment="CENTER_LEFT" spacing="12">
-        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
         <Label fx:id="accountNameLabel" text="Deposit" styleClass="account-name-label"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="receiveBtn" text="⬇  Receive" onAction="#onReceive"
-                styleClass="action-btn" visible="false" managed="false"/>
-        <Button fx:id="refreshBtn" text="⟳  Refresh" onAction="#onRefresh" styleClass="refresh-btn"/>
+                styleClass="primary-btn" visible="false" managed="false"/>
+        <Button fx:id="refreshBtn" text="⟳  Refresh" onAction="#onRefresh" styleClass="action-btn refresh-btn"/>
     </HBox>
 
-    <!-- ② Balance row: numbers only -->
-    <HBox styleClass="balance-row" alignment="CENTER_LEFT" spacing="24">
-        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+    <!-- ② Balance row: cards -->
+    <HBox styleClass="balance-row" alignment="CENTER_LEFT" spacing="14">
+        <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
 
-        <VBox spacing="2">
+        <VBox styleClass="balance-card primary" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="CONFIRMED" styleClass="balance-caption"/>
             <Label fx:id="balanceLabel" text="—" styleClass="balance-value"/>
         </VBox>
-        <Separator orientation="VERTICAL"/>
-        <VBox spacing="2">
+        <VBox styleClass="balance-card" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="MEMPOOL" styleClass="balance-caption"/>
             <Label fx:id="mempoolLabel" text="—" styleClass="balance-value secondary"/>
         </VBox>
-        <Separator orientation="VERTICAL"/>
-        <VBox spacing="2">
+        <VBox styleClass="balance-card" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="UTXOs" styleClass="balance-caption"/>
             <Label fx:id="utxoCountLabel" text="0" styleClass="balance-value secondary"/>
         </VBox>
@@ -41,7 +39,7 @@
 
     <!-- Badbank / doxxic-change info bar (shown only when Badbank tab is active) -->
     <HBox fx:id="badbankInfoBar" styleClass="badbank-info-bar" alignment="CENTER_LEFT" spacing="8" visible="false" managed="false">
-        <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+        <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
         <Label text="⚠" styleClass="badbank-warning-icon"/>
         <Label fx:id="badbankInfoLabel"
                text="Spending these UTXOs is not advised. Please consider mixing in a smaller pool or an atomic swap to XMR."
@@ -50,7 +48,7 @@
 
     <!-- ③ View toggle: UTXOs / Transactions + Mix Selected (right-aligned) -->
     <HBox styleClass="view-toggle-bar" alignment="CENTER_LEFT" spacing="0">
-        <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
+        <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
         <ToggleButton fx:id="utxoViewBtn"  text="UTXOs"        onAction="#onViewToggle" styleClass="view-toggle-btn" selected="true"/>
         <ToggleButton fx:id="txnViewBtn"   text="Transactions" onAction="#onViewToggle" styleClass="view-toggle-btn"/>
         <Region HBox.hgrow="ALWAYS"/>
@@ -75,11 +73,11 @@
             <TableColumn fx:id="colValue"   text="Value"   prefWidth="160" minWidth="120"/>
         </columns>
         <placeholder>
-            <VBox alignment="CENTER" spacing="12" styleClass="empty-state">
+            <VBox alignment="CENTER" spacing="14" styleClass="empty-state">
                 <Label text="▼" styleClass="empty-state-icon"/>
                 <Label text="You don't have any UTXOs yet" styleClass="empty-state-message"/>
                 <Button fx:id="receiveCta" text="Receive Funds" onAction="#onReceiveCta"
-                        styleClass="action-btn"/>
+                        styleClass="primary-btn"/>
             </VBox>
         </placeholder>
     </TableView>
@@ -101,7 +99,7 @@
 
     <!-- Mix action buttons: Start Mixing + Mix To (Mix Selected moved to toggle bar above) -->
     <HBox fx:id="mixButtonBox" styleClass="mix-button-row" alignment="CENTER_LEFT" spacing="10" visible="false">
-        <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
 
         <Button fx:id="startMixBtn"  text="Start Mixing" onAction="#onStartMix"  styleClass="primary-btn mix-btn" visible="false"/>
         <Button fx:id="mixToBtn"     text="Mix To…"      onAction="#onMixTo"      styleClass="action-btn mix-btn"  visible="false"/>
