@@ -482,6 +482,13 @@
 .combo-box-popup .list-cell:hover { -fx-background-color: -ag-bg-raised; }
 .combo-box-popup .list-cell:selected { -fx-background-color: derive(-ag-accent, -60%); -fx-text-fill: -ag-accent; }
 
+/* Monospace text area (seed / descriptor entry) */
+.mono-area {
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 13px;
+}
+.mono-area .content { -fx-background-color: -ag-bg; }
+
 /* ── Toggle buttons ───────────────────────────────────────────────────────── */
 .toggle-button {
     -fx-background-color: -ag-bg-light;
@@ -796,6 +803,26 @@
     -fx-background-insets: 0;
     -fx-background-radius: 100;
 }
+
+/* ── Seed word display grid (Seed Words dialog) ───────────────────────────── */
+.seed-word-grid {
+    -fx-padding: 4 2 4 2;
+}
+.seed-word-grid .label {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 12px;
+}
+.seed-word-grid .text-field {
+    -fx-background-color: -ag-bg-light;
+    -fx-text-fill: -ag-text;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius-sm;
+    -fx-background-radius: -ag-radius-sm;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 13px;
+    -fx-padding: 5 8 5 8;
+}
+.seed-word-grid .text-field:focused { -fx-border-color: -ag-accent; }
 
 /* ── BIP47 message verifier ─────────────────────── */
 .verifier-panel .text-area {

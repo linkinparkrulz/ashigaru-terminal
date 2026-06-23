@@ -94,6 +94,7 @@ public class WalletCreationFlow {
         dlg.setHeaderText("Enter a name for the wallet");
         dlg.setContentText("Name:");
         dlg.initOwner(owner);
+        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
 
         while (true) {
             Optional<String> result = dlg.showAndWait();
@@ -124,6 +125,7 @@ public class WalletCreationFlow {
         dlg.setHeaderText("Choose the type of wallet");
         dlg.setContentText("Type:");
         dlg.initOwner(owner);
+        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
         return dlg.showAndWait().orElse(null);
     }
 
@@ -135,18 +137,23 @@ public class WalletCreationFlow {
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle("Create BIP39 Wallet – " + walletName);
         dlg.initOwner(owner);
+        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
 
         Label seedLabel = new Label("Seed words:");
+        seedLabel.getStyleClass().add("field-label");
         TextArea seedArea = new TextArea();
+        seedArea.getStyleClass().add("mono-area");
         seedArea.setWrapText(true);
         seedArea.setPrefRowCount(5);
         seedArea.setPromptText("Enter your 12/18/24 word BIP39 seed phrase, or generate a new one below.");
 
         Label passLabel = new Label("BIP39 Passphrase:");
+        passLabel.getStyleClass().add("field-label");
         ViewPasswordField passField = new ViewPasswordField();
         passField.setPromptText("Enter passphrase");
 
         Label passConfirmLabel = new Label("Confirm Passphrase:");
+        passConfirmLabel.getStyleClass().add("field-label");
         ViewPasswordField passConfirmField = new ViewPasswordField();
         passConfirmField.setPromptText("Re-enter passphrase");
 
@@ -274,9 +281,12 @@ public class WalletCreationFlow {
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle("Create Watch Only Wallet – " + walletName);
         dlg.initOwner(owner);
+        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
 
         Label hint = new Label("Output descriptor or xpub\n(BIP84 Native Segwit Deposit or Postmix account)");
+        hint.getStyleClass().add("field-label");
         TextArea descriptorArea = new TextArea();
+        descriptorArea.getStyleClass().add("mono-area");
         descriptorArea.setWrapText(true);
         descriptorArea.setPrefRowCount(6);
         descriptorArea.setPromptText("Paste your xpub or output descriptor here…");
@@ -369,6 +379,7 @@ public class WalletCreationFlow {
             progress.setHeaderText("Discovering accounts…");
             progress.initOwner(owner);
             progress.initModality(Modality.APPLICATION_MODAL);
+            AppServices.addAshigaruStylesheets(progress.getDialogPane().getStylesheets());
 
             // Cancel button — gives user an immediate escape hatch
             ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
@@ -441,6 +452,7 @@ public class WalletCreationFlow {
         pwDlg.setTitle("Wallet Password");
         pwDlg.setHeaderText("Add a password to the wallet?\nLeave empty for no password.");
         pwDlg.initOwner(owner);
+        AppServices.addAshigaruStylesheets(pwDlg.getDialogPane().getStylesheets());
 
         ButtonType okType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         pwDlg.getDialogPane().getButtonTypes().addAll(okType, ButtonType.CANCEL);
@@ -564,6 +576,7 @@ public class WalletCreationFlow {
         alert.setHeaderText(title);
         alert.setContentText(message);
         alert.initOwner(owner);
+        AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
         alert.showAndWait();
     }
 }
