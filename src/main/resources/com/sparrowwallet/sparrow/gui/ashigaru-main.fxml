@@ -20,7 +20,7 @@
             <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
             <StackPane styleClass="header-logo-frame">
                 <ImageView fitWidth="24" fitHeight="24" preserveRatio="true" smooth="true">
-                    <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png"/></image>
+                    <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png" requestedWidth="48" requestedHeight="48" preserveRatio="true" smooth="true"/></image>
                 </ImageView>
             </StackPane>
             <Label text="Ashigaru" styleClass="app-title"/>
@@ -105,7 +105,7 @@
                         <padding><Insets top="40" right="44" bottom="40" left="44"/></padding>
                         <StackPane styleClass="welcome-logo-frame">
                             <ImageView fitWidth="72" fitHeight="72" preserveRatio="true" smooth="true">
-                                <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png"/></image>
+                                <image><Image url="@/image/Ashigaru_Terminal_Logo_Circle.png" requestedWidth="144" requestedHeight="144" preserveRatio="true" smooth="true"/></image>
                             </ImageView>
                         </StackPane>
                         <VBox alignment="CENTER" spacing="6">

@@ -780,6 +780,14 @@ public class AppServices {
         // theme defaults to LIGHT, which used to leave dialogs un-themed.)
         if(stage.getScene() != null) {
             addAshigaruStylesheets(stage.getScene().getStylesheets());
+            // Also add at the scene-root (DialogPane) level. Dialogs add general.css
+            // to their pane in the constructor, and in JavaFX a Parent's stylesheets
+            // take precedence over the Scene's — so scene-level theming alone loses to
+            // general.css. Appending here (after general.css) makes the dark theme win.
+            javafx.scene.Parent root = stage.getScene().getRoot();
+            if(root != null) {
+                addAshigaruStylesheets(root.getStylesheets());
+            }
         }
     }
 
