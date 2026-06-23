@@ -772,8 +772,26 @@ public class AppServices {
         Stage stage = (Stage)window;
         stage.getIcons().add(getWindowIcon());
 
-        if(stage.getScene() != null && Config.get().getTheme() == Theme.DARK) {
-            stage.getScene().getStylesheets().add(AppServices.class.getResource("darktheme.css").toExternalForm());
+        // Ashigaru is a dark-only app: theme every window/dialog unconditionally so
+        // pop-ups (Seed Words, password prompts, alerts, etc.) match the main UI.
+        // darktheme.css carries the re-themed Modena base + -ag-* tokens (dark
+        // surfaces, red accent); ashigaru.css adds the brand font + refined control
+        // skins. (The legacy Theme.DARK gate is intentionally dropped — the config
+        // theme defaults to LIGHT, which used to leave dialogs un-themed.)
+        if(stage.getScene() != null) {
+            addAshigaruStylesheets(stage.getScene().getStylesheets());
+        }
+    }
+
+    /** Adds the Ashigaru dark theme stylesheets to the given list, avoiding duplicates. */
+    public static void addAshigaruStylesheets(List<String> stylesheets) {
+        String darkCss = AppServices.class.getResource("darktheme.css").toExternalForm();
+        if(!stylesheets.contains(darkCss)) {
+            stylesheets.add(darkCss);
+        }
+        String ashigaruCss = AppServices.class.getResource("gui/ashigaru.css").toExternalForm();
+        if(!stylesheets.contains(ashigaruCss)) {
+            stylesheets.add(ashigaruCss);
         }
     }
 

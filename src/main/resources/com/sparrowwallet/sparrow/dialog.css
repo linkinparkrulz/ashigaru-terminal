@@ -1,7 +1,7 @@
 .root.dialog-pane .header-panel {
     -fx-background-color: -fx-control-inner-background;
     -fx-border-width: 0px 0px 1px 0px;
-    -fx-border-color: #e5e5e6;
+    -fx-border-color: -ag-border;
 }
 
 .header-panel .label {

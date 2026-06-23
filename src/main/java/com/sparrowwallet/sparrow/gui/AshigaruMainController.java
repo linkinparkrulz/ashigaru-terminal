@@ -347,6 +347,7 @@ public class AshigaruMainController implements Initializable {
         dialog.setTitle("Delete Wallet");
         dialog.setHeaderText("Enter passphrase to permanently delete \"" + walletName + "\"");
         dialog.initOwner(AshigaruGui.get().getMainStage());
+        AppServices.addAshigaruStylesheets(dialog.getDialogPane().getStylesheets());
 
         ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(deleteBtn, ButtonType.CANCEL);
@@ -465,6 +466,7 @@ public class AshigaruMainController implements Initializable {
             alert.setTitle(title);
             alert.setHeaderText(title);
             alert.initOwner(AshigaruGui.get().getMainStage());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
             alert.show();
         });
     }
@@ -494,6 +496,7 @@ public class AshigaruMainController implements Initializable {
             alert.setHeaderText("No seed words available");
             alert.setContentText("This wallet does not have seed words stored (e.g. it may be a watch-only wallet).");
             alert.initOwner(AshigaruGui.get().getMainStage());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
             alert.showAndWait();
             return;
         }
@@ -669,6 +672,7 @@ public class AshigaruMainController implements Initializable {
         dialog.setTitle("Wallet Password");
         dialog.setHeaderText("Enter password for: " + walletName);
         dialog.initOwner(AshigaruGui.get().getMainStage());
+        AppServices.addAshigaruStylesheets(dialog.getDialogPane().getStylesheets());
 
         ButtonType okBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
@@ -869,6 +873,7 @@ public class AshigaruMainController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(title);
         alert.initOwner(AshigaruGui.get().getMainStage());
+        AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
         return alert.showAndWait();
     }
 
