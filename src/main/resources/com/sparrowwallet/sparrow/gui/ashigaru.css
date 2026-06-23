@@ -489,6 +489,32 @@
 }
 .mono-area .content { -fx-background-color: -ag-bg; }
 
+/* ── Wallet create / restore wizard dialogs ──────────────────────────────── */
+.wizard-header {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: -ag-border;
+    -fx-border-width: 0 0 1 0;
+}
+.wizard-eyebrow  { -fx-text-fill: -ag-accent;    -fx-font-size: 10px; -fx-font-weight: bold; }
+.wizard-title    { -fx-text-fill: -ag-text;      -fx-font-size: 18px; -fx-font-weight: bold; }
+.wizard-subtitle { -fx-text-fill: -ag-text-dim;  -fx-font-size: 12px; -fx-padding: 2 0 0 0; }
+
+/* Large selectable choice cards (wallet type / seed length) */
+.type-card {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius;
+    -fx-padding: 14 16 14 16;
+    -fx-cursor: hand;
+}
+.type-card:hover {
+    -fx-background-color: -ag-bg-raised;
+    -fx-border-color: -ag-accent;
+}
+.type-card-title { -fx-text-fill: -ag-text;     -fx-font-size: 14px; -fx-font-weight: bold; }
+.type-card-desc  { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
+
 /* ── Toggle buttons ───────────────────────────────────────────────────────── */
 .toggle-button {
     -fx-background-color: -ag-bg-light;

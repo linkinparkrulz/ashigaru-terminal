@@ -345,12 +345,13 @@ public class AshigaruMainController implements Initializable {
     private Dialog<String> buildPassphraseDialog(String walletName) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Delete Wallet");
-        dialog.setHeaderText("Enter passphrase to permanently delete \"" + walletName + "\"");
         dialog.initOwner(AshigaruGui.get().getMainStage());
-        AppServices.addAshigaruStylesheets(dialog.getDialogPane().getStylesheets());
+        WalletCreationFlow.styleWizardDialog(dialog, "DELETE WALLET", "Confirm deletion",
+                "Enter your BIP39 passphrase to permanently delete \"" + walletName + "\".");
 
         ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(deleteBtn, ButtonType.CANCEL);
+        WalletCreationFlow.styleWizardButtons(dialog.getDialogPane());
 
         Label hint = new Label("Enter your BIP39 passphrase (leave empty if none):");
         PasswordField pf = new PasswordField();
@@ -670,12 +671,13 @@ public class AshigaruMainController implements Initializable {
     private Dialog<String> buildPasswordDialog(String walletName) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Wallet Password");
-        dialog.setHeaderText("Enter password for: " + walletName);
         dialog.initOwner(AshigaruGui.get().getMainStage());
-        AppServices.addAshigaruStylesheets(dialog.getDialogPane().getStylesheets());
+        WalletCreationFlow.styleWizardDialog(dialog, "OPEN WALLET", "Wallet password",
+                "Enter the password for " + walletName + ".");
 
         ButtonType okBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
+        WalletCreationFlow.styleWizardButtons(dialog.getDialogPane());
 
         PasswordField pf = new PasswordField();
         pf.setPromptText("Password");

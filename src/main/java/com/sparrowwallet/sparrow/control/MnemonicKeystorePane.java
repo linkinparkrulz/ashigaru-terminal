@@ -175,6 +175,7 @@ public class MnemonicKeystorePane extends TitledDescriptionPane {
         vBox.setSpacing(10);
 
         wordsPane = new TilePane();
+        wordsPane.getStyleClass().add("seed-word-grid");
         wordsPane.setPrefRows(numWords/3);
         wordsPane.setHgap(10);
         wordsPane.setVgap(10);

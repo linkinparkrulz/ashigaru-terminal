@@ -16,6 +16,7 @@ import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.control.HelpLabel;
 import com.sparrowwallet.sparrow.control.LifeHashIcon;
+import com.sparrowwallet.sparrow.control.SeedEntryDialog;
 import com.sparrowwallet.sparrow.control.ViewPasswordField;
 import com.sparrowwallet.sparrow.event.StorageEvent;
 import com.sparrowwallet.sparrow.event.TimedEvent;
@@ -37,6 +38,7 @@ import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -49,8 +51,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.*;
 
 
@@ -67,6 +67,68 @@ public class WalletCreationFlow {
     public WalletCreationFlow(Stage owner, AshigaruMainController mainController) {
         this.owner = owner;
         this.mainController = mainController;
+    }
+
+    // -------------------------------------------------------------------------
+    // Shared cohesive dialog styling (reused across the create/restore journey,
+    // and by AshigaruMainController for the open/unlock + delete prompts)
+    // -------------------------------------------------------------------------
+
+    /** Themes the dialog and gives it a consistent custom header (eyebrow + title + subtitle). */
+    static void styleWizardDialog(Dialog<?> dlg, String eyebrow, String title, String subtitle) {
+        DialogPane pane = dlg.getDialogPane();
+        AppServices.addAshigaruStylesheets(pane.getStylesheets());
+
+        VBox header = new VBox(2);
+        header.getStyleClass().add("wizard-header");
+        header.setPadding(new Insets(16, 20, 16, 20));
+        if(eyebrow != null) {
+            Label eyebrowLabel = new Label(eyebrow);
+            eyebrowLabel.getStyleClass().add("wizard-eyebrow");
+            header.getChildren().add(eyebrowLabel);
+        }
+        Label titleLabel = new Label(title);
+        titleLabel.getStyleClass().add("wizard-title");
+        header.getChildren().add(titleLabel);
+        if(subtitle != null) {
+            Label subtitleLabel = new Label(subtitle);
+            subtitleLabel.getStyleClass().add("wizard-subtitle");
+            subtitleLabel.setWrapText(true);
+            header.getChildren().add(subtitleLabel);
+        }
+        pane.setHeaderText(null);
+        pane.setHeader(header);
+    }
+
+    /** Gives the dialog's buttons a consistent primary/secondary hierarchy. */
+    static void styleWizardButtons(DialogPane pane) {
+        for(ButtonType bt : pane.getButtonTypes()) {
+            Node n = pane.lookupButton(bt);
+            if(n instanceof Button b) {
+                if(bt.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                    if(!b.getStyleClass().contains("primary-btn")) b.getStyleClass().add("primary-btn");
+                } else if(!b.getStyleClass().contains("action-btn")) {
+                    b.getStyleClass().add("action-btn");
+                }
+            }
+        }
+    }
+
+    /** A large, full-width selectable card button (title + description). */
+    private Button typeCard(String title, String desc) {
+        Label t = new Label(title);
+        t.getStyleClass().add("type-card-title");
+        Label d = new Label(desc);
+        d.getStyleClass().add("type-card-desc");
+        d.setWrapText(true);
+        VBox box = new VBox(4, t, d);
+        box.setAlignment(Pos.CENTER_LEFT);
+        Button b = new Button();
+        b.setGraphic(box);
+        b.getStyleClass().add("type-card");
+        b.setMaxWidth(Double.MAX_VALUE);
+        b.setAlignment(Pos.CENTER_LEFT);
+        return b;
     }
 
     /** Entry point — call from the JavaFX UI thread. */
@@ -89,25 +151,42 @@ public class WalletCreationFlow {
     // -------------------------------------------------------------------------
 
     private String askWalletName() {
-        TextInputDialog dlg = new TextInputDialog();
-        dlg.setTitle("Create Wallet");
-        dlg.setHeaderText("Enter a name for the wallet");
-        dlg.setContentText("Name:");
-        dlg.initOwner(owner);
-        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
-
         while (true) {
-            Optional<String> result = dlg.showAndWait();
-            if (result.isEmpty()) return null;
-            String name = result.get().trim();
+            Dialog<ButtonType> dlg = new Dialog<>();
+            dlg.setTitle("Create Wallet");
+            dlg.initOwner(owner);
+            styleWizardDialog(dlg, "NEW / RESTORE WALLET", "Name your wallet",
+                    "Choose a name to identify this wallet.");
+
+            ButtonType continueType = new ButtonType("Continue", ButtonBar.ButtonData.OK_DONE);
+            dlg.getDialogPane().getButtonTypes().addAll(continueType, ButtonType.CANCEL);
+
+            Label lbl = new Label("Wallet name");
+            lbl.getStyleClass().add("field-label");
+            TextField nameField = new TextField();
+            nameField.setPromptText("e.g. Savings");
+            VBox content = new VBox(8, lbl, nameField);
+            content.setPadding(new Insets(20));
+            content.setPrefWidth(460);
+            dlg.getDialogPane().setContent(content);
+
+            Button continueNode = (Button) dlg.getDialogPane().lookupButton(continueType);
+            continueNode.setDisable(true);
+            nameField.textProperty().addListener((o, a, b) -> continueNode.setDisable(b.trim().isEmpty()));
+            styleWizardButtons(dlg.getDialogPane());
+            Platform.runLater(nameField::requestFocus);
+
+            dlg.setResultConverter(bt -> bt);
+            Optional<ButtonType> result = dlg.showAndWait();
+            if (result.isEmpty() || result.get() != continueType) return null;
+
+            String name = nameField.getText().trim();
             if (name.isEmpty()) {
                 showError("Invalid Name", "Please enter a name for the wallet.");
-                dlg.getEditor().setText("");
                 continue;
             }
             if (Storage.walletExists(name)) {
                 showError("Wallet Exists", "A wallet named \"" + name + "\" already exists. Choose a different name.");
-                dlg.getEditor().setText("");
                 continue;
             }
             return name;
@@ -119,13 +198,25 @@ public class WalletCreationFlow {
     // -------------------------------------------------------------------------
 
     private String askWalletType() {
-        List<String> choices = List.of("Hot Wallet", "Watch Only");
-        ChoiceDialog<String> dlg = new ChoiceDialog<>("Hot Wallet", choices);
+        Dialog<String> dlg = new Dialog<>();
         dlg.setTitle("Create Wallet");
-        dlg.setHeaderText("Choose the type of wallet");
-        dlg.setContentText("Type:");
         dlg.initOwner(owner);
-        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "Choose wallet type",
+                "How do you want to set up this wallet?");
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Button hot = typeCard("Hot Wallet", "Create a new wallet or restore from a BIP39 seed phrase.");
+        Button watch = typeCard("Watch Only", "Import an xpub or output descriptor to watch addresses.");
+        hot.setOnAction(e -> { dlg.setResult("Hot Wallet"); dlg.close(); });
+        watch.setOnAction(e -> { dlg.setResult("Watch Only"); dlg.close(); });
+
+        VBox content = new VBox(12, hot, watch);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(460);
+        dlg.getDialogPane().setContent(content);
+        styleWizardButtons(dlg.getDialogPane());
+
+        dlg.setResultConverter(bt -> null);
         return dlg.showAndWait().orElse(null);
     }
 
@@ -134,18 +225,65 @@ public class WalletCreationFlow {
     // -------------------------------------------------------------------------
 
     private void showBip39Dialog(String walletName) {
+        // Step 1: seed length
+        Integer count = askWordCount();
+        if (count == null) return;
+
+        // Step 2: enter / generate the seed on a numbered word grid (reused widget,
+        // with live BIP39 autocomplete, paste-fill, Generate New, and checksum gating).
+        SeedEntryDialog seedDialog = new SeedEntryDialog(walletName, count);
+        seedDialog.initOwner(owner);
+        Optional<List<String>> seedResult = seedDialog.showAndWait();
+        if (seedResult.isEmpty() || seedResult.get() == null) return;
+        List<String> words = seedResult.get();
+
+        // Step 3: BIP39 passphrase (required, must match) + master fingerprint preview
+        String passphrase = askBip39Passphrase(walletName, words);
+        if (passphrase == null) return;
+
+        try {
+            Bip39 importer = new Bip39();
+            Wallet wallet = new Wallet(walletName);
+            wallet.setPolicyType(PolicyType.SINGLE);
+            wallet.setScriptType(ScriptType.P2WPKH);
+            Keystore keystore = importer.getKeystore(ScriptType.P2WPKH.getDefaultDerivation(), words, passphrase);
+            wallet.getKeystores().add(keystore);
+            wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE, ScriptType.P2WPKH, wallet.getKeystores(), 1));
+            discoverAndSave(walletName, List.of(wallet));
+        } catch (ImportException e) {
+            showError("Invalid Seed", "Could not import wallet from seed: " + e.getMessage());
+        }
+    }
+
+    private Integer askWordCount() {
+        Dialog<Integer> dlg = new Dialog<>();
+        dlg.setTitle("Create Wallet");
+        dlg.initOwner(owner);
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "Seed length",
+                "How many words is your seed phrase?");
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Button w12 = typeCard("12 words", "Standard length, used by most wallets.");
+        Button w24 = typeCard("24 words", "Maximum entropy — recommended for new wallets.");
+        w12.setOnAction(e -> { dlg.setResult(12); dlg.close(); });
+        w24.setOnAction(e -> { dlg.setResult(24); dlg.close(); });
+
+        VBox content = new VBox(12, w12, w24);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(460);
+        dlg.getDialogPane().setContent(content);
+        styleWizardButtons(dlg.getDialogPane());
+
+        dlg.setResultConverter(bt -> null);
+        return dlg.showAndWait().orElse(null);
+    }
+
+    private String askBip39Passphrase(String walletName, List<String> words) {
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle("Create BIP39 Wallet – " + walletName);
         dlg.initOwner(owner);
-        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
-
-        Label seedLabel = new Label("Seed words:");
-        seedLabel.getStyleClass().add("field-label");
-        TextArea seedArea = new TextArea();
-        seedArea.getStyleClass().add("mono-area");
-        seedArea.setWrapText(true);
-        seedArea.setPrefRowCount(5);
-        seedArea.setPromptText("Enter your 12/18/24 word BIP39 seed phrase, or generate a new one below.");
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "BIP39 passphrase",
+                "Add a passphrase. It becomes part of your wallet — you'll need it every time you open it.");
 
         Label passLabel = new Label("BIP39 Passphrase:");
         passLabel.getStyleClass().add("field-label");
@@ -162,6 +300,7 @@ public class WalletCreationFlow {
         HBox fingerprintBox = new HBox(10);
         fingerprintBox.setAlignment(Pos.CENTER_LEFT);
         Label fingerprintLabel = new Label("Master fingerprint:");
+        fingerprintLabel.getStyleClass().add("field-label");
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
@@ -191,62 +330,33 @@ public class WalletCreationFlow {
         });
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon, helpLabel);
 
-        Button generateBtn = new Button("Generate New Wallet");
-        generateBtn.setOnAction(e -> seedArea.setText(generateMnemonic(12)));
-
-        VBox content = new VBox(10, seedLabel, seedArea, passLabel, passField, passConfirmLabel, passConfirmField, fingerprintBox, generateBtn);
-        content.setPadding(new Insets(12));
+        VBox content = new VBox(12, passLabel, passField, passConfirmLabel, passConfirmField, fingerprintBox);
+        content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
 
-        ButtonType nextType = new ButtonType("Next", ButtonBar.ButtonData.OK_DONE);
-        dlg.getDialogPane().getButtonTypes().addAll(nextType, ButtonType.CANCEL);
-
-        Button nextNode = (Button) dlg.getDialogPane().lookupButton(nextType);
-        nextNode.setDisable(true);
+        ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(createType, ButtonType.CANCEL);
+        Button createNode = (Button) dlg.getDialogPane().lookupButton(createType);
+        createNode.setDisable(true);
+        styleWizardButtons(dlg.getDialogPane());
 
         Bip39 importer = new Bip39();
-        Runnable updateNext = () -> {
-            boolean valid = isValidSeed(importer, seedArea.getText(), passField.getText())
-                    && !passField.getText().isEmpty()
+        String seedText = String.join(" ", words);
+        Runnable update = () -> {
+            boolean valid = !passField.getText().isEmpty()
                     && passField.getText().equals(passConfirmField.getText());
-            nextNode.setDisable(!valid);
-            masterFingerprint.set(computeFingerprint(importer, seedArea.getText(), passField.getText()));
+            createNode.setDisable(!valid);
+            masterFingerprint.set(computeFingerprint(importer, seedText, passField.getText()));
         };
-        seedArea.textProperty().addListener((obs, old, text) -> updateNext.run());
-        passField.textProperty().addListener((obs, old, text) -> updateNext.run());
-        passConfirmField.textProperty().addListener((obs, old, text) -> updateNext.run());
+        passField.textProperty().addListener((obs, old, text) -> update.run());
+        passConfirmField.textProperty().addListener((obs, old, text) -> update.run());
+        update.run();
 
         dlg.setResultConverter(bt -> bt);
-
         Optional<ButtonType> result = dlg.showAndWait();
-        if (result.isEmpty() || result.get() != nextType) return;
-
-        List<String> words = Arrays.asList(seedArea.getText().trim().split("\\s+"));
-        String passphrase = passField.getText();
-
-        try {
-            Wallet wallet = new Wallet(walletName);
-            wallet.setPolicyType(PolicyType.SINGLE);
-            wallet.setScriptType(ScriptType.P2WPKH);
-            Keystore keystore = importer.getKeystore(ScriptType.P2WPKH.getDefaultDerivation(), words, passphrase);
-            wallet.getKeystores().add(keystore);
-            wallet.setDefaultPolicy(Policy.getPolicy(PolicyType.SINGLE, ScriptType.P2WPKH, wallet.getKeystores(), 1));
-            discoverAndSave(walletName, List.of(wallet));
-        } catch (ImportException e) {
-            showError("Invalid Seed", "Could not import wallet from seed: " + e.getMessage());
-        }
-    }
-
-    private boolean isValidSeed(Bip39 importer, String text, String passphrase) {
-        String[] words = text.trim().split("\\s+");
-        if (words.length < 12) return false;
-        try {
-            importer.getKeystore(ScriptType.P2WPKH.getDefaultDerivation(), Arrays.asList(words), passphrase);
-            return true;
-        } catch (ImportException e) {
-            return false;
-        }
+        if (result.isEmpty() || result.get() != createType) return null;
+        return passField.getText();
     }
 
     private byte[] computeFingerprint(Bip39 importer, String seedText, String passphrase) {
@@ -260,19 +370,6 @@ public class WalletCreationFlow {
         }
     }
 
-    private String generateMnemonic(int wordCount) {
-        int mnemonicSeedLength = wordCount * 11;
-        int entropyLength = mnemonicSeedLength - (mnemonicSeedLength / 33);
-        SecureRandom rng;
-        try {
-            rng = SecureRandom.getInstanceStrong();
-        } catch (NoSuchAlgorithmException e) {
-            rng = new SecureRandom();
-        }
-        DeterministicSeed seed = new DeterministicSeed(rng, entropyLength, "");
-        return String.join(" ", seed.getMnemonicCode());
-    }
-
     // -------------------------------------------------------------------------
     // Step 3b – Watch Only wallet dialog
     // -------------------------------------------------------------------------
@@ -281,7 +378,8 @@ public class WalletCreationFlow {
         Dialog<ButtonType> dlg = new Dialog<>();
         dlg.setTitle("Create Watch Only Wallet – " + walletName);
         dlg.initOwner(owner);
-        AppServices.addAshigaruStylesheets(dlg.getDialogPane().getStylesheets());
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "Watch-only wallet",
+                "Import an xpub or output descriptor to watch addresses without spending.");
 
         Label hint = new Label("Output descriptor or xpub\n(BIP84 Native Segwit Deposit or Postmix account)");
         hint.getStyleClass().add("field-label");
@@ -292,7 +390,7 @@ public class WalletCreationFlow {
         descriptorArea.setPromptText("Paste your xpub or output descriptor here…");
 
         VBox content = new VBox(10, hint, descriptorArea);
-        content.setPadding(new Insets(12));
+        content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
 
@@ -301,6 +399,7 @@ public class WalletCreationFlow {
 
         Button importNode = (Button) dlg.getDialogPane().lookupButton(importType);
         importNode.setDisable(true);
+        styleWizardButtons(dlg.getDialogPane());
         descriptorArea.textProperty().addListener((obs, old, text) ->
                 importNode.setDisable(!isValidDescriptorOrXpub(text.replaceAll("\\s+", ""))));
 
@@ -376,14 +475,15 @@ public class WalletCreationFlow {
 
             Dialog<Void> progress = new Dialog<>();
             progress.setTitle(walletName);
-            progress.setHeaderText("Discovering accounts…");
             progress.initOwner(owner);
             progress.initModality(Modality.APPLICATION_MODAL);
-            AppServices.addAshigaruStylesheets(progress.getDialogPane().getStylesheets());
+            styleWizardDialog(progress, "NEW / RESTORE WALLET", "Discovering accounts",
+                    "Looking for previous transactions on the blockchain…");
 
             // Cancel button — gives user an immediate escape hatch
             ButtonType cancelType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
             progress.getDialogPane().getButtonTypes().add(cancelType);
+            styleWizardButtons(progress.getDialogPane());
 
             Label descLabel = new Label("Looking for previous transactions on the blockchain.");
             descLabel.setWrapText(true);
@@ -450,17 +550,20 @@ public class WalletCreationFlow {
         // Ask for optional password
         Dialog<String> pwDlg = new Dialog<>();
         pwDlg.setTitle("Wallet Password");
-        pwDlg.setHeaderText("Add a password to the wallet?\nLeave empty for no password.");
         pwDlg.initOwner(owner);
-        AppServices.addAshigaruStylesheets(pwDlg.getDialogPane().getStylesheets());
+        styleWizardDialog(pwDlg, "NEW / RESTORE WALLET", "Protect your wallet",
+                "Add an optional password to encrypt this wallet. Leave blank for none.");
 
         ButtonType okType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         pwDlg.getDialogPane().getButtonTypes().addAll(okType, ButtonType.CANCEL);
+        styleWizardButtons(pwDlg.getDialogPane());
 
         PasswordField pwField = new PasswordField();
         pwField.setPromptText("Leave blank for no password");
-        VBox content = new VBox(8, new Label("Password (optional):"), pwField);
-        content.setPadding(new Insets(12));
+        Label pwLabel = new Label("Password (optional):");
+        pwLabel.getStyleClass().add("field-label");
+        VBox content = new VBox(8, pwLabel, pwField);
+        content.setPadding(new Insets(20));
         pwDlg.getDialogPane().setContent(content);
         Platform.runLater(pwField::requestFocus);
         pwDlg.setResultConverter(bt -> bt == okType ? pwField.getText() : null);
