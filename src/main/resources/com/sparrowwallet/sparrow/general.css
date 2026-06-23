@@ -106,11 +106,11 @@
 .hyperlink {
     -fx-padding: 0;
     -fx-border-width: 0;
-    -fx-fill: #1e88cf;
+    -fx-fill: #42a5f5;
 }
 
 .hyperlink:visited {
-    -fx-text-fill: #1e88cf;
+    -fx-text-fill: #42a5f5;
     -fx-underline: false;
 }
 
@@ -239,11 +239,11 @@
 }
 
 .icon-button .glyph-font {
-    -fx-text-fill: #1e88cf;
+    -fx-text-fill: #42a5f5;
 }
 
 .icon-button:hover .glyph-font {
-    -fx-text-fill: #259cf5;
+    -fx-text-fill: #6cbaf7;
 }
 
 .number-field {
