@@ -825,6 +825,31 @@
 .seed-word-grid .text-field:focused { -fx-border-color: -ag-accent; }
 
 /* ── BIP47 message verifier ─────────────────────── */
+.verifier-panel { -fx-background-color: -ag-bg; }
+
+.verifier-hero {
+    -fx-background-color: linear-gradient(to right, derive(-ag-accent, -80%), -ag-bg-mid 60%);
+    -fx-background-radius: -ag-radius-lg;
+    -fx-border-color: derive(-ag-accent, -55%);
+    -fx-border-radius: -ag-radius-lg;
+}
+.verifier-hero-icon {
+    -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;
+    -fx-background-color: -ag-accent-faint;
+    -fx-background-radius: 999;
+    -fx-border-color: derive(-ag-accent, -35%);
+    -fx-border-radius: 999;
+}
+.verifier-hero-glyph { -fx-text-fill: -ag-accent; -fx-font-size: 22px; -fx-font-weight: bold; }
+.verifier-hero-title { -fx-text-fill: -ag-text;   -fx-font-size: 18px; -fx-font-weight: bold; }
+.verifier-hero-sub   { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
+
+.step-chip   { -fx-min-width: 22; -fx-alignment: CENTER; }
+.step-title  { -fx-text-fill: -ag-text; -fx-font-size: 13px; -fx-font-weight: bold; }
+.step-optional { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; -fx-font-style: italic; }
+
+.verify-btn { -fx-font-size: 14px; -fx-padding: 10 16 10 16; }
+
 .verifier-panel .text-area {
     -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
     -fx-font-size: 12px;
