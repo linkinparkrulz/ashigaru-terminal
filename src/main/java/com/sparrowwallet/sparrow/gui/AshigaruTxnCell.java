@@ -2,6 +2,7 @@ package com.sparrowwallet.sparrow.gui;
 
 import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.sparrow.control.PayNymAvatar;
+import com.sparrowwallet.sparrow.paynym.PayNymService;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -11,21 +12,32 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Circle;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Card-style list cell for a transaction on the Ashigaru wallet dashboard.
  * Every card has a consistent 40px left icon column so rows line up: a send/receive
  * arrow for ordinary transactions, or the sender's PayNym avatar for an incoming BIP47
- * payment (which also shows the full payment code as a copyable identity line instead
- * of the editable label).
+ * payment. For BIP47 receives the card also shows the sender's PayNym name (when
+ * registered) above an abbreviated payment code whose copy button yields the full code.
  */
 public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     private static final double ICON_SIZE = 40;
 
+    // Shared across cells: payment code string -> PayNym name ("" = looked up, none registered)
+    private static final Map<String, String> NYM_NAME_CACHE = new ConcurrentHashMap<>();
+    private static final Set<String> NYM_FETCHING = ConcurrentHashMap.newKeySet();
+
     private final PayNymAvatar avatar = new PayNymAvatar();
+    private final Circle avatarPlaceholder = new Circle(ICON_SIZE / 2);
     private final Label arrowIcon = new Label();
     private final StackPane iconHolder = new StackPane();
 
+    private final Label nymNameLabel = new Label();
     private final Label amountLabel = new Label();
     private final Label dateLabel = new Label();
     private final TextField labelField = new TextField();
@@ -40,6 +52,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     public AshigaruTxnCell() {
         avatar.setForceLoad(true);
         avatar.setPrefSize(ICON_SIZE, ICON_SIZE);
+        avatarPlaceholder.getStyleClass().add("avatar-placeholder");
 
         arrowIcon.getStyleClass().add("tx-icon");
         arrowIcon.setMinSize(ICON_SIZE, ICON_SIZE);
@@ -50,6 +63,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
         iconHolder.setPrefWidth(ICON_SIZE);
         iconHolder.setAlignment(Pos.TOP_CENTER);
 
+        nymNameLabel.getStyleClass().add("paynym-name");
         amountLabel.getStyleClass().add("card-value");
         dateLabel.getStyleClass().add("card-faint");
 
@@ -59,10 +73,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
         labelField.focusedProperty().addListener((o, was, is) -> { if (was && !is) commitLabel(); });
 
         paymentCodeLabel.getStyleClass().add("paynym-code");
-        paymentCodeLabel.setWrapText(true);
-        paymentCodeLabel.setMaxWidth(Double.MAX_VALUE);
-        HBox.setHgrow(paymentCodeLabel, Priority.ALWAYS);
-        paymentCodeLine.setAlignment(Pos.TOP_LEFT);
+        paymentCodeLine.setAlignment(Pos.CENTER_LEFT);
 
         txidLabel.getStyleClass().add("card-secondary");
         txidLabel.setMaxWidth(Double.MAX_VALUE);
@@ -103,13 +114,28 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
 
         PaymentCode paymentCode = row.paymentCode();
         if (paymentCode != null) {
-            // BIP47 receive: sender avatar + the full payment code as identity
+            // BIP47 receive: avatar (with placeholder), optional PayNym name, abbreviated code
             avatar.setPaymentCode(paymentCode);
-            iconHolder.getChildren().setAll(avatar);
-            paymentCodeLabel.setText("From " + paymentCode.toString());
+            iconHolder.getChildren().setAll(avatarPlaceholder, avatar);
+
+            String code = paymentCode.toString();
+            String nymName = NYM_NAME_CACHE.get(code);
+            if (nymName != null && !nymName.isEmpty()) {
+                nymNameLabel.setText(nymName);
+                nymNameLabel.setVisible(true);
+                nymNameLabel.setManaged(true);
+            } else {
+                nymNameLabel.setVisible(false);
+                nymNameLabel.setManaged(false);
+                if (nymName == null) {
+                    fetchNymName(code);
+                }
+            }
+
+            paymentCodeLabel.setText(paymentCode.toAbbreviatedString());
             paymentCodeLine.getChildren().setAll(paymentCodeLabel,
-                    AshigaruWalletController.makeCopyButton(paymentCode.toString()));
-            center.getChildren().setAll(topLine, paymentCodeLine);
+                    AshigaruWalletController.makeCopyButton(code));
+            center.getChildren().setAll(nymNameLabel, topLine, paymentCodeLine);
         } else {
             avatar.clearPaymentCode();
             boolean received = row.amount() != null && row.amount().startsWith("+");
@@ -131,5 +157,31 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
 
         setText(null);
         setGraphic(root);
+    }
+
+    /**
+     * Looks up the PayNym name for a payment code (regardless of the global usePayNym
+     * preference, like the avatar) and caches it. The PayNymService callback runs on the
+     * JavaFX thread, so on completion we refresh the list to surface the name.
+     */
+    private void fetchNymName(String code) {
+        if (!NYM_FETCHING.add(code)) {
+            return; // already in flight
+        }
+        try {
+            PayNymService.getPayNym(code, true).subscribe(payNym -> {
+                NYM_NAME_CACHE.put(code, payNym.nymName() == null ? "" : payNym.nymName());
+                NYM_FETCHING.remove(code);
+                if (getListView() != null) {
+                    getListView().refresh();
+                }
+            }, error -> {
+                NYM_NAME_CACHE.put(code, "");
+                NYM_FETCHING.remove(code);
+            });
+        } catch (Exception e) {
+            NYM_NAME_CACHE.put(code, "");
+            NYM_FETCHING.remove(code);
+        }
     }
 }

@@ -45,7 +45,6 @@ public class KeystorePassphraseDialog extends Dialog<String> {
         dialogPane.setGraphic(key);
 
         final VBox content = new VBox(10);
-        content.setPrefHeight(50);
         content.getChildren().add(passphrase);
 
         passphrase.textProperty().addListener((observable, oldValue, passphrase) -> {

@@ -383,11 +383,22 @@
 .card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
-/* Full BIP47 payment code shown on an incoming-payment transaction card */
+/* Sender PayNym name + abbreviated payment code on an incoming-payment transaction card */
+.paynym-name {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
 .paynym-code {
     -fx-text-fill: -ag-text-dim;
     -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
     -fx-font-size: 11px;
+}
+/* Neutral disc shown behind the avatar while it loads (and if unavailable) */
+.avatar-placeholder {
+    -fx-fill: -ag-bg-light;
+    -fx-stroke: -ag-border;
+    -fx-stroke-width: 1;
 }
 
 /* Consistent left icon on every transaction card (send/receive arrow) */
