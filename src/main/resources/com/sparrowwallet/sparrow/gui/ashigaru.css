@@ -390,6 +390,31 @@
     -fx-font-size: 11px;
 }
 
+/* Consistent left icon on every transaction card (send/receive arrow) */
+.tx-icon {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: 20;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 20;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.tx-icon.received { -fx-text-fill: -ag-green; }
+.tx-icon.sent     { -fx-text-fill: -ag-accent; }
+
+/* Read-only master fingerprint shown on the unlock / passphrase dialog */
+.fingerprint-hex {
+    -fx-opacity: 1.0;
+    -fx-background-color: -ag-bg-light;
+    -fx-text-fill: -ag-text;
+    -fx-prompt-text-fill: -ag-text-faint;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+}
+.fingerprint-hex:disabled { -fx-opacity: 1.0; }
+
 /* Inline editable label inside a card */
 .card-label-field {
     -fx-background-color: transparent;

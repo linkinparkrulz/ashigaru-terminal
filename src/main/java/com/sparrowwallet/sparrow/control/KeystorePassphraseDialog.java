@@ -36,8 +36,8 @@ public class KeystorePassphraseDialog extends Dialog<String> {
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
-        dialogPane.setPrefWidth(380);
-        dialogPane.setPrefHeight(200);
+        dialogPane.setPrefWidth(420);
+        // Let the dialog size to its content so the fingerprint row + warning aren't clipped
         AppServices.moveToActiveWindowScreen(this);
 
         Glyph key = new Glyph(FontAwesome5.FONT_NAME, FontAwesome5.Glyph.KEY);
@@ -55,11 +55,11 @@ public class KeystorePassphraseDialog extends Dialog<String> {
         HBox fingerprintBox = new HBox(10);
         fingerprintBox.setAlignment(Pos.CENTER_LEFT);
         Label fingerprintLabel = new Label("Master fingerprint:");
+        fingerprintLabel.getStyleClass().add("field-label");
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().addAll("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((observable, oldValue, newValue) -> {
             if(newValue != null) {
                 fingerprintHex.setText(Utils.bytesToHex(newValue));
