@@ -383,6 +383,13 @@
 .card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
+/* Full BIP47 payment code shown on an incoming-payment transaction card */
+.paynym-code {
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 11px;
+}
+
 /* Inline editable label inside a card */
 .card-label-field {
     -fx-background-color: transparent;

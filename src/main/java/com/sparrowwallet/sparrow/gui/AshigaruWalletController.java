@@ -6,6 +6,7 @@ import com.samourai.whirlpool.client.mix.listener.MixStep;
 import com.samourai.whirlpool.client.wallet.beans.MixProgress;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.sparrowwallet.drongo.address.Address;
+import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.drongo.protocol.Sha256Hash;
 import com.sparrowwallet.drongo.wallet.*;
 import com.sparrowwallet.sparrow.AppServices;
@@ -282,6 +283,10 @@ public class AshigaruWalletController implements Initializable {
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         UnitFormat fmt = Config.get().getUnitFormat() == null ? UnitFormat.DOT : Config.get().getUnitFormat();
 
+        // Map each BIP47 child wallet's label-base -> sender payment code, so we can
+        // resolve the full payment code behind a "From <abbrev/PayNym>" transaction label.
+        Map<String, PaymentCode> senderCodes = buildSenderPaymentCodes(activeAccountForm.getWallet());
+
         List<Entry> entries = new ArrayList<>(txnEntry.getChildren());
         // Most recent first
         Collections.reverse(entries);
@@ -296,8 +301,35 @@ public class AshigaruWalletController implements Initializable {
             long net = txEntry.getValue();
             String amount = (net >= 0 ? "+" : "") + fmt.formatBtcValue(net) + " BTC";
 
-            txnRows.add(new TxnRow(date, txid, label, amount, txEntry));
+            PaymentCode paymentCode = null;
+            if (label.startsWith("From ")) {
+                paymentCode = senderCodes.get(label.substring("From ".length()).trim());
+            }
+
+            txnRows.add(new TxnRow(date, txid, label, amount, txEntry, paymentCode));
         }
+    }
+
+    /**
+     * Builds a lookup from each BIP47 child wallet's label-base to its sender payment code.
+     * The label-base mirrors how the "From ..." transaction label is generated in
+     * {@code WalletNode}: the child wallet label minus its trailing " &lt;ScriptType&gt;" suffix.
+     */
+    private Map<String, PaymentCode> buildSenderPaymentCodes(Wallet wallet) {
+        Map<String, PaymentCode> codes = new HashMap<>();
+        Wallet master = wallet.isMasterWallet() ? wallet : wallet.getMasterWallet();
+        if (master == null) return codes;
+        for (Wallet child : master.getChildWallets()) {
+            if (!child.isBip47() || child.getLabel() == null || child.getKeystores().isEmpty()) continue;
+            PaymentCode externalCode = child.getKeystores().get(0).getExternalPaymentCode();
+            if (externalCode == null) continue;
+            String suffix = " " + child.getScriptType().getName();
+            String base = child.getLabel().endsWith(suffix)
+                    ? child.getLabel().substring(0, child.getLabel().length() - suffix.length())
+                    : child.getLabel();
+            codes.put(base, externalCode);
+        }
+        return codes;
     }
 
     private void configureMixButtons(Wallet wallet) {
@@ -755,5 +787,5 @@ public class AshigaruWalletController implements Initializable {
             this.utxoEntry = utxoEntry;
         }
     }
-    record TxnRow(String date, String txid, String label, String amount, TransactionEntry txnEntry) {}
+    record TxnRow(String date, String txid, String label, String amount, TransactionEntry txnEntry, PaymentCode paymentCode) {}
 }
