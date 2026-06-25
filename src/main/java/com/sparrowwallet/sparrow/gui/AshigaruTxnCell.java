@@ -12,7 +12,6 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Circle;
 
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +32,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     private static final Set<String> NYM_FETCHING = ConcurrentHashMap.newKeySet();
 
     private final PayNymAvatar avatar = new PayNymAvatar();
-    private final Circle avatarPlaceholder = new Circle(ICON_SIZE / 2);
+    private final Region avatarPlaceholder = new Region();
     private final Label arrowIcon = new Label();
     private final StackPane iconHolder = new StackPane();
 
@@ -52,6 +51,9 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     public AshigaruTxnCell() {
         avatar.setForceLoad(true);
         avatar.setPrefSize(ICON_SIZE, ICON_SIZE);
+        avatarPlaceholder.setMinSize(ICON_SIZE, ICON_SIZE);
+        avatarPlaceholder.setPrefSize(ICON_SIZE, ICON_SIZE);
+        avatarPlaceholder.setMaxSize(ICON_SIZE, ICON_SIZE);
         avatarPlaceholder.getStyleClass().add("avatar-placeholder");
 
         arrowIcon.getStyleClass().add("tx-icon");

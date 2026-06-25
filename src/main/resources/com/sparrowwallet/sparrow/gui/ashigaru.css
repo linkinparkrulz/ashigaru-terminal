@@ -396,9 +396,11 @@
 }
 /* Neutral disc shown behind the avatar while it loads (and if unavailable) */
 .avatar-placeholder {
-    -fx-fill: -ag-bg-light;
-    -fx-stroke: -ag-border;
-    -fx-stroke-width: 1;
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: 20;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
 }
 
 /* Consistent left icon on every transaction card (send/receive arrow) */
