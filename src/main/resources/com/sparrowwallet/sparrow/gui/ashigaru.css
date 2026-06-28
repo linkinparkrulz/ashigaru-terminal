@@ -614,6 +614,15 @@
 .badbank-warning-icon { -fx-text-fill: -ag-testnet; -fx-font-size: 14px; }
 .badbank-info-text    { -fx-text-fill: -ag-testnet; -fx-font-size: 11px; }
 
+/* ── Coordinator-unreachable warning bar ──────────────────────────────────── */
+.coordinator-warning-bar {
+    -fx-background-color: -ag-accent-faint;
+    -fx-border-color: -ag-accent;
+    -fx-border-width: 0 0 1 0;
+}
+.coordinator-warning-icon { -fx-text-fill: -ag-accent; -fx-font-size: 14px; }
+.coordinator-warning-text { -fx-text-fill: -ag-accent; -fx-font-size: 11px; }
+
 /* ── Copy icon button (used in tables and receive dialog) ─────────────────── */
 .copy-icon-btn {
     -fx-background-color: transparent;

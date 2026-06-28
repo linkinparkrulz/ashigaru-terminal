@@ -46,6 +46,14 @@
                styleClass="badbank-info-text" wrapText="true"/>
     </HBox>
 
+    <!-- Coordinator-unreachable warning bar (shown while mixing can't connect) -->
+    <HBox fx:id="coordinatorWarningBar" styleClass="coordinator-warning-bar" alignment="CENTER_LEFT" spacing="8" visible="false" managed="false">
+        <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+        <Label text="⚠" styleClass="coordinator-warning-icon"/>
+        <Label text="Can't reach the Whirlpool coordinator. It may be offline — mixing will resume automatically once it's reachable."
+               styleClass="coordinator-warning-text" wrapText="true"/>
+    </HBox>
+
     <!-- ③ View toggle: UTXOs / Transactions + Mix Selected (right-aligned) -->
     <HBox styleClass="view-toggle-bar" alignment="CENTER_LEFT" spacing="0">
         <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>

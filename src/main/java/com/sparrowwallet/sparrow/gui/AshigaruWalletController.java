@@ -56,6 +56,7 @@ public class AshigaruWalletController implements Initializable {
     @FXML private Label utxoCountLabel;
     @FXML private HBox badbankInfoBar;
     @FXML private Label badbankInfoLabel;
+    @FXML private HBox coordinatorWarningBar;
     @FXML private ToggleButton utxoViewBtn;
     @FXML private ToggleButton txnViewBtn;
     @FXML private ListView<UtxoRow> utxoTable;
@@ -74,6 +75,11 @@ public class AshigaruWalletController implements Initializable {
 
     // Whether the active account is a Whirlpool mix wallet (drives mix-status display in cells)
     private final SimpleBooleanProperty showMixInfo = new SimpleBooleanProperty(false);
+
+    // Tracks when each UTXO first entered the CONNECTING mix step, to detect a coordinator
+    // that has gone unreachable (the client loops re-emitting CONNECTING while it's down).
+    private final Map<BlockTransactionHashIndex, Long> connectingSince = new HashMap<>();
+    private static final long COORDINATOR_WARN_MS = 90_000;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -179,6 +185,9 @@ public class AshigaruWalletController implements Initializable {
 
     private void activateAccountForm(WalletForm form) {
         activeAccountForm = form;
+        // Reset coordinator-reachability tracking when switching accounts; the next mix
+        // event for the newly active account repopulates it if mixing is still stuck.
+        clearCoordinatorWarning();
         refreshAccountView();
     }
 
@@ -690,6 +699,7 @@ public class AshigaruWalletController implements Initializable {
                             }
                             utxoTable.refresh();
                         });
+                trackCoordinatorReachability(event);
             });
         }
     }
@@ -699,6 +709,40 @@ public class AshigaruWalletController implements Initializable {
         if (activeAccountForm != null && event.getWallet().equals(activeAccountForm.getWallet())) {
             Platform.runLater(() -> configureMixButtons(activeAccountForm.getWallet()));
         }
+    }
+
+    /**
+     * Detects when mixing can no longer reach the Whirlpool coordinator. While the coordinator
+     * is down the client loops re-emitting the CONNECTING step, so a UTXO that stays in
+     * CONNECTING beyond {@link #COORDINATOR_WARN_MS} is treated as unreachable and the warning
+     * bar is shown. Any forward progress, failure, or move-on clears that UTXO's tracking.
+     * Runs on the FX thread (called from within {@code whirlpoolMix}'s Platform.runLater).
+     */
+    private void trackCoordinatorReachability(WhirlpoolMixEvent event) {
+        BlockTransactionHashIndex utxo = event.getUtxo();
+        MixProgress mixProgress = event.getMixProgress();
+        if (event.getMixFailReason() != null || event.getNextUtxo() != null) {
+            connectingSince.remove(utxo);
+        } else if (mixProgress != null && mixProgress.getMixStep() == MixStep.CONNECTING) {
+            connectingSince.putIfAbsent(utxo, System.currentTimeMillis());
+        } else {
+            connectingSince.remove(utxo);
+        }
+        refreshCoordinatorWarning();
+    }
+
+    private void refreshCoordinatorWarning() {
+        long now = System.currentTimeMillis();
+        boolean unreachable = connectingSince.values().stream()
+                .anyMatch(since -> now - since > COORDINATOR_WARN_MS);
+        coordinatorWarningBar.setVisible(unreachable);
+        coordinatorWarningBar.setManaged(unreachable);
+    }
+
+    private void clearCoordinatorWarning() {
+        connectingSince.clear();
+        coordinatorWarningBar.setVisible(false);
+        coordinatorWarningBar.setManaged(false);
     }
 
     @Subscribe
