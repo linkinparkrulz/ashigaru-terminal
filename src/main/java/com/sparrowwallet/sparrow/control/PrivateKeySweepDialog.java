@@ -69,6 +69,7 @@ public class PrivateKeySweepDialog extends Dialog<Transaction> {
     public PrivateKeySweepDialog(Wallet wallet) {
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getStylesheets().add(AppServices.class.getResource("dialog.css").toExternalForm());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.setHeaderText("Sweep Private Key");
@@ -481,6 +482,7 @@ public class PrivateKeySweepDialog extends Dialog<Transaction> {
             setTitle("BIP38 Passphrase");
             dialogPane.setHeaderText("Enter the BIP38 passphrase for this key:");
             dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+            AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
             AppServices.setStageIcon(dialogPane.getScene().getWindow());
             dialogPane.getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
             dialogPane.setPrefWidth(380);

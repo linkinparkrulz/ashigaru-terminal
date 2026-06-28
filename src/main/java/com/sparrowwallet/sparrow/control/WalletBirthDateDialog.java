@@ -28,6 +28,7 @@ public class WalletBirthDateDialog extends Dialog<Date> {
         setTitle(singleAddress ? "Address Scan Start Date" : "Wallet Birth Date");
         dialogPane.setHeaderText("Select an approximate date earlier than the first " + (singleAddress ? "" : "wallet") + " transaction:");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(420);
         dialogPane.setPrefHeight(200);

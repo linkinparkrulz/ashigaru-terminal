@@ -30,6 +30,7 @@ public class AddAccountDialog extends Dialog<List<StandardAccount>> {
         setTitle("Add Account");
         dialogPane.setHeaderText("Choose an account to add:");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
         dialogPane.setPrefWidth(380);

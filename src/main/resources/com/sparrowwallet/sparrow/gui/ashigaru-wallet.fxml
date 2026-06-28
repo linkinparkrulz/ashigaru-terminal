@@ -11,29 +11,27 @@
 
     <!-- ① Account header row: name + action buttons -->
     <HBox styleClass="account-header-row" alignment="CENTER_LEFT" spacing="12">
-        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
         <Label fx:id="accountNameLabel" text="Deposit" styleClass="account-name-label"/>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="receiveBtn" text="⬇  Receive" onAction="#onReceive"
-                styleClass="action-btn" visible="false" managed="false"/>
-        <Button fx:id="refreshBtn" text="⟳  Refresh" onAction="#onRefresh" styleClass="refresh-btn"/>
+                styleClass="primary-btn" visible="false" managed="false"/>
+        <Button fx:id="refreshBtn" text="⟳  Refresh" onAction="#onRefresh" styleClass="action-btn refresh-btn"/>
     </HBox>
 
-    <!-- ② Balance row: numbers only -->
-    <HBox styleClass="balance-row" alignment="CENTER_LEFT" spacing="24">
-        <padding><Insets top="10" right="16" bottom="10" left="16"/></padding>
+    <!-- ② Balance row: cards -->
+    <HBox styleClass="balance-row" alignment="CENTER_LEFT" spacing="14">
+        <padding><Insets top="16" right="20" bottom="16" left="20"/></padding>
 
-        <VBox spacing="2">
+        <VBox styleClass="balance-card primary" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="CONFIRMED" styleClass="balance-caption"/>
             <Label fx:id="balanceLabel" text="—" styleClass="balance-value"/>
         </VBox>
-        <Separator orientation="VERTICAL"/>
-        <VBox spacing="2">
+        <VBox styleClass="balance-card" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="MEMPOOL" styleClass="balance-caption"/>
             <Label fx:id="mempoolLabel" text="—" styleClass="balance-value secondary"/>
         </VBox>
-        <Separator orientation="VERTICAL"/>
-        <VBox spacing="2">
+        <VBox styleClass="balance-card" spacing="4" HBox.hgrow="ALWAYS" maxWidth="Infinity">
             <Label text="UTXOs" styleClass="balance-caption"/>
             <Label fx:id="utxoCountLabel" text="0" styleClass="balance-value secondary"/>
         </VBox>
@@ -41,16 +39,24 @@
 
     <!-- Badbank / doxxic-change info bar (shown only when Badbank tab is active) -->
     <HBox fx:id="badbankInfoBar" styleClass="badbank-info-bar" alignment="CENTER_LEFT" spacing="8" visible="false" managed="false">
-        <padding><Insets top="8" right="16" bottom="8" left="16"/></padding>
+        <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
         <Label text="⚠" styleClass="badbank-warning-icon"/>
         <Label fx:id="badbankInfoLabel"
                text="Spending these UTXOs is not advised. Please consider mixing in a smaller pool or an atomic swap to XMR."
                styleClass="badbank-info-text" wrapText="true"/>
     </HBox>
 
+    <!-- Coordinator-unreachable warning bar (shown while mixing can't connect) -->
+    <HBox fx:id="coordinatorWarningBar" styleClass="coordinator-warning-bar" alignment="CENTER_LEFT" spacing="8" visible="false" managed="false">
+        <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+        <Label text="⚠" styleClass="coordinator-warning-icon"/>
+        <Label text="Can't reach the Whirlpool coordinator. It may be offline — mixing will resume automatically once it's reachable."
+               styleClass="coordinator-warning-text" wrapText="true"/>
+    </HBox>
+
     <!-- ③ View toggle: UTXOs / Transactions + Mix Selected (right-aligned) -->
     <HBox styleClass="view-toggle-bar" alignment="CENTER_LEFT" spacing="0">
-        <padding><Insets top="6" right="16" bottom="6" left="16"/></padding>
+        <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>
         <ToggleButton fx:id="utxoViewBtn"  text="UTXOs"        onAction="#onViewToggle" styleClass="view-toggle-btn" selected="true"/>
         <ToggleButton fx:id="txnViewBtn"   text="Transactions" onAction="#onViewToggle" styleClass="view-toggle-btn"/>
         <Region HBox.hgrow="ALWAYS"/>
@@ -62,46 +68,30 @@
 
     <Separator/>
 
-    <!-- UTXO table -->
-    <TableView fx:id="utxoTable" styleClass="utxo-table" VBox.vgrow="ALWAYS">
-        <columns>
-            <TableColumn fx:id="colCheck"   text=""        prefWidth="40"  minWidth="40" resizable="false" sortable="false"/>
-            <TableColumn fx:id="colDate"    text="Date"    prefWidth="160" minWidth="120"/>
-            <TableColumn fx:id="colOutput"  text="Output"  prefWidth="220" minWidth="160"/>
-            <TableColumn fx:id="colAddress" text="Address" prefWidth="240" minWidth="160"/>
-            <TableColumn fx:id="colLabel"   text="Label"   prefWidth="160" minWidth="100"/>
-            <TableColumn fx:id="colMixes"   text="Mixes"   prefWidth="90"  minWidth="70"/>
-            <TableColumn fx:id="colMixStage" text="Stage"  prefWidth="180" minWidth="130"/>
-            <TableColumn fx:id="colValue"   text="Value"   prefWidth="160" minWidth="120"/>
-        </columns>
+    <!-- UTXO list — responsive card view -->
+    <ListView fx:id="utxoTable" styleClass="utxo-list" VBox.vgrow="ALWAYS">
         <placeholder>
-            <VBox alignment="CENTER" spacing="12" styleClass="empty-state">
+            <VBox alignment="CENTER" spacing="14" styleClass="empty-state">
                 <Label text="▼" styleClass="empty-state-icon"/>
                 <Label text="You don't have any UTXOs yet" styleClass="empty-state-message"/>
                 <Button fx:id="receiveCta" text="Receive Funds" onAction="#onReceiveCta"
-                        styleClass="action-btn"/>
+                        styleClass="primary-btn"/>
             </VBox>
         </placeholder>
-    </TableView>
+    </ListView>
 
-    <!-- Transaction history table (hidden by default) -->
-    <TableView fx:id="txnTable" styleClass="utxo-table" VBox.vgrow="ALWAYS" visible="false" managed="false">
-        <columns>
-            <TableColumn fx:id="colTxnDate"   text="Date"   prefWidth="160" minWidth="120"/>
-            <TableColumn fx:id="colTxnId"     text="TxID"   prefWidth="260" minWidth="160"/>
-            <TableColumn fx:id="colTxnLabel"  text="Label"  prefWidth="160" minWidth="100"/>
-            <TableColumn fx:id="colTxnAmount" text="Amount" prefWidth="160" minWidth="120"/>
-        </columns>
+    <!-- Transaction history list (hidden by default) -->
+    <ListView fx:id="txnTable" styleClass="utxo-list" VBox.vgrow="ALWAYS" visible="false" managed="false">
         <placeholder>
             <Label text="No transactions" styleClass="table-placeholder"/>
         </placeholder>
-    </TableView>
+    </ListView>
 
     <Separator/>
 
     <!-- Mix action buttons: Start Mixing + Mix To (Mix Selected moved to toggle bar above) -->
     <HBox fx:id="mixButtonBox" styleClass="mix-button-row" alignment="CENTER_LEFT" spacing="10" visible="false">
-        <padding><Insets top="12" right="16" bottom="12" left="16"/></padding>
+        <padding><Insets top="14" right="20" bottom="14" left="20"/></padding>
 
         <Button fx:id="startMixBtn"  text="Start Mixing" onAction="#onStartMix"  styleClass="primary-btn mix-btn" visible="false"/>
         <Button fx:id="mixToBtn"     text="Mix To…"      onAction="#onMixTo"      styleClass="action-btn mix-btn"  visible="false"/>

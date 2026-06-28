@@ -48,7 +48,7 @@ public class AshigaruGui extends Application {
     public void init() throws Exception {
         Thread.setDefaultUncaughtExceptionHandler((t, e) ->
                 log.error("Exception in thread \"" + t.getName() + "\"", e));
-        AppServices.initialize(this);
+        AppServices.initialize(this, new AshigaruInteractionServices());
         instance = this;
         EventManager.get().register(this);
     }

@@ -49,6 +49,7 @@ public class InitiatorDialog extends Dialog<Transaction> {
             AppServices.moveToActiveWindowScreen(this);
 
             dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
             dialogPane.getStylesheets().add(AppServices.class.getResource("app.css").toExternalForm());
             dialogPane.getStylesheets().add(AppServices.class.getResource("soroban/initiator.css").toExternalForm());
 

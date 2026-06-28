@@ -30,6 +30,8 @@ public class PayNymAvatar extends StackPane {
 
     private final ObjectProperty<PaymentCode> paymentCodeProperty = new SimpleObjectProperty<>(null);
 
+    private boolean forceLoad = false;
+
     private static final Map<String, Image> paymentCodeCache = Collections.synchronizedMap(new HashMap<>());
     private static final Map<String, Object> paymentCodeLoading = Collections.synchronizedMap(new HashMap<>());
 
@@ -39,7 +41,7 @@ public class PayNymAvatar extends StackPane {
         paymentCodeProperty.addListener((observable, oldValue, paymentCode) -> {
             if(paymentCode == null) {
                 getChildren().clear();
-            } else if(Config.get().isUsePayNym() && (oldValue == null || !oldValue.toString().equals(paymentCode.toString()))) {
+            } else if((forceLoad || Config.get().isUsePayNym()) && (oldValue == null || !oldValue.toString().equals(paymentCode.toString()))) {
                 String cacheId = getCacheId(paymentCode, getPrefWidth());
                 if(paymentCodeCache.containsKey(cacheId)) {
                     setImage(paymentCodeCache.get(cacheId));
@@ -62,9 +64,19 @@ public class PayNymAvatar extends StackPane {
 
     private void setImage(Image image) {
         getChildren().clear();
-        Circle circle = new Circle(getPrefWidth() / 2,getPrefHeight() / 2,getPrefWidth() / 2);
+        double radius = getAvatarSize() / 2;
+        Circle circle = new Circle(0, 0, radius);
         circle.setFill(new ImagePattern(image));
+        widthProperty().addListener((obs, o, n) -> circle.setRadius(getAvatarSize() / 2));
+        heightProperty().addListener((obs, o, n) -> circle.setRadius(getAvatarSize() / 2));
         getChildren().add(circle);
+    }
+
+    private double getAvatarSize() {
+        double width = getWidth() > 0 ? getWidth() : getPrefWidth();
+        double height = getHeight() > 0 ? getHeight() : getPrefHeight();
+        double size = Math.min(width, height);
+        return size > 0 ? size : 30;
     }
 
     public PaymentCode getPaymentCode() {
@@ -85,6 +97,15 @@ public class PayNymAvatar extends StackPane {
 
     public void clearPaymentCode() {
         this.paymentCodeProperty.set(null);
+    }
+
+    /**
+     * When set, the avatar is fetched even if the global {@code usePayNym} preference is off.
+     * Used where the avatar is explicitly requested (e.g. the transaction card). Still requires
+     * a connection and routes through the app proxy.
+     */
+    public void setForceLoad(boolean forceLoad) {
+        this.forceLoad = forceLoad;
     }
 
     private static String getCacheId(PaymentCode paymentCode, double width) {

@@ -62,6 +62,7 @@ public class MempoolSizeFeeRatesChart extends StackedAreaChart<String, Number> {
                 }
 
                 scenePane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+                AppServices.addAshigaruStylesheets(scenePane.getStylesheets());
                 if(Config.get().getTheme() == Theme.DARK) {
                     scenePane.getStylesheets().add(AppServices.class.getResource("darktheme.css").toExternalForm());
                 }

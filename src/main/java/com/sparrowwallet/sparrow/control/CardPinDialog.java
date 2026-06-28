@@ -38,6 +38,7 @@ public class CardPinDialog extends Dialog<CardPinDialog.CardPinChange> {
         setTitle(backupOnly ? "Backup Card" : "Change Card PIN");
         dialogPane.setHeaderText(backupOnly ? "Enter the current card PIN." : "Enter the current PIN, and then the new PIN twice. PIN must be between 6 and 32 digits.");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(380);

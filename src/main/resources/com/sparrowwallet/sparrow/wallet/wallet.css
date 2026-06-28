@@ -1,11 +1,11 @@
 .list-menu {
     -fx-pref-width: 180;
-    -fx-background-color: #3da0e3;
+    -fx-background-color: #16171C;
 }
 
 .list-item {
     -fx-pref-width: 180;
-    -fx-background-color: #3da0e3;
+    -fx-background-color: #1E2026;
 }
 
 .list-item * {
@@ -13,15 +13,15 @@
 }
 
 .list-item:hover {
-    -fx-background-color: linear-gradient(to right, #3da0e3, derive(#4aa7e5, 10%));
+    -fx-background-color: #282A32;
 }
 
 .list-item:selected {
-    -fx-background-color: linear-gradient(to right, #3da0e3, derive(#1e88cf, -10%));
+    -fx-background-color: #cc1111;
 }
 
 .list-item:disabled {
-    -fx-background-color: #a0a1a7;
+    -fx-background-color: #2E3038;
     -fx-opacity: 1;
 }
 

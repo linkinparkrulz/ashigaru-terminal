@@ -1,10 +1,26 @@
+/* Ashigaru identity tokens (mirror of gui/ashigaru.css — keep in sync) */
 .root {
-    -fx-accent: #166793;
-    -fx-focus-color: -fx-accent;
-    -fx-base: #1b1d1f;
-    -fx-control-inner-background: derive(-fx-base, 25%);
+    -ag-bg:            #0E0F12;
+    -ag-bg-mid:        #16171C;
+    -ag-bg-light:      #1E2026;
+    -ag-bg-raised:     #282A32;
+    -ag-border:        #2E3038;
+    -ag-border-strong: #3A3D47;
+    -ag-text:          #ECECEC;
+    -ag-text-dim:      #A6A7AD;
+    -ag-text-faint:    #6E7077;
+    -ag-accent:        #cc1111;
+    -ag-accent-hover:  #e11414;
+    -ag-accent-dark:   #991010;
+
+    /* Drive Modena from the Ashigaru palette: red accent, deep neutral base */
+    -fx-accent: -ag-accent;
+    -fx-focus-color: -ag-accent;
+    -fx-faint-focus-color: derive(-ag-accent, -75%);
+    -fx-base: #1A1B20;
+    -fx-control-inner-background: derive(-fx-base, 22%);
     -fx-control-inner-background-alt: -fx-control-inner-background ;
-    -fx-default-button: #1e88cf;
+    -fx-default-button: -ag-accent;
     -fx-box-border: ladder(-fx-color, black 20%, derive(-fx-color,40%) 30%);
 }
 
@@ -135,20 +151,22 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
 }
 
 .root .list-menu {
-    -fx-background-color: #2284bb;
+    -fx-background-color: -ag-bg-mid;
 }
 
 .root .list-item {
     -fx-pref-width: 180;
-    -fx-background-color: #2284bb;
+    -fx-background-color: -ag-bg-light;
+    -fx-border-color: -ag-border;
 }
 
 .root .list-item:hover {
-    -fx-background-color: linear-gradient(to right, #2284bb, derive(#388fc7, 10%));
+    -fx-background-color: -ag-bg-raised;
 }
 
 .root .list-item:selected {
-    -fx-background-color: linear-gradient(to right, #2284bb, derive(#1479bb, -10%));
+    -fx-background-color: derive(-ag-accent, -64%);
+    -fx-border-color: -ag-accent;
 }
 
 .root .list-item:disabled {
@@ -157,11 +175,11 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
 }
 
 .root .wallet-subtabs > .tab-header-area .tab {
-    -fx-background-color: derive(#2284bb, 32%);
+    -fx-background-color: -ag-bg-light;
 }
 
 .root .wallet-subtabs > .tab-header-area .tab:selected {
-    -fx-background-color: #2284bb;
+    -fx-background-color: -ag-accent;
 }
 
 #inputsPie .default-color0.chart-pie {
@@ -292,7 +310,7 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
 }
 
 .root .placeholder .hyperlink {
-    -fx-text-fill: derive(#1e88cf, 20%);
+    -fx-text-fill: #5cb4f7;
 }
 
 .root .box-overlay {
@@ -325,11 +343,11 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
 }
 
 .root .hyperlink {
-    -fx-text-fill: #229df5;
+    -fx-text-fill: #42a5f5;
 }
 
 .root .hyperlink:visited {
-    -fx-text-fill: #229df5;
+    -fx-text-fill: #42a5f5;
 }
 
 #grid .spreadsheet-cell.selection {

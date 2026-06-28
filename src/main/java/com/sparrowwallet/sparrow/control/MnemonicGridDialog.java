@@ -47,6 +47,7 @@ public class MnemonicGridDialog extends Dialog<List<String>> {
         setDialogPane(dialogPane);
         setTitle("Border Wallets Grid");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getStylesheets().add(AppServices.class.getResource("grid.css").toExternalForm());
         dialogPane.setHeaderText("Load a Border Wallets PDF, or generate a grid from a BIP39 seed.\nThen select 11 or 23 words in a pattern on the grid.\nThe order of selection is important!");
         javafx.scene.image.Image image = new Image("/image/border-wallets.png");
