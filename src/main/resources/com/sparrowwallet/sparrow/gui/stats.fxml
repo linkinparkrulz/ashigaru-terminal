@@ -39,16 +39,19 @@
                     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
                     <Label text="TOTAL BTC IN POOLS" styleClass="card-faint"/>
                     <Label fx:id="totalBtcLabel" text="—" styleClass="card-value"/>
+                    <Label fx:id="totalsSubLabel" text="—" styleClass="card-faint"/>
                 </VBox>
                 <VBox spacing="6" styleClass="ag-card" HBox.hgrow="ALWAYS">
                     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
                     <Label text="BLOCK RANGE" styleClass="card-faint"/>
                     <Label fx:id="blockRangeLabel" text="—" styleClass="card-value"/>
+                    <Label fx:id="syncLabel" text="—" styleClass="card-faint"/>
                 </VBox>
                 <VBox spacing="6" styleClass="ag-card" HBox.hgrow="ALWAYS">
                     <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
                     <Label text="LAST UPDATED" styleClass="card-faint"/>
                     <Label fx:id="lastUpdatedLabel" text="—" styleClass="card-value"/>
+                    <Label fx:id="nextUpdateLabel" text="—" styleClass="card-faint"/>
                 </VBox>
             </HBox>
 
@@ -81,7 +84,16 @@
             <!-- Chart -->
             <VBox spacing="10" styleClass="ag-card">
                 <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
-                <Label text="Pool Capacity Over Block Height" styleClass="step-title"/>
+                <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label fx:id="chartTitleLabel" text="Pool Capacity Over Block Height" styleClass="step-title"/>
+                    <Region HBox.hgrow="ALWAYS"/>
+                    <HBox styleClass="view-toggle-bar">
+                        <fx:define><ToggleGroup fx:id="chartMetricGroup"/></fx:define>
+                        <ToggleButton fx:id="capacityToggle" text="Capacity" selected="true" toggleGroup="$chartMetricGroup" styleClass="view-toggle"/>
+                        <ToggleButton fx:id="enteredToggle" text="Entered" toggleGroup="$chartMetricGroup" styleClass="view-toggle"/>
+                        <ToggleButton fx:id="utxosToggle" text="UTXOs" toggleGroup="$chartMetricGroup" styleClass="view-toggle"/>
+                    </HBox>
+                </HBox>
                 <LineChart fx:id="poolChart" animated="false" createSymbols="false" prefHeight="320" minHeight="280">
                     <xAxis><NumberAxis fx:id="xAxis" label="Block Height" /></xAxis>
                     <yAxis><NumberAxis fx:id="yAxis" label="Pool Size (BTC)" /></yAxis>

@@ -383,6 +383,16 @@
 .card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
+/* Inline link inside a card (e.g. Stats tx explorer / exposure links) */
+.card-link {
+    -fx-text-fill: -ag-accent;
+    -fx-font-size: 11px;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+.card-link:hover { -fx-underline: true; }
+.card-link:visited { -fx-text-fill: -ag-accent; }
+
 /* Sender PayNym name + abbreviated payment code on an incoming-payment transaction card */
 .paynym-name {
     -fx-text-fill: -ag-text;
