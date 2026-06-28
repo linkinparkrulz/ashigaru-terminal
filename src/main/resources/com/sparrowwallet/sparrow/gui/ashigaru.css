@@ -383,6 +383,12 @@
 .card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
+/* Whirlpool Stats chart: orange (first pool) + yellow (second pool) series */
+.stats-chart .default-color0.chart-series-line { -fx-stroke: #ff9500; -fx-stroke-width: 2px; }
+.stats-chart .default-color1.chart-series-line { -fx-stroke: #ffcc00; -fx-stroke-width: 2px; }
+.stats-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #ff9500; }
+.stats-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #ffcc00; }
+
 /* Inline link inside a card (e.g. Stats tx explorer / exposure links) */
 .card-link {
     -fx-text-fill: -ag-accent;

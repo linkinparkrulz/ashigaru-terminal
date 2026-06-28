@@ -9,7 +9,6 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
@@ -39,7 +38,7 @@ public class StatsController implements Initializable {
     private static final String CHARTS_URL = API_BASE + "/charts";
     private static final String TXS_URL = API_BASE + "/txs";
     private static final String SOURCE_URL = "https://whirlpoolstats.xyz";
-    private static final String EXPLORER_TX = "https://mempool.space/tx/";
+    private static final String EXPLORER_TX = "https://bithypha.com/transaction/";
 
     @FXML private Button refreshBtn;
     @FXML private Label statusLabel;
@@ -206,11 +205,8 @@ public class StatsController implements Initializable {
         chartTitleLabel.setText(metric.title);
         yAxis.setLabel(metric.yLabel);
 
-        Map<String, String> colors = new HashMap<>();
-        for(PoolSummary p : data.pools) {
-            colors.put(p.poolName(), p.color());
-        }
-
+        // Series colours (orange / yellow per pool) are applied by index via the
+        // .stats-chart CSS rules, so both the lines and legend symbols stay in sync.
         for(Map.Entry<String, List<Double>> entry : metric.series.entrySet()) {
             XYChart.Series<Number, Number> series = new XYChart.Series<>();
             series.setName(entry.getKey().replace("_BTC_Pool", " BTC Pool"));
@@ -219,17 +215,6 @@ public class StatsController implements Initializable {
                 series.getData().add(new XYChart.Data<>(metric.blocks.get(i), values.get(i)));
             }
             poolChart.getData().add(series);
-
-            String color = colors.getOrDefault(entry.getKey(), null);
-            if(color != null) {
-                final String c = color;
-                Platform.runLater(() -> {
-                    Node line = series.getNode();
-                    if(line != null) {
-                        line.setStyle("-fx-stroke: " + c + ";");
-                    }
-                });
-            }
         }
     }
 
@@ -432,9 +417,8 @@ public class StatsController implements Initializable {
         private final Hyperlink explorerLink = new Hyperlink("explorer ↗");
         private final Hyperlink exposureLink = new Hyperlink("exposure ↗");
         private final HBox topLine = new HBox(8);
-        private final HBox txidLine = new HBox(6);
-        private final HBox linkLine = new HBox(12);
-        private final VBox root = new VBox(4, topLine, txidLine, feeLabel, linkLine);
+        private final HBox midLine = new HBox(8);
+        private final VBox root = new VBox(6, topLine, midLine, feeLabel);
 
         TxCell() {
             blockLabel.getStyleClass().add("card-faint");
@@ -443,8 +427,8 @@ public class StatsController implements Initializable {
             explorerLink.getStyleClass().add("card-link");
             exposureLink.getStyleClass().add("card-link");
             topLine.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-            txidLine.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
-            linkLine.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            midLine.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
+            root.setFillWidth(true);
         }
 
         @Override
@@ -456,6 +440,7 @@ public class StatsController implements Initializable {
                 return;
             }
 
+            // Row 1: pool badge (left) — block height (right)
             poolBadge.setText(row.poolLabel());
             poolBadge.setStyle("-fx-background-color: " + row.poolColor()
                     + "; -fx-text-fill: black; -fx-padding: 2 8 2 8; -fx-background-radius: 10; -fx-font-size: 11px;");
@@ -464,12 +449,22 @@ public class StatsController implements Initializable {
             HBox.setHgrow(topSpacer, Priority.ALWAYS);
             topLine.getChildren().setAll(poolBadge, topSpacer, blockLabel);
 
+            // Row 2: txid + copy (left) — explorer / exposure links (right)
             String shortTxid = row.txid().length() > 22
                     ? row.txid().substring(0, 12) + "…" + row.txid().substring(row.txid().length() - 8)
                     : row.txid();
             txidLabel.setText(shortTxid);
-            txidLine.getChildren().setAll(txidLabel, AshigaruWalletController.makeCopyButton(row.txid()));
+            Region midSpacer = new Region();
+            HBox.setHgrow(midSpacer, Priority.ALWAYS);
+            midLine.getChildren().setAll(txidLabel, AshigaruWalletController.makeCopyButton(row.txid()), midSpacer);
+            explorerLink.setOnAction(e -> openUrl(EXPLORER_TX + row.txid()));
+            midLine.getChildren().add(explorerLink);
+            if(row.amIExposedUrl() != null && !row.amIExposedUrl().isEmpty()) {
+                exposureLink.setOnAction(e -> openUrl(row.amIExposedUrl()));
+                midLine.getChildren().add(exposureLink);
+            }
 
+            // Row 3: Tx0 inputs + fee efficiency
             if(!row.inputs().isEmpty()) {
                 String fees = row.inputs().stream()
                         .map(i -> i.feeEfficiencyPct() + "%")
@@ -482,13 +477,6 @@ public class StatsController implements Initializable {
             } else {
                 feeLabel.setVisible(false);
                 feeLabel.setManaged(false);
-            }
-
-            explorerLink.setOnAction(e -> openUrl(EXPLORER_TX + row.txid()));
-            linkLine.getChildren().setAll(explorerLink);
-            if(row.amIExposedUrl() != null && !row.amIExposedUrl().isEmpty()) {
-                exposureLink.setOnAction(e -> openUrl(row.amIExposedUrl()));
-                linkLine.getChildren().add(exposureLink);
             }
 
             setText(null);

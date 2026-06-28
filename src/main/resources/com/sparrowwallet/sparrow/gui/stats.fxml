@@ -94,7 +94,7 @@
                         <ToggleButton fx:id="utxosToggle" text="UTXOs" toggleGroup="$chartMetricGroup" styleClass="view-toggle"/>
                     </HBox>
                 </HBox>
-                <LineChart fx:id="poolChart" animated="false" createSymbols="false" prefHeight="320" minHeight="280">
+                <LineChart fx:id="poolChart" styleClass="stats-chart" animated="false" createSymbols="false" prefHeight="320" minHeight="280">
                     <xAxis><NumberAxis fx:id="xAxis" label="Block Height" /></xAxis>
                     <yAxis><NumberAxis fx:id="yAxis" label="Pool Size (BTC)" /></yAxis>
                 </LineChart>
