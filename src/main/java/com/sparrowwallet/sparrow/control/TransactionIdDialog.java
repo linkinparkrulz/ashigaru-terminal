@@ -30,6 +30,7 @@ public class TransactionIdDialog extends Dialog<Sha256Hash> {
         setTitle("Load Transaction");
         dialogPane.setHeaderText("Enter the transaction ID:");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(550);
         dialogPane.setPrefHeight(200);

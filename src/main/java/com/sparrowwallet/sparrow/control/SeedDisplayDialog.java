@@ -11,6 +11,7 @@ public class SeedDisplayDialog extends Dialog<Void> {
     public SeedDisplayDialog(Keystore decryptedKeystore) {
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
 
         int lines = decryptedKeystore.getSeed().getMnemonicCode().size() / 3;

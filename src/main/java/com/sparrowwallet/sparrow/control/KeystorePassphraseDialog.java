@@ -34,6 +34,7 @@ public class KeystorePassphraseDialog extends Dialog<String> {
         setTitle("Keystore Passphrase" + (walletName != null ? " for " + walletName : ""));
         dialogPane.setHeaderText((confirm ? "Re-enter" : "Enter") + " the BIP39 passphrase\n" + (confirm ? "to confirm:" : "for keystore: " + keystore.getLabel()));
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
         dialogPane.setPrefWidth(420);

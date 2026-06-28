@@ -106,6 +106,7 @@ public class MessageSignDialog extends Dialog<ButtonBar.ButtonData> {
 
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getStylesheets().add(AppServices.class.getResource("dialog.css").toExternalForm());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.setHeaderText(title == null ? (wallet == null ? "Verify Message" : "Sign/Verify Message") : title);

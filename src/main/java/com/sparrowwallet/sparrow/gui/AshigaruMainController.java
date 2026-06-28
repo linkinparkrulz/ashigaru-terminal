@@ -699,11 +699,23 @@ public class AshigaruMainController implements Initializable {
             try {
                 storage.restorePublicKeysFromSeed(wak.getWallet(), wak.getKey());
                 if (!wak.getWallet().isValid()) {
-                    log.warn("Wallet file is not valid (likely a child/aux wallet opened standalone): {}",
-                            storage.getWalletFile().getName());
-                    showError("Cannot open this wallet",
-                            "This file is not a complete wallet on its own. "
-                                    + "If it's a Premix, Postmix or Badbank file, open the parent wallet instead and use the tabs.");
+                    // Distinguish "user cancelled the passphrase prompt" from "aux/child wallet opened standalone"
+                    boolean passphraseCancelled = wak.getWallet().getKeystores().stream()
+                            .anyMatch(ks -> ks.hasSeed() && ks.getSeed().getPassphrase() == null
+                                    && ks.getSeed().needsPassphrase());
+                    if (passphraseCancelled) {
+                        log.info("Wallet not opened — BIP39 passphrase prompt was cancelled: {}",
+                                storage.getWalletFile().getName());
+                        showWizardError("WALLET NOT OPENED", "Passphrase required",
+                                "The BIP39 passphrase is required to open this wallet. "
+                                        + "No passphrase was entered, so the wallet was not opened.");
+                    } else {
+                        log.warn("Wallet file is not valid (likely a child/aux wallet opened standalone): {}",
+                                storage.getWalletFile().getName());
+                        showWizardError("CANNOT OPEN", "Not a standalone wallet",
+                                "This file is not a complete wallet on its own. "
+                                        + "If it's a Premix, Postmix or Badbank file, open the parent wallet instead and use the tabs.");
+                    }
                     Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
                     return;
                 }
@@ -877,6 +889,19 @@ public class AshigaruMainController implements Initializable {
         alert.initOwner(AshigaruGui.get().getMainStage());
         AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
         return alert.showAndWait();
+    }
+
+    private void showWizardError(String eyebrow, String title, String message) {
+        Dialog<Void> dlg = new Dialog<>();
+        dlg.setTitle(title);
+        dlg.initOwner(AshigaruGui.get().getMainStage());
+        WalletCreationFlow.styleWizardDialog(dlg, eyebrow, title, message);
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        WalletCreationFlow.styleWizardButtons(dlg.getDialogPane());
+        dlg.getDialogPane().setPrefWidth(460);
+        AppServices.moveToActiveWindowScreen(dlg);
+        dlg.setResultConverter(bt -> null);
+        dlg.showAndWait();
     }
 
     private static String deriveWalletName(File file) {

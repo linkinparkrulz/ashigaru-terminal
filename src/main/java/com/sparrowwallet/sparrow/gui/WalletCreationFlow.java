@@ -169,6 +169,9 @@ public class WalletCreationFlow {
             content.setPadding(new Insets(20));
             content.setPrefWidth(460);
             dlg.getDialogPane().setContent(content);
+            dlg.getDialogPane().setPrefWidth(460);
+            dlg.getDialogPane().setPrefHeight(180);
+            AppServices.moveToActiveWindowScreen(dlg);
 
             Button continueNode = (Button) dlg.getDialogPane().lookupButton(continueType);
             continueNode.setDisable(true);
@@ -214,6 +217,9 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefHeight(240);
+        AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
         dlg.setResultConverter(bt -> null);
@@ -272,6 +278,9 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefHeight(240);
+        AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
         dlg.setResultConverter(bt -> null);

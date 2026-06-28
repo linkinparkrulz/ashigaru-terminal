@@ -9,6 +9,7 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.sparrowwallet.sparrow.gui.AshigaruReceiveController"
             prefWidth="500" prefHeight="520"
+            stylesheets="@ashigaru.css, @../darktheme.css"
             styleClass="receive-pane">
 
     <buttonTypes/><!-- handled programmatically via onNextAddress / onClose -->

@@ -37,6 +37,7 @@ public class ServerAliasDialog extends Dialog<Server> {
 
         setTitle("Server Aliases");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.setHeaderText("Configure aliases for recently connected servers.\nNew servers are added to this list on successful connections.");
 
         Image image = new Image("/image/sparrow-small.png");

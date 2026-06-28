@@ -43,6 +43,7 @@ public class TextfieldDialog extends Dialog<String> {
 
         dialogPane.setContent(hbox);
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
 
         dialogPane.getStyleClass().add("text-input-dialog");

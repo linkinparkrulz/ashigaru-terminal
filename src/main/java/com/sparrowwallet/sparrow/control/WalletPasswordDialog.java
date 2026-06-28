@@ -40,6 +40,7 @@ public class WalletPasswordDialog extends Dialog<SecureString> {
         setTitle("Wallet Password" + (walletName != null ? " - " + walletName : ""));
         dialogPane.setHeaderText(walletName != null ? requirement.description.substring(0, requirement.description.length() - 1) + " for " + walletName + ":" : requirement.description);
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(380);

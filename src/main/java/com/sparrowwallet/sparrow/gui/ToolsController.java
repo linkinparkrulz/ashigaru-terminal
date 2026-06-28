@@ -21,6 +21,7 @@ public class ToolsController implements Initializable {
 
     @FXML private ToggleGroup toolsMenu;
     @FXML private ToggleButton bip47VerifierButton;
+    @FXML private ToggleButton statsButton;
     @FXML private StackPane toolsPane;
 
     @Override
@@ -33,6 +34,8 @@ public class ToolsController implements Initializable {
 
             if(selectedToggle == bip47VerifierButton) {
                 setToolPane("bip47-message-verifier.fxml");
+            } else if(selectedToggle == statsButton) {
+                setToolPane("stats.fxml");
             }
         });
 

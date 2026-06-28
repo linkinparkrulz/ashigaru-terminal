@@ -11,6 +11,7 @@ public class MasterKeyDisplayDialog  extends Dialog<Void> {
     public MasterKeyDisplayDialog(Keystore decryptedKeystore) {
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
 
         StackPane stackPane = new StackPane();

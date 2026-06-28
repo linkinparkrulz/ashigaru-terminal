@@ -27,6 +27,7 @@ public class CounterpartyDialog extends Dialog<Boolean> {
 
             dialogPane.getStylesheets().add(AppServices.class.getResource("app.css").toExternalForm());
             dialogPane.getStylesheets().add(AppServices.class.getResource("soroban/counterparty.css").toExternalForm());
+            AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
 
             final ButtonType nextButtonType = new javafx.scene.control.ButtonType("Next", ButtonBar.ButtonData.OK_DONE);
             final ButtonType cancelButtonType = new javafx.scene.control.ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);

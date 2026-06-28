@@ -1227,6 +1227,7 @@ public class AppController implements Initializable {
         if(walletFile != null) {
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             AppServices.setStageIcon(alert.getDialogPane().getScene().getWindow());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
             alert.setTitle("Existing wallet found");
             alert.setHeaderText("Replace existing wallet?");
             alert.setContentText("Wallet file " + walletFile.getName() + " already exists.\n");

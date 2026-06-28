@@ -64,9 +64,19 @@ public class PayNymAvatar extends StackPane {
 
     private void setImage(Image image) {
         getChildren().clear();
-        Circle circle = new Circle(getPrefWidth() / 2,getPrefHeight() / 2,getPrefWidth() / 2);
+        double radius = getAvatarSize() / 2;
+        Circle circle = new Circle(0, 0, radius);
         circle.setFill(new ImagePattern(image));
+        widthProperty().addListener((obs, o, n) -> circle.setRadius(getAvatarSize() / 2));
+        heightProperty().addListener((obs, o, n) -> circle.setRadius(getAvatarSize() / 2));
         getChildren().add(circle);
+    }
+
+    private double getAvatarSize() {
+        double width = getWidth() > 0 ? getWidth() : getPrefWidth();
+        double height = getHeight() > 0 ? getHeight() : getPrefHeight();
+        double size = Math.min(width, height);
+        return size > 0 ? size : 30;
     }
 
     public PaymentCode getPaymentCode() {

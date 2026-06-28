@@ -51,6 +51,8 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     public AshigaruTxnCell() {
         avatar.setForceLoad(true);
         avatar.setPrefSize(ICON_SIZE, ICON_SIZE);
+        avatar.setMinSize(ICON_SIZE, ICON_SIZE);
+        avatar.setMaxSize(ICON_SIZE, ICON_SIZE);
         avatarPlaceholder.setMinSize(ICON_SIZE, ICON_SIZE);
         avatarPlaceholder.setPrefSize(ICON_SIZE, ICON_SIZE);
         avatarPlaceholder.setMaxSize(ICON_SIZE, ICON_SIZE);
@@ -63,6 +65,10 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
 
         iconHolder.setMinWidth(ICON_SIZE);
         iconHolder.setPrefWidth(ICON_SIZE);
+        iconHolder.setMaxWidth(ICON_SIZE);
+        iconHolder.setMinHeight(ICON_SIZE);
+        iconHolder.setPrefHeight(ICON_SIZE);
+        iconHolder.setMaxHeight(ICON_SIZE);
         iconHolder.setAlignment(Pos.TOP_CENTER);
 
         nymNameLabel.getStyleClass().add("paynym-name");

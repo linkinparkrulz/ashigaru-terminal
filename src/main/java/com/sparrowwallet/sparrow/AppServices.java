@@ -1076,6 +1076,7 @@ public class AppServices {
             Image image = new Image("/image/sparrow-small.png");
             walletChoiceDialog.getDialogPane().setGraphic(new ImageView(image));
             setStageIcon(walletChoiceDialog.getDialogPane().getScene().getWindow());
+            addAshigaruStylesheets(walletChoiceDialog.getDialogPane().getStylesheets());
             moveToActiveWindowScreen(walletChoiceDialog);
             Optional<Wallet> optWallet = walletChoiceDialog.showAndWait();
             if(optWallet.isPresent()) {

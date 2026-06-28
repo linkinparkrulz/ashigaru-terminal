@@ -25,6 +25,7 @@ public class TitledDescriptionPane extends TitledPane {
 
     public TitledDescriptionPane(String title, String description, String content, String imageUrl) {
         getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(getStylesheets());
         getStyleClass().add("titled-description-pane");
 
         setPadding(Insets.EMPTY);

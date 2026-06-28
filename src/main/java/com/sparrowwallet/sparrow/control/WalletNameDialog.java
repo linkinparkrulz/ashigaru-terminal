@@ -53,6 +53,7 @@ public class WalletNameDialog extends Dialog<WalletNameDialog.NameAndBirthDate> 
         setTitle("Wallet Name");
         dialogPane.setHeaderText("Enter a name for this wallet:");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(460);
         dialogPane.setPrefHeight(requestBirthDate ? 250 : 200);
