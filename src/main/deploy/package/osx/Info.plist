@@ -11,7 +11,7 @@
   <key>CFBundleExecutable</key>
   <string>Ashigaru</string>
   <key>CFBundleIconFile</key>
-  <string>ashigaru</string>
+  <string>Ashigaru.icns</string>
   <key>CFBundleIdentifier</key>
   <string>com.ashigaru.desktop</string>
   <key>CFBundleInfoDictionaryVersion</key>

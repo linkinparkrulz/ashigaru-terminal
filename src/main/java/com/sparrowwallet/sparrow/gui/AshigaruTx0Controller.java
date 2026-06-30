@@ -6,23 +6,34 @@ import com.samourai.whirlpool.client.tx0.Tx0Previews;
 import com.samourai.whirlpool.client.wallet.beans.Tx0FeeTarget;
 import com.samourai.whirlpool.client.whirlpool.beans.Pool;
 import com.sparrowwallet.drongo.BitcoinUnit;
+import com.sparrowwallet.drongo.protocol.Sha256Hash;
+import com.sparrowwallet.drongo.wallet.BlockTransactionHashIndex;
 import com.sparrowwallet.drongo.wallet.MixConfig;
+import com.sparrowwallet.drongo.wallet.StandardAccount;
 import com.sparrowwallet.sparrow.AppServices;
+import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.UnitFormat;
+import com.sparrowwallet.sparrow.event.WalletAddAccountEvent;
 import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.wallet.Entry;
 import com.sparrowwallet.sparrow.wallet.UtxoEntry;
 import com.sparrowwallet.sparrow.wallet.WalletForm;
 import com.sparrowwallet.sparrow.whirlpool.Whirlpool;
 import com.sparrowwallet.sparrow.whirlpool.dataSource.SparrowMinerFeeSupplier;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +41,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Controller for the Tx0 (Transaction Zero) dialog.
@@ -49,6 +61,16 @@ public class AshigaruTx0Controller implements Initializable {
     @FXML private Label totalFeesValue;
     @FXML private ButtonType broadcastBtnType;
     private Button broadcastBtn;   // resolved in show() after setDialogPane()
+    private Button cancelBtn;      // resolved in show()
+
+    // Broadcast animation overlay
+    @FXML private VBox formBox;
+    @FXML private VBox broadcastOverlay;
+    @FXML private ImageView broadcastGif;
+    @FXML private Label broadcastStatus;
+    @FXML private Label stepSigning;
+    @FXML private Label stepBroadcasting;
+    @FXML private Label stepComplete;
 
     // Set by show() before the dialog is displayed
     private String walletId;
@@ -56,8 +78,9 @@ public class AshigaruTx0Controller implements Initializable {
     private List<UtxoEntry> utxoEntries;
 
     private Tx0Previews tx0Previews;
-    private Pool selectedPool;           // result returned to caller
+    private Pool selectedPool;           // chosen pool to broadcast
     private Stage dialogStage;
+    private Dialog<Sha256Hash> dialog;   // set in show(); result = broadcast txid
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -72,13 +95,20 @@ public class AshigaruTx0Controller implements Initializable {
         int feeRate = SparrowMinerFeeSupplier.getFee(
                 Integer.parseInt(Tx0FeeTarget.BLOCKS_2.getFeeTarget().getValue()));
         feeRateLabel.setText(Math.max(2, feeRate) + " sats/vB  (High priority)");
+
+        try {
+            broadcastGif.setImage(new Image(getClass().getResourceAsStream(
+                    "/image/Ashigaru_Whirlpool_Logo_GIF_White_On_Transparent.gif")));
+        } catch (Exception e) {
+            log.warn("Could not load broadcast animation", e);
+        }
     }
 
     // -------------------------------------------------------------------------
     // Static factory — opens dialog modally and returns chosen Pool (or null)
     // -------------------------------------------------------------------------
 
-    public static Pool show(String walletId, WalletForm walletForm, List<UtxoEntry> utxoEntries) throws Exception {
+    public static Sha256Hash show(String walletId, WalletForm walletForm, List<UtxoEntry> utxoEntries) throws Exception {
         FXMLLoader loader = new FXMLLoader(AshigaruTx0Controller.class.getResource("ashigaru-tx0.fxml"));
         DialogPane pane = loader.load();
         AshigaruTx0Controller ctrl = loader.getController();
@@ -86,23 +116,27 @@ public class AshigaruTx0Controller implements Initializable {
         ctrl.walletForm = walletForm;
         ctrl.utxoEntries = utxoEntries;
 
-        Dialog<Pool> dialog = new Dialog<>();
+        Dialog<Sha256Hash> dialog = new Dialog<>();
         dialog.setTitle(walletForm.getWallet().getFullDisplayName() + " — Transaction Zero");
         dialog.setDialogPane(pane);
-        // Resolve the actual Button node now that the DialogPane is wired up
+        ctrl.dialog = dialog;
+        // Resolve the actual Button nodes now that the DialogPane is wired up
         ctrl.broadcastBtn = (Button) pane.lookupButton(ctrl.broadcastBtnType);
         ctrl.broadcastBtn.setDisable(true);
+        ctrl.cancelBtn = pane.getButtonTypes().stream()
+                .filter(bt -> bt.getButtonData() == ButtonBar.ButtonData.CANCEL_CLOSE)
+                .findFirst().map(bt -> (Button) pane.lookupButton(bt)).orElse(null);
+        // Intercept Broadcast: keep the dialog open and run sign+broadcast with the animation
+        ctrl.broadcastBtn.addEventFilter(ActionEvent.ACTION, e -> {
+            e.consume();
+            ctrl.doBroadcast();
+        });
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(AshigaruGui.get().getMainStage());
         ctrl.dialogStage = (Stage) dialog.getDialogPane().getScene().getWindow();
 
-        // Wire Broadcast / Cancel to dialog result
-        dialog.setResultConverter(btn -> {
-            if (btn != null && btn.getButtonData() == ButtonBar.ButtonData.OK_DONE) {
-                return ctrl.selectedPool;
-            }
-            return null;
-        });
+        // Cancel closes with no result; success is set explicitly via dialog.setResult(txid)
+        dialog.setResultConverter(btn -> null);
 
         // Fetch pools after the dialog is shown
         Platform.runLater(() -> ctrl.fetchPools(false));
@@ -246,6 +280,108 @@ public class AshigaruTx0Controller implements Initializable {
 
         selectedPool = pool;
         broadcastBtn.setDisable(false);
+    }
+
+    // -------------------------------------------------------------------------
+    // Broadcast (sign + push) with in-dialog animation
+    // -------------------------------------------------------------------------
+
+    private void doBroadcast() {
+        if (selectedPool == null) {
+            return;
+        }
+        showOverlay();
+
+        // Ensure the Premix account exists before broadcasting (the Tx0 funds premix).
+        var wallet = walletForm.getWallet();
+        if (wallet.isMasterWallet() && !wallet.isWhirlpoolMasterWallet()) {
+            EventManager.get().post(new WalletAddAccountEvent(wallet, StandardAccount.WHIRLPOOL_PREMIX));
+            Platform.runLater(this::runBroadcast);
+        } else {
+            runBroadcast();
+        }
+    }
+
+    private void runBroadcast() {
+        Whirlpool wp = AppServices.getWhirlpoolServices().getWhirlpool(walletId);
+        List<BlockTransactionHashIndex> utxos = utxoEntries.stream()
+                .map(UtxoEntry::getHashIndex)
+                .collect(Collectors.toList());
+        Whirlpool.Tx0BroadcastService svc = new Whirlpool.Tx0BroadcastService(wp, selectedPool, utxos);
+
+        // Signing + broadcasting are one opaque client call; stage the labels for feedback.
+        PauseTransition toBroadcasting = new PauseTransition(Duration.seconds(1.2));
+        toBroadcasting.setOnFinished(ev -> {
+            if (svc.isRunning()) {
+                markStep(stepBroadcasting, "Broadcasting");
+                broadcastStatus.setText("Broadcasting premix transaction…");
+            }
+        });
+        toBroadcasting.play();
+
+        svc.setOnSucceeded(e -> {
+            Sha256Hash txid = svc.getValue();
+            markStep(stepBroadcasting, "Broadcasting");
+            markStep(stepComplete, "Complete");
+            broadcastStatus.setText("✓ Broadcast complete");
+            PauseTransition done = new PauseTransition(Duration.seconds(1.1));
+            done.setOnFinished(ev -> {
+                dialog.setResult(txid);
+                dialog.close();
+            });
+            done.play();
+        });
+        svc.setOnFailed(e -> {
+            Throwable ex = e.getSource().getException();
+            while (ex != null && ex.getCause() != null) ex = ex.getCause();
+            String msg = ex != null ? ex.getMessage() : "Unknown error";
+            hideOverlay();
+            AppServices.showErrorDialog("Error broadcasting Transaction Zero", msg);
+        });
+        svc.start();
+    }
+
+    private void showOverlay() {
+        formBox.setVisible(false);
+        formBox.setManaged(false);
+        broadcastOverlay.setVisible(true);
+        broadcastOverlay.setManaged(true);
+        setButtonsDisabled(true);
+        resetSteps();
+        markStep(stepSigning, "Signing");
+        broadcastStatus.setText("Signing transaction…");
+    }
+
+    private void hideOverlay() {
+        broadcastOverlay.setVisible(false);
+        broadcastOverlay.setManaged(false);
+        formBox.setVisible(true);
+        formBox.setManaged(true);
+        setButtonsDisabled(false);
+        resetSteps();
+    }
+
+    private void setButtonsDisabled(boolean disabled) {
+        broadcastBtn.setDisable(disabled);
+        if (cancelBtn != null) {
+            cancelBtn.setDisable(disabled);
+        }
+    }
+
+    private void resetSteps() {
+        stepSigning.setText("• Signing");
+        stepBroadcasting.setText("• Broadcasting");
+        stepComplete.setText("• Complete");
+        stepSigning.getStyleClass().remove("done");
+        stepBroadcasting.getStyleClass().remove("done");
+        stepComplete.getStyleClass().remove("done");
+    }
+
+    private void markStep(Label step, String name) {
+        step.setText("✓ " + name);
+        if (!step.getStyleClass().contains("done")) {
+            step.getStyleClass().add("done");
+        }
     }
 
     // -------------------------------------------------------------------------
