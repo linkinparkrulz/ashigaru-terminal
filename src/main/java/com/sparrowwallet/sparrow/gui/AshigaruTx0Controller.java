@@ -346,7 +346,7 @@ public class AshigaruTx0Controller implements Initializable {
         formBox.setManaged(false);
         broadcastOverlay.setVisible(true);
         broadcastOverlay.setManaged(true);
-        setButtonsDisabled(true);
+        setButtonsShown(false);
         resetSteps();
         markStep(stepSigning, "Signing");
         broadcastStatus.setText("Signing transaction…");
@@ -357,14 +357,18 @@ public class AshigaruTx0Controller implements Initializable {
         broadcastOverlay.setManaged(false);
         formBox.setVisible(true);
         formBox.setManaged(true);
-        setButtonsDisabled(false);
+        setButtonsShown(true);
         resetSteps();
     }
 
-    private void setButtonsDisabled(boolean disabled) {
-        broadcastBtn.setDisable(disabled);
+    // Hide (not just disable) the button bar during the animation for a clean, full overlay;
+    // buttons return only on failure. Success closes the dialog programmatically.
+    private void setButtonsShown(boolean shown) {
+        broadcastBtn.setVisible(shown);
+        broadcastBtn.setManaged(shown);
         if (cancelBtn != null) {
-            cancelBtn.setDisable(disabled);
+            cancelBtn.setVisible(shown);
+            cancelBtn.setManaged(shown);
         }
     }
 
