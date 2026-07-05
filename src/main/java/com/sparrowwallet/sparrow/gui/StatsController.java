@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sparrowwallet.sparrow.AppServices;
+import com.sparrowwallet.sparrow.io.Config;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -39,7 +40,6 @@ public class StatsController implements Initializable {
     private static final String ONION_BASE = "http://25jmfjjzm24mjslbub27xnqdbf3dy2oafc7ydawdkz56nlb252hpenyd.onion/api";
     private static final String CLEARNET_BASE = "https://whirlpoolstats.xyz/api";
     private static final String SOURCE_URL = "https://whirlpoolstats.xyz";
-    private static final String EXPLORER_TX = "https://bithypha.com/transaction/";
 
     private static String apiBase() {
         return AppServices.getProxy() != null ? ONION_BASE : CLEARNET_BASE;
@@ -463,10 +463,12 @@ public class StatsController implements Initializable {
             Region midSpacer = new Region();
             HBox.setHgrow(midSpacer, Priority.ALWAYS);
             midLine.getChildren().setAll(txidLabel, AshigaruWalletController.makeCopyButton(row.txid()), midSpacer);
-            explorerLink.setOnAction(e -> openUrl(EXPLORER_TX + row.txid()));
-            midLine.getChildren().add(explorerLink);
-            if(row.amIExposedUrl() != null && !row.amIExposedUrl().isEmpty()) {
-                exposureLink.setOnAction(e -> openUrl(row.amIExposedUrl()));
+            if(!Config.get().isBlockExplorerDisabled()) {
+                explorerLink.setOnAction(e -> AppServices.openBlockExplorer(row.txid()));
+                midLine.getChildren().add(explorerLink);
+            }
+            if(!Config.get().isAmIExposedDisabled()) {
+                exposureLink.setOnAction(e -> AppServices.openAmIExposed(row.txid()));
                 midLine.getChildren().add(exposureLink);
             }
 

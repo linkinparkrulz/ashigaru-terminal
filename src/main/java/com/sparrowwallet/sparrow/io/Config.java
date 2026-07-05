@@ -32,6 +32,7 @@ public class Config {
     private BitcoinUnit bitcoinUnit;
     private UnitFormat unitFormat;
     private Server blockExplorer;
+    private Server amIExposed;
     private FeeRatesSource feeRatesSource;
     private FeeRatesSelection feeRatesSelection;
     private OptimizationStrategy sendOptimizationStrategy;
@@ -176,6 +177,19 @@ public class Config {
 
     public void setBlockExplorer(Server blockExplorer) {
         this.blockExplorer = blockExplorer;
+        flush();
+    }
+
+    public boolean isAmIExposedDisabled() {
+        return AmIExposed.NONE.getServer().equals(amIExposed);
+    }
+
+    public Server getAmIExposed() {
+        return amIExposed;
+    }
+
+    public void setAmIExposed(Server amIExposed) {
+        this.amIExposed = amIExposed;
         flush();
     }
 

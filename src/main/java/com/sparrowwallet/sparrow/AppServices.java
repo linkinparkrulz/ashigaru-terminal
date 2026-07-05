@@ -859,6 +859,21 @@ public class AppServices {
         AppServices.get().getApplication().getHostServices().showDocument(url);
     }
 
+    public static void openAmIExposed(String txid) {
+        if(Config.get().isAmIExposedDisabled()) {
+            return;
+        }
+
+        Server amIExposed = Config.get().getAmIExposed() == null ? AmIExposed.AM_I_EXPOSED.getServer() : Config.get().getAmIExposed();
+        String url = amIExposed.getUrl();
+        if(url.contains("{0}")) {
+            url = url.replace("{0}", txid);
+        } else {
+            url += "/#tx=" + txid;
+        }
+        AppServices.get().getApplication().getHostServices().showDocument(url);
+    }
+
     static void parseFileUriArguments(List<String> fileUriArguments) {
         for(String fileUri : fileUriArguments) {
             try {

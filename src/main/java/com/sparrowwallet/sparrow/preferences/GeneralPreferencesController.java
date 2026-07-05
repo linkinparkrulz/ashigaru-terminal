@@ -8,6 +8,7 @@ import com.sparrowwallet.sparrow.control.UnlabeledToggleSwitch;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.io.Server;
+import com.sparrowwallet.sparrow.net.AmIExposed;
 import com.sparrowwallet.sparrow.net.BlockExplorer;
 import com.sparrowwallet.sparrow.net.FeeRatesSource;
 import javafx.application.Platform;
@@ -28,12 +29,16 @@ public class GeneralPreferencesController extends PreferencesDetailController {
     private static final Logger log = LoggerFactory.getLogger(GeneralPreferencesController.class);
 
     private static final Server CUSTOM_BLOCK_EXPLORER = new Server("http://custom.block.explorer");
+    private static final Server CUSTOM_AM_I_EXPOSED = new Server("http://custom.am.i.exposed");
 
     @FXML
     private ComboBox<FeeRatesSource> feeRatesSource;
 
     @FXML
     private ComboBox<Server> blockExplorers;
+
+    @FXML
+    private ComboBox<Server> amIExposedServers;
 
     @FXML
     private UnlabeledToggleSwitch loadRecentWallets;
@@ -121,6 +126,63 @@ public class GeneralPreferencesController extends PreferencesDetailController {
             blockExplorers.getSelectionModel().select(0);
         }
 
+        amIExposedServers.setItems(getAmIExposedList());
+        amIExposedServers.setConverter(new StringConverter<>() {
+            @Override
+            public String toString(Server server) {
+                if(server == null || server == AmIExposed.NONE.getServer()) {
+                    return "None";
+                }
+
+                if(server == CUSTOM_AM_I_EXPOSED) {
+                    return "Custom...";
+                }
+
+                return server.getHost();
+            }
+
+            @Override
+            public Server fromString(String string) {
+                return null;
+            }
+        });
+        amIExposedServers.valueProperty().addListener((observable, oldValue, newValue) -> {
+            if(newValue != null) {
+                if(newValue == CUSTOM_AM_I_EXPOSED) {
+                    TextfieldDialog textfieldDialog = new TextfieldDialog();
+                    textfieldDialog.initOwner(amIExposedServers.getScene().getWindow());
+                    textfieldDialog.setTitle("Enter Am I Exposed URL");
+                    textfieldDialog.setHeaderText("Enter the URL of the Am I Exposed instance.\n\nIf present, the characters {0} will be replaced with the txid.\nFor example, https://localhost or https://localhost/#tx={0}\n");
+                    textfieldDialog.getEditor().setPromptText("https://localhost");
+                    Optional<String> optUrl = textfieldDialog.showAndWait();
+                    if(optUrl.isPresent() && !optUrl.get().isEmpty()) {
+                        try {
+                            Server server = getBlockExplorer(optUrl.get());
+                            config.setAmIExposed(server);
+                            Platform.runLater(() -> {
+                                amIExposedServers.getSelectionModel().select(-1);
+                                amIExposedServers.setItems(getAmIExposedList());
+                                amIExposedServers.setValue(Config.get().getAmIExposed());
+                            });
+                        } catch(Exception e) {
+                            AppServices.showErrorDialog("Invalid URL", "The URL " + optUrl.get() + " is not valid.");
+                            amIExposedServers.setValue(oldValue);
+                        }
+                    } else {
+                        amIExposedServers.setValue(oldValue);
+                    }
+                } else {
+                    Config.get().setAmIExposed(newValue);
+                }
+            }
+        });
+
+        if(config.getAmIExposed() != null) {
+            amIExposedServers.setValue(config.getAmIExposed());
+        } else {
+            amIExposedServers.getSelectionModel().select(0);
+        }
+
         loadRecentWallets.setSelected(config.isLoadRecentWallets());
         loadRecentWallets.selectedProperty().addListener((observableValue, oldValue, newValue) -> {
             config.setLoadRecentWallets(newValue);
@@ -164,6 +226,15 @@ public class GeneralPreferencesController extends PreferencesDetailController {
             servers.add(Config.get().getBlockExplorer());
         }
         servers.add(CUSTOM_BLOCK_EXPLORER);
+        return FXCollections.observableList(servers);
+    }
+
+    private ObservableList<Server> getAmIExposedList() {
+        List<Server> servers = Arrays.stream(AmIExposed.values()).map(AmIExposed::getServer).collect(Collectors.toList());
+        if(Config.get().getAmIExposed() != null && !servers.contains(Config.get().getAmIExposed())) {
+            servers.add(Config.get().getAmIExposed());
+        }
+        servers.add(CUSTOM_AM_I_EXPOSED);
         return FXCollections.observableList(servers);
     }
 
