@@ -17,10 +17,13 @@ import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.io.Server;
 import com.sparrowwallet.sparrow.io.Storage;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.text.Font;
@@ -126,6 +129,12 @@ public class ServerPreferencesController extends PreferencesDetailController {
 
     @FXML
     private ComboBox<Server> recentElectrumServers;
+
+    @FXML
+    private Hyperlink discoverNodesLink;
+
+    @FXML
+    private Label discoverNodesStatus;
 
     @FXML
     private ComboBoxTextField electrumHost;
@@ -904,6 +913,54 @@ public class ServerPreferencesController extends PreferencesDetailController {
         ObservableList<Server> serverObservableList = FXCollections.observableList(new ArrayList<>(servers));
         serverObservableList.add(MANAGE_ALIASES_SERVER);
         return serverObservableList;
+    }
+
+    @FXML
+    private void discoverNodes(ActionEvent event) {
+        if(AppServices.getHttpClientService() == null || AppServices.getHttpClientService().getTorProxy() == null) {
+            discoverNodesStatus.setText("Configure the Tor proxy first — Ashigaru nodes are onion services.");
+            return;
+        }
+
+        discoverNodesLink.setDisable(true);
+        discoverNodesStatus.setText("Discovering Ashigaru nodes over Tor…");
+
+        Task<List<DojoNodeDiscovery.DiscoveredNode>> task = new Task<>() {
+            @Override
+            protected List<DojoNodeDiscovery.DiscoveredNode> call() throws Exception {
+                return DojoNodeDiscovery.discover(AppServices.getHttpClientService());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            List<DojoNodeDiscovery.DiscoveredNode> discovered = task.getValue();
+            int added = 0;
+            int signed = 0;
+            for(DojoNodeDiscovery.DiscoveredNode node : discovered) {
+                Config.get().addRecentElectrumServer(node.getServer());
+                added++;
+                if(node.isSigned()) {
+                    signed++;
+                }
+            }
+            recentElectrumServers.setItems(getObservableServerList(Config.get().getRecentElectrumServers()));
+            if(added == 0) {
+                discoverNodesStatus.setText("No eligible nodes found (need version 1.28+, active, on this network).");
+            } else {
+                discoverNodesStatus.setText("Added " + added + " node" + (added == 1 ? "" : "s") + " (" + signed + " signed). Select one above to connect.");
+            }
+            discoverNodesLink.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            discoverNodesStatus.setText("Discovery failed: " + (ex != null ? ex.getMessage() : "unknown error"));
+            discoverNodesLink.setDisable(false);
+        });
+
+        Thread thread = new Thread(task, "dojo-node-discovery");
+        thread.setDaemon(true);
+        thread.start();
     }
 
     @Subscribe
