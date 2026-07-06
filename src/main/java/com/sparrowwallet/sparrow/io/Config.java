@@ -68,6 +68,7 @@ public class Config {
     private ServerType serverType;
     private Server publicElectrumServer;
     private List<Server> discoveredServers;
+    private List<Server> discoveredExplorers;
     private Server coreServer;
     private List<Server> recentCoreServers;
     private CoreAuthType coreAuthType;
@@ -536,6 +537,24 @@ public class Config {
 
         if(!discoveredServers.contains(discoveredServer)) {
             discoveredServers.add(discoveredServer);
+            flush();
+            return true;
+        }
+
+        return false;
+    }
+
+    public List<Server> getDiscoveredExplorers() {
+        return discoveredExplorers == null ? new ArrayList<>() : discoveredExplorers;
+    }
+
+    public boolean addDiscoveredExplorer(Server discoveredExplorer) {
+        if(discoveredExplorers == null) {
+            discoveredExplorers = new ArrayList<>();
+        }
+
+        if(!discoveredExplorers.contains(discoveredExplorer)) {
+            discoveredExplorers.add(discoveredExplorer);
             flush();
             return true;
         }

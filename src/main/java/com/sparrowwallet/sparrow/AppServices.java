@@ -24,6 +24,7 @@ import com.sparrowwallet.sparrow.control.TrayManager;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.*;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import com.sparrowwallet.sparrow.soroban.SorobanServices;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolServices;
 import javafx.application.Application;
@@ -67,6 +68,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static com.sparrowwallet.sparrow.control.DownloadVerifierDialog.*;
@@ -200,10 +202,26 @@ public class AppServices {
                 torService.start();
             } else {
                 restartServices();
+                //Tor is external and assumed already available, so discover Dojo servers now
+                maybeStartDojoDiscovery();
             }
         }
 
         addURIHandlers();
+    }
+
+    private static final AtomicBoolean dojoDiscoveryStarted = new AtomicBoolean(false);
+
+    private static void maybeStartDojoDiscovery() {
+        if(dojoDiscoveryStarted.compareAndSet(false, true)) {
+            DojoNodeDiscovery.discoverInBackground();
+        }
+    }
+
+    @Subscribe
+    public void torReadyStatus(TorReadyStatusEvent event) {
+        //Internal Tor is up; discover the Electrum servers running on directory Dojos
+        maybeStartDojoDiscovery();
     }
 
     private void restartServices() {

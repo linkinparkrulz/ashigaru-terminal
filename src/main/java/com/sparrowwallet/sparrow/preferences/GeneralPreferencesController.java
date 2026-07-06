@@ -81,7 +81,7 @@ public class GeneralPreferencesController extends PreferencesDetailController {
                     return "Custom...";
                 }
 
-                return server.getHost();
+                return server.getAlias() != null ? server.getAlias() : server.getHost();
             }
 
             @Override
@@ -222,6 +222,11 @@ public class GeneralPreferencesController extends PreferencesDetailController {
 
     private ObservableList<Server> getBlockExplorerList() {
         List<Server> servers = Arrays.stream(BlockExplorer.values()).map(BlockExplorer::getServer).collect(Collectors.toList());
+        for(Server discovered : Config.get().getDiscoveredExplorers()) {
+            if(!servers.contains(discovered)) {
+                servers.add(discovered);
+            }
+        }
         if(Config.get().getBlockExplorer() != null && !servers.contains(Config.get().getBlockExplorer())) {
             servers.add(Config.get().getBlockExplorer());
         }

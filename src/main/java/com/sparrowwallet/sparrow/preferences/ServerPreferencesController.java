@@ -933,40 +933,38 @@ public class ServerPreferencesController extends PreferencesDetailController {
     @FXML
     private void discoverNodes(ActionEvent event) {
         discoverNodesLink.setDisable(true);
-        discoverNodesStatus.setText("Discovering Ashigaru nodes over Tor…");
+        discoverNodesStatus.setText("Discovering Dojo Electrum servers over Tor…");
 
-        Task<List<DojoNodeDiscovery.DiscoveredNode>> task = new Task<>() {
+        Task<DojoNodeDiscovery.DiscoveryResult> task = new Task<>() {
             @Override
-            protected List<DojoNodeDiscovery.DiscoveredNode> call() throws Exception {
+            protected DojoNodeDiscovery.DiscoveryResult call() throws Exception {
                 return DojoNodeDiscovery.discover(AppServices.getHttpClientService());
             }
         };
 
         task.setOnSucceeded(e -> {
-            List<DojoNodeDiscovery.DiscoveredNode> discovered = task.getValue();
-            int added = 0;
-            int skipped = 0;
-            for(DojoNodeDiscovery.DiscoveredNode node : discovered) {
+            DojoNodeDiscovery.DiscoveryResult result = task.getValue();
+            int verified = 0;
+            int unverified = 0;
+            for(DojoNodeDiscovery.DiscoveredNode node : result.getNodes()) {
                 if(node.isVerified()) {
-                    Config.get().addDiscoveredServer(node.getServer());
-                    added++;
+                    Config.get().addDiscoveredServer(node.getIndexerServer());
+                    if(node.getExplorerServer() != null) {
+                        Config.get().addDiscoveredExplorer(node.getExplorerServer());
+                    }
+                    verified++;
                 } else {
-                    skipped++;
+                    unverified++;
                 }
             }
 
-            Server current = publicElectrumServer.getValue();
-            publicElectrumServer.setItems(getPublicServerList());
-            if(current != null) {
-                publicElectrumServer.setValue(current);
-            }
+            refreshPublicServerList();
 
-            if(added == 0 && skipped == 0) {
-                discoverNodesStatus.setText("No eligible nodes found (need version 1.28+, active, on this network).");
+            if(verified == 0 && unverified == 0 && result.getUnreachable() == 0) {
+                discoverNodesStatus.setText("No Dojos found (need version 1.28+ on this network).");
             } else {
-                discoverNodesStatus.setText("Added " + added + " verified node" + (added == 1 ? "" : "s")
-                        + (skipped > 0 ? "; " + skipped + " unverified skipped" : "")
-                        + ". Directory courtesy of dojobay.pw");
+                discoverNodesStatus.setText("Added " + verified + " Dojo Electrum server" + (verified == 1 ? "" : "s")
+                        + "; " + unverified + " unverified, " + result.getUnreachable() + " unreachable. Directory courtesy of dojobay.pw");
             }
             discoverNodesLink.setDisable(false);
         });
@@ -980,6 +978,23 @@ public class ServerPreferencesController extends PreferencesDetailController {
         Thread thread = new Thread(task, "dojo-node-discovery");
         thread.setDaemon(true);
         thread.start();
+    }
+
+    private void refreshPublicServerList() {
+        Server current = publicElectrumServer.getValue();
+        publicElectrumServer.setItems(getPublicServerList());
+        if(current != null) {
+            publicElectrumServer.setValue(current);
+        }
+    }
+
+    @Subscribe
+    public void discoveredServersChanged(DiscoveredServersChangedEvent event) {
+        Platform.runLater(() -> {
+            if(publicElectrumServer != null) {
+                refreshPublicServerList();
+            }
+        });
     }
 
     @Subscribe
