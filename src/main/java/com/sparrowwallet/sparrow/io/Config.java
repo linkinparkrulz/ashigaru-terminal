@@ -67,6 +67,7 @@ public class Config {
     private String webcamDeviceId;
     private ServerType serverType;
     private Server publicElectrumServer;
+    private List<Server> discoveredServers;
     private Server coreServer;
     private List<Server> recentCoreServers;
     private CoreAuthType coreAuthType;
@@ -516,10 +517,30 @@ public class Config {
     }
 
     public void changePublicServer() {
-        List<Server> otherServers = PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).filter(server -> !server.equals(getPublicElectrumServer())).collect(Collectors.toList());
+        List<Server> allServers = new ArrayList<>(PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).collect(Collectors.toList()));
+        allServers.addAll(getDiscoveredServers());
+        List<Server> otherServers = allServers.stream().filter(server -> !server.equals(getPublicElectrumServer())).collect(Collectors.toList());
         if(!otherServers.isEmpty()) {
             setPublicElectrumServer(otherServers.get(new Random().nextInt(otherServers.size())));
         }
+    }
+
+    public List<Server> getDiscoveredServers() {
+        return discoveredServers == null ? new ArrayList<>() : discoveredServers;
+    }
+
+    public boolean addDiscoveredServer(Server discoveredServer) {
+        if(discoveredServers == null) {
+            discoveredServers = new ArrayList<>();
+        }
+
+        if(!discoveredServers.contains(discoveredServer)) {
+            discoveredServers.add(discoveredServer);
+            flush();
+            return true;
+        }
+
+        return false;
     }
 
     public Server getCoreServer() {

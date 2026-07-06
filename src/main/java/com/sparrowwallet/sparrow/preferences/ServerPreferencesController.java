@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class ServerPreferencesController extends PreferencesDetailController {
     private static final Logger log = LoggerFactory.getLogger(ServerPreferencesController.class);
@@ -71,7 +72,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
     private Form publicElectrumForm;
 
     @FXML
-    private ComboBox<PublicElectrumServer> publicElectrumServer;
+    private ComboBox<Server> publicElectrumServer;
 
     @FXML
     private UnlabeledToggleSwitch publicUseProxy;
@@ -221,7 +222,9 @@ public class ServerPreferencesController extends PreferencesDetailController {
         }
         serverTypeToggleGroup.selectToggle(serverTypeToggleGroup.getToggles().stream().filter(toggle -> toggle.getUserData() == serverType).findFirst().orElse(null));
 
-        publicElectrumServer.setItems(FXCollections.observableList(PublicElectrumServer.getServers()));
+        publicElectrumServer.setItems(getPublicServerList());
+        publicElectrumServer.setCellFactory(value -> new ServerCell());
+        publicElectrumServer.setButtonCell(new ServerCell());
         publicElectrumServer.getSelectionModel().selectedItemProperty().addListener(getPublicElectrumServerListener(config));
 
         publicUseProxy.selectedProperty().bindBidirectional(useProxy.selectedProperty());
@@ -408,11 +411,11 @@ public class ServerPreferencesController extends PreferencesDetailController {
             testConnection.setVisible(true);
         });
 
-        PublicElectrumServer configPublicElectrumServer = PublicElectrumServer.fromServer(config.getPublicElectrumServer());
+        Server configPublicElectrumServer = config.getPublicElectrumServer();
         if(configPublicElectrumServer == null && PublicElectrumServer.supportedNetwork()) {
             List<PublicElectrumServer> servers = PublicElectrumServer.getServers();
             if(!servers.isEmpty()) {
-                publicElectrumServer.setValue(servers.get(new Random().nextInt(servers.size())));
+                publicElectrumServer.setValue(servers.get(new Random().nextInt(servers.size())).getServer());
             }
         } else {
             publicElectrumServer.setValue(configPublicElectrumServer);
@@ -733,9 +736,11 @@ public class ServerPreferencesController extends PreferencesDetailController {
     }
 
     @NotNull
-    private ChangeListener<PublicElectrumServer> getPublicElectrumServerListener(Config config) {
+    private ChangeListener<Server> getPublicElectrumServerListener(Config config) {
         return (observable, oldValue, newValue) -> {
-            config.setPublicElectrumServer(newValue.getServer());
+            if(newValue != null) {
+                config.setPublicElectrumServer(newValue);
+            }
         };
     }
 
@@ -915,13 +920,18 @@ public class ServerPreferencesController extends PreferencesDetailController {
         return serverObservableList;
     }
 
+    private ObservableList<Server> getPublicServerList() {
+        List<Server> servers = PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).collect(Collectors.toList());
+        for(Server discovered : Config.get().getDiscoveredServers()) {
+            if(!servers.contains(discovered)) {
+                servers.add(discovered);
+            }
+        }
+        return FXCollections.observableList(servers);
+    }
+
     @FXML
     private void discoverNodes(ActionEvent event) {
-        if(AppServices.getHttpClientService() == null || AppServices.getHttpClientService().getTorProxy() == null) {
-            discoverNodesStatus.setText("Configure the Tor proxy first — Ashigaru nodes are onion services.");
-            return;
-        }
-
         discoverNodesLink.setDisable(true);
         discoverNodesStatus.setText("Discovering Ashigaru nodes over Tor…");
 
@@ -935,19 +945,28 @@ public class ServerPreferencesController extends PreferencesDetailController {
         task.setOnSucceeded(e -> {
             List<DojoNodeDiscovery.DiscoveredNode> discovered = task.getValue();
             int added = 0;
-            int signed = 0;
+            int skipped = 0;
             for(DojoNodeDiscovery.DiscoveredNode node : discovered) {
-                Config.get().addRecentElectrumServer(node.getServer());
-                added++;
-                if(node.isSigned()) {
-                    signed++;
+                if(node.isVerified()) {
+                    Config.get().addDiscoveredServer(node.getServer());
+                    added++;
+                } else {
+                    skipped++;
                 }
             }
-            recentElectrumServers.setItems(getObservableServerList(Config.get().getRecentElectrumServers()));
-            if(added == 0) {
+
+            Server current = publicElectrumServer.getValue();
+            publicElectrumServer.setItems(getPublicServerList());
+            if(current != null) {
+                publicElectrumServer.setValue(current);
+            }
+
+            if(added == 0 && skipped == 0) {
                 discoverNodesStatus.setText("No eligible nodes found (need version 1.28+, active, on this network).");
             } else {
-                discoverNodesStatus.setText("Added " + added + " node" + (added == 1 ? "" : "s") + " (" + signed + " signed). Select one above to connect.");
+                discoverNodesStatus.setText("Added " + added + " verified node" + (added == 1 ? "" : "s")
+                        + (skipped > 0 ? "; " + skipped + " unverified skipped" : "")
+                        + ". Directory courtesy of dojobay.pw");
             }
             discoverNodesLink.setDisable(false);
         });

@@ -2,15 +2,13 @@ package com.sparrowwallet.sparrow.gui;
 
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.bip47.PaymentCode;
-import com.sparrowwallet.drongo.crypto.ECKey;
-import com.sparrowwallet.drongo.protocol.ScriptType;
+import com.sparrowwallet.sparrow.net.dojo.SignedMessageVerifier;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.VBox;
 
 import java.security.SignatureException;
-import java.util.Locale;
 
 public class Bip47MessageVerifierController {
     private static final String RELEASE_SIGNING_PAYMENT_CODE = "PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1";
@@ -32,7 +30,7 @@ public class Bip47MessageVerifierController {
     @FXML
     private void onParseSignedBlock() {
         try {
-            SignedMessageBlock parsed = parseSignedMessageBlock(signedBlockArea.getText());
+            SignedMessageVerifier.ParsedBlock parsed = SignedMessageVerifier.parse(signedBlockArea.getText());
             messageArea.setText(parsed.message());
             signatureArea.setText(parsed.signature());
             showInfo("Signed message block parsed", null, null);
@@ -52,7 +50,7 @@ public class Bip47MessageVerifierController {
             String message = messageArea.getText();
             String signature = signatureArea.getText() == null ? "" : signatureArea.getText().trim();
             if((message == null || message.isEmpty()) && signedBlockArea.getText() != null && !signedBlockArea.getText().isBlank()) {
-                SignedMessageBlock parsed = parseSignedMessageBlock(signedBlockArea.getText());
+                SignedMessageVerifier.ParsedBlock parsed = SignedMessageVerifier.parse(signedBlockArea.getText());
                 message = parsed.message();
                 signature = parsed.signature();
                 messageArea.setText(message);
@@ -68,8 +66,7 @@ public class Bip47MessageVerifierController {
 
             PaymentCode paymentCode = new PaymentCode(paymentCodeText);
             Address notificationAddress = paymentCode.getNotificationAddress();
-            ECKey recoveredKey = ECKey.signedMessageToKey(message, signature, false);
-            Address recoveredAddress = ScriptType.P2PKH.getAddress(recoveredKey);
+            Address recoveredAddress = SignedMessageVerifier.recoverAddress(message, signature);
 
             if(notificationAddress.equals(recoveredAddress)) {
                 showSuccess(notificationAddress.toString(), recoveredAddress.toString());
@@ -114,52 +111,4 @@ public class Bip47MessageVerifierController {
         resultBox.setVisible(true);
         resultBox.setManaged(true);
     }
-
-    private static SignedMessageBlock parseSignedMessageBlock(String block) {
-        if(block == null || block.isBlank()) {
-            throw new IllegalArgumentException("Signed message block is empty");
-        }
-
-        String upper = block.toUpperCase(Locale.ROOT);
-        String beginMessage = "-----BEGIN BITCOIN SIGNED MESSAGE-----";
-        String beginSignature = "-----BEGIN BITCOIN SIGNATURE-----";
-        String endSignature = "-----END BITCOIN SIGNATURE-----";
-
-        int messageStart = upper.indexOf(beginMessage);
-        int signatureStart = upper.indexOf(beginSignature);
-        if(messageStart < 0 || signatureStart < 0 || signatureStart <= messageStart) {
-            throw new IllegalArgumentException("Signed block must include BEGIN BITCOIN SIGNED MESSAGE and BEGIN BITCOIN SIGNATURE markers");
-        }
-
-        int signatureEnd = upper.indexOf(endSignature, signatureStart + beginSignature.length());
-        if(signatureEnd < 0) {
-            throw new IllegalArgumentException("Signed block is missing END BITCOIN SIGNATURE marker");
-        }
-
-        String message = stripOuterLineBreaks(block.substring(messageStart + beginMessage.length(), signatureStart));
-        String signatureSection = block.substring(signatureStart + beginSignature.length(), signatureEnd);
-        String signature = "";
-        for(String line : signatureSection.split("\\R")) {
-            String trimmed = line.trim();
-            if(trimmed.isEmpty() || trimmed.toLowerCase(Locale.ROOT).startsWith("version:") || trimmed.toLowerCase(Locale.ROOT).startsWith("address:")) {
-                continue;
-            }
-            signature = trimmed;
-        }
-
-        if(message.isEmpty()) {
-            throw new IllegalArgumentException("Could not extract message from signed block");
-        }
-        if(signature.isEmpty()) {
-            throw new IllegalArgumentException("Could not extract signature from signed block");
-        }
-
-        return new SignedMessageBlock(message, signature);
-    }
-
-    private static String stripOuterLineBreaks(String value) {
-        return value.replaceFirst("^\\R+", "").replaceFirst("\\R+$", "");
-    }
-
-    private record SignedMessageBlock(String message, String signature) { }
 }

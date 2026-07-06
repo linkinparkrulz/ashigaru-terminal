@@ -46,13 +46,13 @@ public class DojoNodeDiscovery {
         private final Server server;
         private final String name;
         private final String version;
-        private final boolean signed;
+        private final boolean verified;
 
-        public DiscoveredNode(Server server, String name, String version, boolean signed) {
+        public DiscoveredNode(Server server, String name, String version, boolean verified) {
             this.server = server;
             this.name = name;
             this.version = version;
-            this.signed = signed;
+            this.verified = verified;
         }
 
         public Server getServer() {
@@ -67,8 +67,12 @@ public class DojoNodeDiscovery {
             return version;
         }
 
-        public boolean isSigned() {
-            return signed;
+        /**
+         * True if the node's {@code signed} block cryptographically verifies against its embedded
+         * BIP47 payment code and references this node's pairing url.
+         */
+        public boolean isVerified() {
+            return verified;
         }
     }
 
@@ -112,11 +116,12 @@ public class DojoNodeDiscovery {
                     continue;
                 }
 
-                String base = optString(pairing, "url");
+                String rawUrl = optString(pairing, "url");
                 String apikey = optString(pairing, "apikey");
-                if(base == null || base.isEmpty() || apikey == null || apikey.isEmpty()) {
+                if(rawUrl == null || rawUrl.isEmpty() || apikey == null || apikey.isEmpty()) {
                     continue;
                 }
+                String base = rawUrl;
                 while(base.endsWith("/")) {
                     base = base.substring(0, base.length() - 1);
                 }
@@ -128,8 +133,8 @@ public class DojoNodeDiscovery {
 
                 String name = displayName(node);
                 Server server = new Server(indexerUrl, name);
-                boolean signed = node.has("signed") && !node.get("signed").isJsonNull();
-                byHost.putIfAbsent(server.getHost(), new DiscoveredNode(server, name, version, signed));
+                boolean verified = SignedMessageVerifier.verify(optString(node, "signed"), rawUrl);
+                byHost.putIfAbsent(server.getHost(), new DiscoveredNode(server, name, version, verified));
             } catch(Exception e) {
                 log.warn("Skipping dojo node during discovery: " + e.getMessage());
             }
