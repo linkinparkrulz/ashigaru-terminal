@@ -2,6 +2,7 @@ package com.sparrowwallet.sparrow.gui;
 
 import com.google.common.eventbus.Subscribe;
 import com.sparrowwallet.drongo.ExtendedKey;
+import com.sparrowwallet.drongo.KeyPurpose;
 import com.sparrowwallet.drongo.Network;
 import com.sparrowwallet.drongo.SecureString;
 import com.sparrowwallet.drongo.crypto.InvalidPasswordException;
@@ -9,6 +10,7 @@ import com.sparrowwallet.drongo.wallet.DeterministicSeed;
 import com.sparrowwallet.drongo.wallet.Keystore;
 import com.sparrowwallet.drongo.wallet.StandardAccount;
 import com.sparrowwallet.drongo.wallet.Wallet;
+import com.sparrowwallet.drongo.wallet.WalletNode;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.control.SeedDisplayDialog;
@@ -168,8 +170,11 @@ public class AshigaruMainController implements Initializable {
 
         boolean encrypted = false;
         try { encrypted = walletForm.getStorage().isEncrypted(); } catch (IOException ignored) {}
-        lockWalletBtn.setVisible(encrypted);
-        lockWalletBtn.setManaged(encrypted);
+        boolean needsPassphrase = walletForm.getWallet().getKeystores().stream()
+                .anyMatch(ks -> ks.hasSeed() && ks.getSeed().needsPassphrase());
+        boolean lockable = encrypted || needsPassphrase;
+        lockWalletBtn.setVisible(lockable);
+        lockWalletBtn.setManaged(lockable);
 
         // Select Deposit by default
         depositBtn.setSelected(true);
@@ -388,6 +393,29 @@ public class AshigaruMainController implements Initializable {
                 return false;
             } finally {
                 seed.setPassphrase(savedPassphrase);
+            }
+        }
+        return true;
+    }
+
+    /**
+     * A seed wallet does not persist its xpub/fingerprint (they are stripped on save), so the only
+     * on-disk anchor tied to the passphrase is each used node's persisted address. Returns true if the
+     * currently-derived keys reproduce the first stored node address (correct passphrase), or if there
+     * is no stored address to check (e.g. an empty/new wallet). Returns false when the derived address
+     * differs — i.e. the wrong BIP39 passphrase was entered.
+     */
+    private boolean passphraseMatchesStoredAddresses(Wallet wallet) {
+        for (KeyPurpose keyPurpose : KeyPurpose.DEFAULT_PURPOSES) {
+            WalletNode purposeNode = wallet.getNode(keyPurpose);
+            if (purposeNode == null) continue;
+            for (WalletNode node : purposeNode.getChildren()) {
+                if (node.getAddressData() != null) {
+                    // node.getAddress() returns the persisted address; wallet.getAddress(node) derives
+                    // it fresh from the just-entered-passphrase xpub. All nodes share the xpub, so the
+                    // first stored address is decisive.
+                    return node.getAddress().equals(wallet.getAddress(node));
+                }
             }
         }
         return true;
@@ -720,12 +748,24 @@ public class AshigaruMainController implements Initializable {
                     Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
                     return;
                 }
+                // Restore child wallets first so the entered passphrase can be validated against the
+                // whole set before anything is displayed (funds may live in a Postmix/Premix child).
+                for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
+                    entry.getValue().restorePublicKeysFromSeed(entry.getKey().getWallet(), entry.getKey().getKey());
+                }
+                // A seed wallet does not persist its xpub, so validate the passphrase by checking that the
+                // derived keys reproduce the wallet's stored (correct-passphrase) node addresses.
+                if (!passphraseMatchesStoredAddresses(wak.getWallet())) {
+                    throw new InvalidPassphraseException("The BIP39 passphrase does not match this wallet.");
+                }
+                for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
+                    if (!passphraseMatchesStoredAddresses(entry.getKey().getWallet())) {
+                        throw new InvalidPassphraseException("The BIP39 passphrase does not match this wallet.");
+                    }
+                }
                 AshigaruGui.addWallet(storage, wak.getWallet());
                 for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
-                    Storage childStorage = entry.getValue();
-                    WalletAndKey childWak = entry.getKey();
-                    childStorage.restorePublicKeysFromSeed(childWak.getWallet(), childWak.getKey());
-                    AshigaruGui.addWallet(childStorage, childWak.getWallet());
+                    AshigaruGui.addWallet(entry.getValue(), entry.getKey().getWallet());
                 }
             } catch (InvalidPassphraseException ex) {
                 Optional<ButtonType> retry = showError(
