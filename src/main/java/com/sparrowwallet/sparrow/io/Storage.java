@@ -194,6 +194,17 @@ public class Storage {
                 if(keystore.hasSeed()) {
                     Keystore copyKeystore = copy.getKeystores().get(i);
                     Keystore derivedKeystore = Keystore.fromSeed(copyKeystore.getSeed(), copyKeystore.getKeyDerivation().getDerivation());
+                    //If this is an existing wallet with a stored xpub, the seed (plus any passphrase just
+                    //entered) must reproduce it. Otherwise the wrong BIP39 passphrase was supplied - reject
+                    //rather than silently opening a different wallet with the same cached view. Compare the
+                    //derived public key bytes (as verifyWalletPassphrase does) to avoid false rejects from
+                    //xpub metadata differences.
+                    if(keystore.getExtendedPublicKey() != null && !Arrays.equals(
+                            keystore.getExtendedPublicKey().getKey().getPubKey(),
+                            derivedKeystore.getExtendedPublicKey().getKey().getPubKey())) {
+                        copyKeystore.getSeed().clear();
+                        throw new InvalidPassphraseException("The BIP39 passphrase does not match this wallet.");
+                    }
                     keystore.setKeyDerivation(derivedKeystore.getKeyDerivation());
                     keystore.setExtendedPublicKey(derivedKeystore.getExtendedPublicKey());
                     keystore.getSeed().setPassphrase(copyKeystore.getSeed().getPassphrase());
@@ -202,6 +213,12 @@ public class Storage {
                 } else if(keystore.hasMasterPrivateExtendedKey()) {
                     Keystore copyKeystore = copy.getKeystores().get(i);
                     Keystore derivedKeystore = Keystore.fromMasterPrivateExtendedKey(copyKeystore.getMasterPrivateExtendedKey(), copyKeystore.getKeyDerivation().getDerivation());
+                    if(keystore.getExtendedPublicKey() != null && !Arrays.equals(
+                            keystore.getExtendedPublicKey().getKey().getPubKey(),
+                            derivedKeystore.getExtendedPublicKey().getKey().getPubKey())) {
+                        copyKeystore.getMasterPrivateKey().clear();
+                        throw new InvalidPassphraseException("The master private key does not match this wallet.");
+                    }
                     keystore.setKeyDerivation(derivedKeystore.getKeyDerivation());
                     keystore.setExtendedPublicKey(derivedKeystore.getExtendedPublicKey());
                     keystore.setBip47ExtendedPrivateKey(derivedKeystore.getBip47ExtendedPrivateKey());

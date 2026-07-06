@@ -17,6 +17,7 @@ import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.preferences.PreferencesController;
 import com.sparrowwallet.sparrow.preferences.PreferenceGroup;
 import com.sparrowwallet.sparrow.io.Config;
+import com.sparrowwallet.sparrow.io.InvalidPassphraseException;
 import com.sparrowwallet.sparrow.io.Storage;
 import com.sparrowwallet.sparrow.io.StorageException;
 import com.sparrowwallet.sparrow.io.WalletAndKey;
@@ -725,6 +726,16 @@ public class AshigaruMainController implements Initializable {
                     WalletAndKey childWak = entry.getKey();
                     childStorage.restorePublicKeysFromSeed(childWak.getWallet(), childWak.getKey());
                     AshigaruGui.addWallet(childStorage, childWak.getWallet());
+                }
+            } catch (InvalidPassphraseException ex) {
+                Optional<ButtonType> retry = showError(
+                        "Incorrect Passphrase",
+                        "That BIP39 passphrase doesn't match this wallet. Try again?",
+                        ButtonType.CANCEL, ButtonType.OK);
+                if (retry.isPresent() && retry.get() == ButtonType.OK) {
+                    Platform.runLater(() -> openWalletFile(storage.getWalletFile()));
+                } else {
+                    Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
                 }
             } catch (Exception ex) {
                 log.error("Error opening wallet", ex);
