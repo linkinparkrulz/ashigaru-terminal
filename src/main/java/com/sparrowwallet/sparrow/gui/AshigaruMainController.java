@@ -2,7 +2,6 @@ package com.sparrowwallet.sparrow.gui;
 
 import com.google.common.eventbus.Subscribe;
 import com.sparrowwallet.drongo.ExtendedKey;
-import com.sparrowwallet.drongo.KeyPurpose;
 import com.sparrowwallet.drongo.Network;
 import com.sparrowwallet.drongo.SecureString;
 import com.sparrowwallet.drongo.crypto.InvalidPasswordException;
@@ -10,7 +9,6 @@ import com.sparrowwallet.drongo.wallet.DeterministicSeed;
 import com.sparrowwallet.drongo.wallet.Keystore;
 import com.sparrowwallet.drongo.wallet.StandardAccount;
 import com.sparrowwallet.drongo.wallet.Wallet;
-import com.sparrowwallet.drongo.wallet.WalletNode;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
 import com.sparrowwallet.sparrow.control.SeedDisplayDialog;
@@ -19,7 +17,6 @@ import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.preferences.PreferencesController;
 import com.sparrowwallet.sparrow.preferences.PreferenceGroup;
 import com.sparrowwallet.sparrow.io.Config;
-import com.sparrowwallet.sparrow.io.InvalidPassphraseException;
 import com.sparrowwallet.sparrow.io.Storage;
 import com.sparrowwallet.sparrow.io.StorageException;
 import com.sparrowwallet.sparrow.io.WalletAndKey;
@@ -398,29 +395,6 @@ public class AshigaruMainController implements Initializable {
         return true;
     }
 
-    /**
-     * A seed wallet does not persist its xpub/fingerprint (they are stripped on save), so the only
-     * on-disk anchor tied to the passphrase is each used node's persisted address. Returns true if the
-     * currently-derived keys reproduce the first stored node address (correct passphrase), or if there
-     * is no stored address to check (e.g. an empty/new wallet). Returns false when the derived address
-     * differs — i.e. the wrong BIP39 passphrase was entered.
-     */
-    private boolean passphraseMatchesStoredAddresses(Wallet wallet) {
-        for (KeyPurpose keyPurpose : KeyPurpose.DEFAULT_PURPOSES) {
-            WalletNode purposeNode = wallet.getNode(keyPurpose);
-            if (purposeNode == null) continue;
-            for (WalletNode node : purposeNode.getChildren()) {
-                if (node.getAddressData() != null) {
-                    // node.getAddress() returns the persisted address; wallet.getAddress(node) derives
-                    // it fresh from the just-entered-passphrase xpub. All nodes share the xpub, so the
-                    // first stored address is decisive.
-                    return node.getAddress().equals(wallet.getAddress(node));
-                }
-            }
-        }
-        return true;
-    }
-
     private void doDelete(WalletListItem item, WalletForm form) {
         Storage.DeleteWalletService svc = new Storage.DeleteWalletService(form.getStorage(), false);
         svc.setOnSucceeded(e -> {
@@ -505,15 +479,25 @@ public class AshigaruMainController implements Initializable {
     private void onLockWallet() {
         if (currentWalletForm == null) return;
         File walletFile = currentWalletForm.getStorage().getWalletFile();
-        // Remove nested wallet forms from the registry (master removal won't clean these)
-        for (WalletForm nested : currentWalletForm.getNestedWalletForms()) {
-            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
-        }
-        AshigaruGui.removeWallet(currentWalletForm.getWalletId());
-        currentWalletForm = null;
+        unloadWalletForm(currentWalletForm);
         unloadedWalletFiles.add(walletFile);
         refreshWalletList();
         showWelcome();
+    }
+
+    /**
+     * Unloads a wallet form (and its nested Premix/Postmix/Badbank forms) from the UI and registry,
+     * returning to the locked state. Shared by the Lock button and the reopen-on-wrong-passphrase flow.
+     */
+    private void unloadWalletForm(WalletForm form) {
+        // Remove nested wallet forms from the registry (master removal won't clean these)
+        for (WalletForm nested : form.getNestedWalletForms()) {
+            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
+        }
+        AshigaruGui.removeWallet(form.getWalletId());
+        if (currentWalletForm == form) {
+            currentWalletForm = null;
+        }
     }
 
     @FXML
@@ -748,34 +732,12 @@ public class AshigaruMainController implements Initializable {
                     Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
                     return;
                 }
-                // Restore child wallets first so the entered passphrase can be validated against the
-                // whole set before anything is displayed (funds may live in a Postmix/Premix child).
-                for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
-                    entry.getValue().restorePublicKeysFromSeed(entry.getKey().getWallet(), entry.getKey().getKey());
-                }
-                // A seed wallet does not persist its xpub, so validate the passphrase by checking that the
-                // derived keys reproduce the wallet's stored (correct-passphrase) node addresses.
-                if (!passphraseMatchesStoredAddresses(wak.getWallet())) {
-                    throw new InvalidPassphraseException("The BIP39 passphrase does not match this wallet.");
-                }
-                for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
-                    if (!passphraseMatchesStoredAddresses(entry.getKey().getWallet())) {
-                        throw new InvalidPassphraseException("The BIP39 passphrase does not match this wallet.");
-                    }
-                }
                 AshigaruGui.addWallet(storage, wak.getWallet());
                 for (Map.Entry<WalletAndKey, Storage> entry : wak.getChildWallets().entrySet()) {
-                    AshigaruGui.addWallet(entry.getValue(), entry.getKey().getWallet());
-                }
-            } catch (InvalidPassphraseException ex) {
-                Optional<ButtonType> retry = showError(
-                        "Incorrect Passphrase",
-                        "That BIP39 passphrase doesn't match this wallet. Try again?",
-                        ButtonType.CANCEL, ButtonType.OK);
-                if (retry.isPresent() && retry.get() == ButtonType.OK) {
-                    Platform.runLater(() -> openWalletFile(storage.getWalletFile()));
-                } else {
-                    Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
+                    Storage childStorage = entry.getValue();
+                    WalletAndKey childWak = entry.getKey();
+                    childStorage.restorePublicKeysFromSeed(childWak.getWallet(), childWak.getKey());
+                    AshigaruGui.addWallet(childStorage, childWak.getWallet());
                 }
             } catch (Exception ex) {
                 log.error("Error opening wallet", ex);
@@ -859,6 +821,28 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void walletHistoryFailed(WalletHistoryFailedEvent event) {
         walletHistoryFinished(new WalletHistoryFinishedEvent(event.getWallet()));
+    }
+
+    /**
+     * Posted by WalletForm when an all-history change on a passphrase wallet suggests a mistyped
+     * passphrase and the user chose "Reopen Wallet". Unload the (wrong-passphrase) wallet and reopen
+     * it so the passphrase is prompted again — the same lock/unlock plumbing the Lock button uses.
+     */
+    @Subscribe
+    public void requestWalletOpen(RequestWalletOpenEvent event) {
+        File file = event.getFile();
+        if (file == null) return;
+        Platform.runLater(() -> {
+            WalletForm form = AshigaruGui.get().getWalletForms().values().stream()
+                    .filter(f -> f.getWallet().isMasterWallet() && file.equals(f.getStorage().getWalletFile()))
+                    .findFirst().orElse(null);
+            if (form != null) {
+                unloadWalletForm(form);
+            }
+            unloadedWalletFiles.add(file);
+            refreshWalletList();
+            openWalletFile(file);
+        });
     }
 
     @Subscribe
