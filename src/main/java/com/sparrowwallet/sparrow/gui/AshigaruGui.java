@@ -73,9 +73,11 @@ public class AshigaruGui extends Application {
         stage.setMinHeight(760);
         stage.setScene(scene);
 
-        // Set app icon (window + macOS Dock)
+        // Set app icon (window + macOS Dock). Use the padded variant: the full-bleed circle logo
+        // touches the canvas edges, so the OS renders it larger than neighbouring dock icons (which
+        // follow the ~80% content / transparent-margin convention). Dock_ has that safe-area margin.
         try {
-            Image icon = new Image(getClass().getResourceAsStream("/image/Ashigaru_Terminal_Logo_Circle.png"));
+            Image icon = new Image(getClass().getResourceAsStream("/image/Ashigaru_Terminal_Logo_Dock.png"));
             stage.getIcons().add(icon);
             try {
                 if (java.awt.Taskbar.isTaskbarSupported()) {
