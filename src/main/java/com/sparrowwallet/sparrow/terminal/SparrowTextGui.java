@@ -7,6 +7,7 @@ import com.googlecode.lanterna.screen.Screen;
 import com.sparrowwallet.drongo.Network;
 import com.sparrowwallet.drongo.wallet.Wallet;
 import com.sparrowwallet.sparrow.AppServices;
+import com.sparrowwallet.sparrow.AshigaruTerminal;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.net.ServerType;
@@ -42,7 +43,7 @@ public class SparrowTextGui extends MultiWindowTextGUI {
         Panel panel = new Panel(new BorderLayout());
 
         titleBar = new Panel(new GridLayout(3));
-        new Label("Ashigaru Terminal (v1.0.0)").setBackgroundColor(TextColor.ANSI.BLACK).setForegroundColor(TextColor.ANSI.WHITE).addTo(titleBar);
+        new Label("Ashigaru Terminal (v" + AshigaruTerminal.APP_VERSION + ")").setBackgroundColor(TextColor.ANSI.BLACK).setForegroundColor(TextColor.ANSI.WHITE).addTo(titleBar);
         titleBar.setFillColorOverride(TextColor.ANSI.BLACK);
         this.proxyStatusLabel = (ProxyStatusLabel) new ProxyStatusLabel().setBackgroundColor(TextColor.ANSI.BLACK).setForegroundColor(TextColor.ANSI.WHITE);
         titleBar.addComponent(proxyStatusLabel, GridLayout.createLayoutData(GridLayout.Alignment.END, GridLayout.Alignment.CENTER, true, false));
