@@ -63,12 +63,14 @@ public class AshigaruGui extends Application {
         Parent root = loader.load();
         mainController = loader.getController();
 
-        Scene scene = new Scene(root, 1100, 720);
+        Scene scene = new Scene(root, 1100, 800);
         scene.getStylesheets().add(getClass().getResource("ashigaru.css").toExternalForm());
 
         stage.setTitle("Ashigaru Desktop " + AshigaruTerminal.APP_VERSION);
         stage.setMinWidth(800);
-        stage.setMinHeight(540);
+        // Fits the header + full sidebar (wallet management + account buttons + Tools/Settings) + status bar,
+        // so the bottom status bar can never be clipped by shrinking the window.
+        stage.setMinHeight(760);
         stage.setScene(scene);
 
         // Set app icon (window + macOS Dock)
