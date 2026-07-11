@@ -1,9 +1,12 @@
 package com.sparrowwallet.sparrow.gui;
 
 import com.sparrowwallet.drongo.bip47.PaymentCode;
+import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.control.PayNymAvatar;
+import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.paynym.PayNymService;
 import javafx.geometry.Pos;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
@@ -44,6 +47,8 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
     private final HBox paymentCodeLine = new HBox(6);
     private final Label txidLabel = new Label();
     private final HBox txidLine = new HBox(6);
+    private final Hyperlink explorerLink = new Hyperlink("explorer ↗");
+    private final Hyperlink exposureLink = new Hyperlink("exposure ↗");
     private final HBox topLine = new HBox(8);
     private final VBox center = new VBox(4);
     private final HBox root = new HBox(12);
@@ -81,12 +86,16 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
         labelField.focusedProperty().addListener((o, was, is) -> { if (was && !is) commitLabel(); });
 
         paymentCodeLabel.getStyleClass().add("paynym-code");
+        paymentCodeLabel.setMaxWidth(Double.MAX_VALUE);
+        HBox.setHgrow(paymentCodeLabel, Priority.ALWAYS);
         paymentCodeLine.setAlignment(Pos.CENTER_LEFT);
 
         txidLabel.getStyleClass().add("card-secondary");
         txidLabel.setMaxWidth(Double.MAX_VALUE);
         HBox.setHgrow(txidLabel, Priority.ALWAYS);
         txidLine.setAlignment(Pos.CENTER_LEFT);
+        explorerLink.getStyleClass().add("card-link");
+        exposureLink.getStyleClass().add("card-link");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -99,6 +108,20 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
         root.setAlignment(Pos.TOP_LEFT);
         root.getChildren().addAll(iconHolder, center);
         root.setMaxWidth(Double.MAX_VALUE);
+    }
+
+    private void appendTxLinks(HBox line, String txid) {
+        if (txid == null || txid.isEmpty()) {
+            return;
+        }
+        if (!Config.get().isBlockExplorerDisabled()) {
+            explorerLink.setOnAction(e -> AppServices.openBlockExplorer(txid));
+            line.getChildren().add(explorerLink);
+        }
+        if (!Config.get().isAmIExposedDisabled()) {
+            exposureLink.setOnAction(e -> AppServices.openAmIExposed(txid));
+            line.getChildren().add(exposureLink);
+        }
     }
 
     private void commitLabel() {
@@ -143,6 +166,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
             paymentCodeLabel.setText(paymentCode.toAbbreviatedString());
             paymentCodeLine.getChildren().setAll(paymentCodeLabel,
                     AshigaruWalletController.makeCopyButton(code));
+            appendTxLinks(paymentCodeLine, row.txid());
             center.getChildren().setAll(nymNameLabel, topLine, paymentCodeLine);
         } else {
             avatar.clearPaymentCode();
@@ -160,6 +184,7 @@ public class AshigaruTxnCell extends ListCell<AshigaruWalletController.TxnRow> {
             if (row.txid() != null && !row.txid().isEmpty()) {
                 txidLine.getChildren().add(AshigaruWalletController.makeCopyButton(row.txid()));
             }
+            appendTxLinks(txidLine, row.txid());
             center.getChildren().setAll(topLine, labelField, txidLine);
         }
 

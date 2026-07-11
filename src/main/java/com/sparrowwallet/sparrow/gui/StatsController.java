@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sparrowwallet.sparrow.AppServices;
+import com.sparrowwallet.sparrow.io.Config;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -33,12 +34,16 @@ import java.util.*;
 public class StatsController implements Initializable {
     private static final Logger log = LoggerFactory.getLogger(StatsController.class);
 
-    private static final String API_BASE = "https://whirlpoolstats.xyz/api";
-    private static final String SUMMARY_URL = API_BASE + "/summary";
-    private static final String CHARTS_URL = API_BASE + "/charts";
-    private static final String TXS_URL = API_BASE + "/txs";
+    // whirlpoolstats serves both clearnet and an onion mirror; prefer the onion when a Tor
+    // proxy is active (clearnet HTTPS over Tor is unreliable in packaged builds, whereas
+    // HTTP-to-onion over the proxy is the same path the avatar/fee-rate calls use).
+    private static final String ONION_BASE = "http://25jmfjjzm24mjslbub27xnqdbf3dy2oafc7ydawdkz56nlb252hpenyd.onion/api";
+    private static final String CLEARNET_BASE = "https://whirlpoolstats.xyz/api";
     private static final String SOURCE_URL = "https://whirlpoolstats.xyz";
-    private static final String EXPLORER_TX = "https://bithypha.com/transaction/";
+
+    private static String apiBase() {
+        return AppServices.getProxy() != null ? ONION_BASE : CLEARNET_BASE;
+    }
 
     @FXML private Button refreshBtn;
     @FXML private Label statusLabel;
@@ -118,12 +123,13 @@ public class StatsController implements Initializable {
         statusLabel.setText("Fetching statistics from whirlpoolstats.xyz…");
         refreshBtn.setDisable(true);
 
+        String base = apiBase();
         Task<StatsData> task = new Task<>() {
             @Override
             protected StatsData call() throws Exception {
-                String summaryJson = httpGet(SUMMARY_URL);
-                String chartsJson = httpGet(CHARTS_URL);
-                String txsJson = httpGet(TXS_URL);
+                String summaryJson = httpGet(base + "/summary");
+                String chartsJson = httpGet(base + "/charts");
+                String txsJson = httpGet(base + "/txs");
                 return parseStats(summaryJson, chartsJson, txsJson);
             }
         };
@@ -457,10 +463,12 @@ public class StatsController implements Initializable {
             Region midSpacer = new Region();
             HBox.setHgrow(midSpacer, Priority.ALWAYS);
             midLine.getChildren().setAll(txidLabel, AshigaruWalletController.makeCopyButton(row.txid()), midSpacer);
-            explorerLink.setOnAction(e -> openUrl(EXPLORER_TX + row.txid()));
-            midLine.getChildren().add(explorerLink);
-            if(row.amIExposedUrl() != null && !row.amIExposedUrl().isEmpty()) {
-                exposureLink.setOnAction(e -> openUrl(row.amIExposedUrl()));
+            if(!Config.get().isBlockExplorerDisabled()) {
+                explorerLink.setOnAction(e -> AppServices.openBlockExplorer(row.txid()));
+                midLine.getChildren().add(explorerLink);
+            }
+            if(!Config.get().isAmIExposedDisabled()) {
+                exposureLink.setOnAction(e -> AppServices.openAmIExposed(row.txid()));
                 midLine.getChildren().add(exposureLink);
             }
 

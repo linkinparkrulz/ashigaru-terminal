@@ -63,17 +63,21 @@ public class AshigaruGui extends Application {
         Parent root = loader.load();
         mainController = loader.getController();
 
-        Scene scene = new Scene(root, 1100, 720);
+        Scene scene = new Scene(root, 1100, 800);
         scene.getStylesheets().add(getClass().getResource("ashigaru.css").toExternalForm());
 
         stage.setTitle("Ashigaru Desktop " + AshigaruTerminal.APP_VERSION);
         stage.setMinWidth(800);
-        stage.setMinHeight(540);
+        // Fits the header + full sidebar (wallet management + account buttons + Tools/Settings) + status bar,
+        // so the bottom status bar can never be clipped by shrinking the window.
+        stage.setMinHeight(760);
         stage.setScene(scene);
 
-        // Set app icon (window + macOS Dock)
+        // Set app icon (window + macOS Dock). Use the padded variant: the full-bleed circle logo
+        // touches the canvas edges, so the OS renders it larger than neighbouring dock icons (which
+        // follow the ~80% content / transparent-margin convention). Dock_ has that safe-area margin.
         try {
-            Image icon = new Image(getClass().getResourceAsStream("/image/Ashigaru_Terminal_Logo_Circle.png"));
+            Image icon = new Image(getClass().getResourceAsStream("/image/Ashigaru_Terminal_Logo_Dock.png"));
             stage.getIcons().add(icon);
             try {
                 if (java.awt.Taskbar.isTaskbarSupported()) {

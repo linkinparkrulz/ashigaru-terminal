@@ -512,6 +512,24 @@
     -fx-font-size: 12px;
     -fx-font-weight: bold;
 }
+
+/* Tx0 broadcast animation overlay */
+.tx0-overlay {
+    -fx-background-color: -ag-bg-mid;
+}
+.tx0-broadcast-status {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.tx0-step {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 13px;
+}
+.tx0-step.done {
+    -fx-text-fill: -ag-green;
+    -fx-font-weight: bold;
+}
 .field-label  { -fx-text-fill: -ag-text-dim; }
 .field-value  { -fx-text-fill: -ag-text;     -fx-font-family: monospace; }
 .total-label  { -fx-text-fill: -ag-text;     -fx-font-weight: bold; }

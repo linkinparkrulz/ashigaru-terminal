@@ -550,60 +550,20 @@ public class AshigaruWalletController implements Initializable {
         }
 
         try {
-            Pool pool = AshigaruTx0Controller.show(
+            // The Tx0 dialog now signs + broadcasts (with its in-dialog animation) and
+            // ensures the Premix account first; on success it returns the Tx0 txid.
+            Sha256Hash txid = AshigaruTx0Controller.show(
                     activeAccountForm.getMasterWalletId(), activeAccountForm, selectedEntries);
-            if (pool != null) {
-                if (activeWallet.isMasterWallet() && !activeWallet.isWhirlpoolMasterWallet()) {
-                    addAccountIfNeeded(activeWallet, StandardAccount.WHIRLPOOL_PREMIX,
-                            () -> broadcastPremix(pool, selectedEntries));
-                } else {
-                    Platform.runLater(() -> broadcastPremix(pool, selectedEntries));
-                }
+            if (txid != null && accountTabs != null) {
+                accountTabs.getTabs().stream()
+                        .filter(t -> "Premix".equals(t.getText()))
+                        .findFirst()
+                        .ifPresent(t -> accountTabs.getSelectionModel().select(t));
             }
         } catch (Exception e) {
             log.error("Error in Mix Selected", e);
             AppServices.showErrorDialog("Error", e.getMessage());
         }
-    }
-
-    private void addAccountIfNeeded(Wallet wallet, StandardAccount account, Runnable after) {
-        // Trigger account addition via event, then run after
-        Platform.runLater(() -> {
-            EventManager.get().post(new WalletAddAccountEvent(wallet, account));
-            Platform.runLater(after);
-        });
-    }
-
-    private void broadcastPremix(Pool pool, List<UtxoEntry> entries) {
-        String masterId = activeAccountForm.getMasterWalletId();
-        Whirlpool wp = AppServices.getWhirlpoolServices().getWhirlpool(masterId);
-        List<BlockTransactionHashIndex> utxos = entries.stream()
-                .map(HashIndexEntry::getHashIndex)
-                .collect(Collectors.toList());
-
-        Whirlpool.Tx0BroadcastService svc = new Whirlpool.Tx0BroadcastService(wp, pool, utxos);
-        svc.setOnSucceeded(e -> {
-            Sha256Hash txid = svc.getValue();
-            Platform.runLater(() -> {
-                AppServices.showSuccessDialog("Broadcast Successful",
-                        "Transaction Zero ID:\n" + txid.toString());
-                // Auto-switch to Premix tab so user can see equalized UTXOs (if tab view is active)
-                if (accountTabs != null) {
-                    accountTabs.getTabs().stream()
-                            .filter(t -> "Premix".equals(t.getText()))
-                            .findFirst()
-                            .ifPresent(t -> accountTabs.getSelectionModel().select(t));
-                }
-            });
-        });
-        svc.setOnFailed(e -> {
-            Throwable ex = e.getSource().getException();
-            while (ex.getCause() != null) ex = ex.getCause();
-            String msg = ex.getMessage();
-            Platform.runLater(() ->
-                    AppServices.showErrorDialog("Error broadcasting Transaction Zero", msg));
-        });
-        svc.start();
     }
 
     @FXML

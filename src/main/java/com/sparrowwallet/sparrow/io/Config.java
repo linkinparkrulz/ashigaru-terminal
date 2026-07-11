@@ -32,6 +32,7 @@ public class Config {
     private BitcoinUnit bitcoinUnit;
     private UnitFormat unitFormat;
     private Server blockExplorer;
+    private Server amIExposed;
     private FeeRatesSource feeRatesSource;
     private FeeRatesSelection feeRatesSelection;
     private OptimizationStrategy sendOptimizationStrategy;
@@ -66,6 +67,8 @@ public class Config {
     private String webcamDeviceId;
     private ServerType serverType;
     private Server publicElectrumServer;
+    private List<Server> discoveredServers;
+    private List<Server> discoveredExplorers;
     private Server coreServer;
     private List<Server> recentCoreServers;
     private CoreAuthType coreAuthType;
@@ -176,6 +179,19 @@ public class Config {
 
     public void setBlockExplorer(Server blockExplorer) {
         this.blockExplorer = blockExplorer;
+        flush();
+    }
+
+    public boolean isAmIExposedDisabled() {
+        return AmIExposed.NONE.getServer().equals(amIExposed);
+    }
+
+    public Server getAmIExposed() {
+        return amIExposed;
+    }
+
+    public void setAmIExposed(Server amIExposed) {
+        this.amIExposed = amIExposed;
         flush();
     }
 
@@ -502,10 +518,48 @@ public class Config {
     }
 
     public void changePublicServer() {
-        List<Server> otherServers = PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).filter(server -> !server.equals(getPublicElectrumServer())).collect(Collectors.toList());
+        List<Server> allServers = new ArrayList<>(PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).collect(Collectors.toList()));
+        allServers.addAll(getDiscoveredServers());
+        List<Server> otherServers = allServers.stream().filter(server -> !server.equals(getPublicElectrumServer())).collect(Collectors.toList());
         if(!otherServers.isEmpty()) {
             setPublicElectrumServer(otherServers.get(new Random().nextInt(otherServers.size())));
         }
+    }
+
+    public List<Server> getDiscoveredServers() {
+        return discoveredServers == null ? new ArrayList<>() : discoveredServers;
+    }
+
+    public boolean addDiscoveredServer(Server discoveredServer) {
+        if(discoveredServers == null) {
+            discoveredServers = new ArrayList<>();
+        }
+
+        if(!discoveredServers.contains(discoveredServer)) {
+            discoveredServers.add(discoveredServer);
+            flush();
+            return true;
+        }
+
+        return false;
+    }
+
+    public List<Server> getDiscoveredExplorers() {
+        return discoveredExplorers == null ? new ArrayList<>() : discoveredExplorers;
+    }
+
+    public boolean addDiscoveredExplorer(Server discoveredExplorer) {
+        if(discoveredExplorers == null) {
+            discoveredExplorers = new ArrayList<>();
+        }
+
+        if(!discoveredExplorers.contains(discoveredExplorer)) {
+            discoveredExplorers.add(discoveredExplorer);
+            flush();
+            return true;
+        }
+
+        return false;
     }
 
     public Server getCoreServer() {

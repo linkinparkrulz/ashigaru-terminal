@@ -17,12 +17,16 @@ import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.io.Server;
 import com.sparrowwallet.sparrow.io.Storage;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -49,11 +53,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 public class ServerPreferencesController extends PreferencesDetailController {
     private static final Logger log = LoggerFactory.getLogger(ServerPreferencesController.class);
 
     private static final Server MANAGE_ALIASES_SERVER = new Server("tcp://localhost", "Manage Aliases...");
+
+    @FXML
+    private GridPane serverDetailPane;
+
+    @FXML
+    private Label warningBodyShort;
+
+    @FXML
+    private Label warningBodyLong;
 
     @FXML
     private ToggleGroup serverTypeToggleGroup;
@@ -68,7 +82,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
     private Form publicElectrumForm;
 
     @FXML
-    private ComboBox<PublicElectrumServer> publicElectrumServer;
+    private ComboBox<Server> publicElectrumServer;
 
     @FXML
     private UnlabeledToggleSwitch publicUseProxy;
@@ -128,6 +142,12 @@ public class ServerPreferencesController extends PreferencesDetailController {
     private ComboBox<Server> recentElectrumServers;
 
     @FXML
+    private Hyperlink discoverNodesLink;
+
+    @FXML
+    private Label discoverNodesStatus;
+
+    @FXML
     private ComboBoxTextField electrumHost;
 
     @FXML
@@ -173,6 +193,15 @@ public class ServerPreferencesController extends PreferencesDetailController {
     @Override
     public void initializeView(Config config) {
         EventManager.get().register(this);
+
+        //Cap the wrapping labels at the detail pane width so their wrapText actually wraps (inside a
+        //tornadofx Field the input container otherwise sizes to the label's unwrapped width and clips
+        //to an ellipsis). The binding tracks resizes, so the text stays fully visible responsively.
+        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(120);
+        warningBodyShort.maxWidthProperty().bind(wrapWidth);
+        warningBodyLong.maxWidthProperty().bind(wrapWidth);
+        discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+
         getMasterController().closingProperty().addListener((observable, oldValue, newValue) -> {
             EventManager.get().unregister(this);
             if(connectionService != null && connectionService.isRunning()) {
@@ -212,7 +241,9 @@ public class ServerPreferencesController extends PreferencesDetailController {
         }
         serverTypeToggleGroup.selectToggle(serverTypeToggleGroup.getToggles().stream().filter(toggle -> toggle.getUserData() == serverType).findFirst().orElse(null));
 
-        publicElectrumServer.setItems(FXCollections.observableList(PublicElectrumServer.getServers()));
+        publicElectrumServer.setItems(getPublicServerList());
+        publicElectrumServer.setCellFactory(value -> new ServerCell());
+        publicElectrumServer.setButtonCell(new ServerCell());
         publicElectrumServer.getSelectionModel().selectedItemProperty().addListener(getPublicElectrumServerListener(config));
 
         publicUseProxy.selectedProperty().bindBidirectional(useProxy.selectedProperty());
@@ -399,11 +430,11 @@ public class ServerPreferencesController extends PreferencesDetailController {
             testConnection.setVisible(true);
         });
 
-        PublicElectrumServer configPublicElectrumServer = PublicElectrumServer.fromServer(config.getPublicElectrumServer());
+        Server configPublicElectrumServer = config.getPublicElectrumServer();
         if(configPublicElectrumServer == null && PublicElectrumServer.supportedNetwork()) {
             List<PublicElectrumServer> servers = PublicElectrumServer.getServers();
             if(!servers.isEmpty()) {
-                publicElectrumServer.setValue(servers.get(new Random().nextInt(servers.size())));
+                publicElectrumServer.setValue(servers.get(new Random().nextInt(servers.size())).getServer());
             }
         } else {
             publicElectrumServer.setValue(configPublicElectrumServer);
@@ -724,9 +755,11 @@ public class ServerPreferencesController extends PreferencesDetailController {
     }
 
     @NotNull
-    private ChangeListener<PublicElectrumServer> getPublicElectrumServerListener(Config config) {
+    private ChangeListener<Server> getPublicElectrumServerListener(Config config) {
         return (observable, oldValue, newValue) -> {
-            config.setPublicElectrumServer(newValue.getServer());
+            if(newValue != null) {
+                config.setPublicElectrumServer(newValue);
+            }
         };
     }
 
@@ -904,6 +937,83 @@ public class ServerPreferencesController extends PreferencesDetailController {
         ObservableList<Server> serverObservableList = FXCollections.observableList(new ArrayList<>(servers));
         serverObservableList.add(MANAGE_ALIASES_SERVER);
         return serverObservableList;
+    }
+
+    private ObservableList<Server> getPublicServerList() {
+        List<Server> servers = PublicElectrumServer.getServers().stream().map(PublicElectrumServer::getServer).collect(Collectors.toList());
+        for(Server discovered : Config.get().getDiscoveredServers()) {
+            if(!servers.contains(discovered)) {
+                servers.add(discovered);
+            }
+        }
+        return FXCollections.observableList(servers);
+    }
+
+    @FXML
+    private void discoverNodes(ActionEvent event) {
+        discoverNodesLink.setDisable(true);
+        discoverNodesStatus.setText("Discovering Dojo Electrum servers over Tor…");
+
+        Task<DojoNodeDiscovery.DiscoveryResult> task = new Task<>() {
+            @Override
+            protected DojoNodeDiscovery.DiscoveryResult call() throws Exception {
+                return DojoNodeDiscovery.discover(AppServices.getHttpClientService());
+            }
+        };
+
+        task.setOnSucceeded(e -> {
+            DojoNodeDiscovery.DiscoveryResult result = task.getValue();
+            int verified = 0;
+            int unverified = 0;
+            for(DojoNodeDiscovery.DiscoveredNode node : result.getNodes()) {
+                if(node.isVerified()) {
+                    Config.get().addDiscoveredServer(node.getIndexerServer());
+                    if(node.getExplorerServer() != null) {
+                        Config.get().addDiscoveredExplorer(node.getExplorerServer());
+                    }
+                    verified++;
+                } else {
+                    unverified++;
+                }
+            }
+
+            refreshPublicServerList();
+
+            if(verified == 0 && unverified == 0 && result.getUnreachable() == 0) {
+                discoverNodesStatus.setText("No Dojos found (need version 1.28+ on this network).");
+            } else {
+                discoverNodesStatus.setText("Added " + verified + " Dojo Electrum server" + (verified == 1 ? "" : "s")
+                        + "; " + unverified + " unverified, " + result.getUnreachable() + " unreachable. Directory courtesy of dojobay.pw");
+            }
+            discoverNodesLink.setDisable(false);
+        });
+
+        task.setOnFailed(e -> {
+            Throwable ex = task.getException();
+            discoverNodesStatus.setText("Discovery failed: " + (ex != null ? ex.getMessage() : "unknown error"));
+            discoverNodesLink.setDisable(false);
+        });
+
+        Thread thread = new Thread(task, "dojo-node-discovery");
+        thread.setDaemon(true);
+        thread.start();
+    }
+
+    private void refreshPublicServerList() {
+        Server current = publicElectrumServer.getValue();
+        publicElectrumServer.setItems(getPublicServerList());
+        if(current != null) {
+            publicElectrumServer.setValue(current);
+        }
+    }
+
+    @Subscribe
+    public void discoveredServersChanged(DiscoveredServersChangedEvent event) {
+        Platform.runLater(() -> {
+            if(publicElectrumServer != null) {
+                refreshPublicServerList();
+            }
+        });
     }
 
     @Subscribe

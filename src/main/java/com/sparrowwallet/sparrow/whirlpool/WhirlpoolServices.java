@@ -80,12 +80,20 @@ public class WhirlpoolServices {
     private void startAllWhirlpool() {
         for (Map.Entry<String, Whirlpool> entry : whirlpoolMap.entrySet().stream().filter(entry -> entry.getValue().hasWallet() && !entry.getValue().isStarted()).collect(Collectors.toList())) {
             Wallet wallet = AppServices.get().getWallet(entry.getKey());
+            if (wallet == null) {
+                // Wallet is still loading (not yet registered) - it will be started on the next
+                // connection event once it is fully open.
+                continue;
+            }
             Whirlpool whirlpool = entry.getValue();
             startWhirlpool(wallet, whirlpool, false);
         }
     }
 
     public void startWhirlpool(Wallet wallet, Whirlpool whirlpool, boolean notifyIfMixToMissing) {
+        if (wallet == null) {
+            return;
+        }
         if (wallet.getMasterMixConfig().getMixOnStartup() != Boolean.FALSE) {
             HostAndPort torProxy = getTorProxy();
             if (!Objects.equals(whirlpool.getTorProxy(), torProxy)) {

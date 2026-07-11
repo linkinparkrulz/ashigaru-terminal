@@ -167,8 +167,11 @@ public class AshigaruMainController implements Initializable {
 
         boolean encrypted = false;
         try { encrypted = walletForm.getStorage().isEncrypted(); } catch (IOException ignored) {}
-        lockWalletBtn.setVisible(encrypted);
-        lockWalletBtn.setManaged(encrypted);
+        boolean needsPassphrase = walletForm.getWallet().getKeystores().stream()
+                .anyMatch(ks -> ks.hasSeed() && ks.getSeed().needsPassphrase());
+        boolean lockable = encrypted || needsPassphrase;
+        lockWalletBtn.setVisible(lockable);
+        lockWalletBtn.setManaged(lockable);
 
         // Select Deposit by default
         depositBtn.setSelected(true);
@@ -476,15 +479,25 @@ public class AshigaruMainController implements Initializable {
     private void onLockWallet() {
         if (currentWalletForm == null) return;
         File walletFile = currentWalletForm.getStorage().getWalletFile();
-        // Remove nested wallet forms from the registry (master removal won't clean these)
-        for (WalletForm nested : currentWalletForm.getNestedWalletForms()) {
-            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
-        }
-        AshigaruGui.removeWallet(currentWalletForm.getWalletId());
-        currentWalletForm = null;
+        unloadWalletForm(currentWalletForm);
         unloadedWalletFiles.add(walletFile);
         refreshWalletList();
         showWelcome();
+    }
+
+    /**
+     * Unloads a wallet form (and its nested Premix/Postmix/Badbank forms) from the UI and registry,
+     * returning to the locked state. Shared by the Lock button and the reopen-on-wrong-passphrase flow.
+     */
+    private void unloadWalletForm(WalletForm form) {
+        // Remove nested wallet forms from the registry (master removal won't clean these)
+        for (WalletForm nested : form.getNestedWalletForms()) {
+            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
+        }
+        AshigaruGui.removeWallet(form.getWalletId());
+        if (currentWalletForm == form) {
+            currentWalletForm = null;
+        }
     }
 
     @FXML
@@ -808,6 +821,28 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void walletHistoryFailed(WalletHistoryFailedEvent event) {
         walletHistoryFinished(new WalletHistoryFinishedEvent(event.getWallet()));
+    }
+
+    /**
+     * Posted by WalletForm when an all-history change on a passphrase wallet suggests a mistyped
+     * passphrase and the user chose "Reopen Wallet". Unload the (wrong-passphrase) wallet and reopen
+     * it so the passphrase is prompted again — the same lock/unlock plumbing the Lock button uses.
+     */
+    @Subscribe
+    public void requestWalletOpen(RequestWalletOpenEvent event) {
+        File file = event.getFile();
+        if (file == null) return;
+        Platform.runLater(() -> {
+            WalletForm form = AshigaruGui.get().getWalletForms().values().stream()
+                    .filter(f -> f.getWallet().isMasterWallet() && file.equals(f.getStorage().getWalletFile()))
+                    .findFirst().orElse(null);
+            if (form != null) {
+                unloadWalletForm(form);
+            }
+            unloadedWalletFiles.add(file);
+            refreshWalletList();
+            openWalletFile(file);
+        });
     }
 
     @Subscribe
