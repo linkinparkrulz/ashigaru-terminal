@@ -26,6 +26,7 @@ import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -58,6 +59,15 @@ public class ServerPreferencesController extends PreferencesDetailController {
     private static final Logger log = LoggerFactory.getLogger(ServerPreferencesController.class);
 
     private static final Server MANAGE_ALIASES_SERVER = new Server("tcp://localhost", "Manage Aliases...");
+
+    @FXML
+    private GridPane serverDetailPane;
+
+    @FXML
+    private Label warningBodyShort;
+
+    @FXML
+    private Label warningBodyLong;
 
     @FXML
     private ToggleGroup serverTypeToggleGroup;
@@ -183,6 +193,15 @@ public class ServerPreferencesController extends PreferencesDetailController {
     @Override
     public void initializeView(Config config) {
         EventManager.get().register(this);
+
+        //Cap the wrapping labels at the detail pane width so their wrapText actually wraps (inside a
+        //tornadofx Field the input container otherwise sizes to the label's unwrapped width and clips
+        //to an ellipsis). The binding tracks resizes, so the text stays fully visible responsively.
+        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(120);
+        warningBodyShort.maxWidthProperty().bind(wrapWidth);
+        warningBodyLong.maxWidthProperty().bind(wrapWidth);
+        discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+
         getMasterController().closingProperty().addListener((observable, oldValue, newValue) -> {
             EventManager.get().unregister(this);
             if(connectionService != null && connectionService.isRunning()) {

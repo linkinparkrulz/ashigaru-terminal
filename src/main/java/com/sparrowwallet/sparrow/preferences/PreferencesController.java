@@ -9,6 +9,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.StackPane;
@@ -87,7 +88,13 @@ public class PreferencesController implements Initializable {
             Node preferenceGroupNode = preferencesDetailLoader.load();
             PreferencesDetailController controller = preferencesDetailLoader.getController();
             controller.setMasterController(this);
-            preferencesPane.getChildren().add(preferenceGroupNode);
+            //Wrap the detail in a scroll pane so its (tall) content scrolls rather than inflating the
+            //root layout's minimum height and pushing the bottom status bar off-screen on short windows.
+            ScrollPane scrollPane = new ScrollPane(preferenceGroupNode);
+            scrollPane.setFitToWidth(true);
+            scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+            scrollPane.getStyleClass().add("preferences-scroll");
+            preferencesPane.getChildren().add(scrollPane);
             controller.initializeView(config);
 
             return preferencesDetailLoader;

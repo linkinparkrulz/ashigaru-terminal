@@ -97,7 +97,7 @@
 
     <!-- ===== CENTER CONTENT ===== -->
     <center>
-        <BorderPane fx:id="contentPane" styleClass="content-area">
+        <BorderPane fx:id="contentPane" styleClass="content-area" minHeight="0">
             <center>
                 <!-- Welcome placeholder shown before any wallet is opened -->
                 <StackPane fx:id="welcomePane" styleClass="welcome-pane">
