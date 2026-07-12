@@ -42,7 +42,6 @@ public class AshigaruMixToController implements Initializable {
 
     private WalletForm walletForm;
     private MixConfig workingConfig;   // copy of the real config; applied on OK
-    private boolean confirmed = false;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -64,16 +63,17 @@ public class AshigaruMixToController implements Initializable {
         ctrl.walletForm = walletForm;
         ctrl.populate();
 
-        Dialog<Boolean> dialog = new Dialog<>();
+        Dialog<Void> dialog = new Dialog<>();
         dialog.setTitle(walletForm.getWallet().getFullDisplayName() + " — Mix To");
         dialog.setDialogPane(pane);
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(AshigaruGui.get().getMainStage());
-        dialog.setResultConverter(btn -> ctrl.confirmed);
+        // This pane has no ButtonTypes (Apply/Cancel are themed buttons in the content),
+        // so a dialog result is never produced. Apply is therefore performed directly in
+        // onApply() rather than via a result converter that would never fire.
+        dialog.setResultConverter(btn -> null);
 
-        dialog.showAndWait().ifPresent(applied -> {
-            if (applied) ctrl.applyConfig();
-        });
+        dialog.showAndWait();
     }
 
     // -------------------------------------------------------------------------
@@ -91,6 +91,10 @@ public class AshigaruMixToController implements Initializable {
                 .filter(w -> w.isValid()
                         && (w.getScriptType() == ScriptType.P2WPKH || w.getScriptType() == ScriptType.P2WSH)
                         && w != wallet && w != wallet.getMasterWallet()
+                        // Exclude BIP47/PayNym contact accounts — they're counterparty receive
+                        // chains named by their payment code (e.g. "…- PM8T…"), not spendable
+                        // mix destinations. (Matches how the account tabs skip payment codes.)
+                        && !w.isBip47()
                         && (w.getStandardAccountType() == null
                             || !List.of(StandardAccount.WHIRLPOOL_PREMIX, StandardAccount.WHIRLPOOL_BADBANK)
                                     .contains(w.getStandardAccountType())))
@@ -106,7 +110,13 @@ public class AshigaruMixToController implements Initializable {
                 Wallet mixToWallet = AppServices.get().getWallet(mixToId);
                 mixToWalletCombo.getSelectionModel().select(new DisplayWallet(mixToWallet));
             } catch (NoSuchElementException e) {
+                // The configured mix-to wallet isn't open, so it can't be resolved. Show None
+                // and enable Apply straight away so the user can clear the stale target
+                // (mix-to wallets must be open to avoid address reuse).
                 mixToWalletCombo.getSelectionModel().select(DisplayWallet.NONE);
+                workingConfig.setMixToWalletName(null);
+                workingConfig.setMixToWalletFile(null);
+                applyBtn.setDisable(false);
             }
         } else {
             mixToWalletCombo.getSelectionModel().select(DisplayWallet.NONE);
@@ -176,15 +186,35 @@ public class AshigaruMixToController implements Initializable {
 
     @FXML
     private void onApply() {
-        confirmed = true;
-        // Bubbles through dialog.setResultConverter → applyConfig() is called in show()
+        commitMinMixes();
+        applyConfig();
         applyBtn.getScene().getWindow().hide();
     }
 
     @FXML
     private void onCancel() {
-        confirmed = false;
         cancelBtn.getScene().getWindow().hide();
+    }
+
+    /**
+     * Commits a value typed into the (editable) min-mixes spinner but not yet entered,
+     * so it is captured when Apply is clicked. Setting the factory value fires the
+     * value listener that writes it through to {@link #workingConfig}.
+     */
+    private void commitMinMixes() {
+        if (minMixesSpinner == null || !minMixesSpinner.isEditable()) {
+            return;
+        }
+        String text = minMixesSpinner.getEditor().getText();
+        if (text == null || text.isBlank()) {
+            return;
+        }
+        try {
+            int val = Math.max(1, Math.min(10000, Integer.parseInt(text.trim())));
+            minMixesSpinner.getValueFactory().setValue(val);
+        } catch (NumberFormatException e) {
+            // keep the last committed value
+        }
     }
 
     // -------------------------------------------------------------------------
