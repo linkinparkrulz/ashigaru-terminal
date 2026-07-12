@@ -106,7 +106,13 @@ public class AshigaruMixToController implements Initializable {
                 Wallet mixToWallet = AppServices.get().getWallet(mixToId);
                 mixToWalletCombo.getSelectionModel().select(new DisplayWallet(mixToWallet));
             } catch (NoSuchElementException e) {
+                // The configured mix-to wallet isn't open, so it can't be resolved. Show None
+                // and enable Apply straight away so the user can clear the stale target
+                // (mix-to wallets must be open to avoid address reuse).
                 mixToWalletCombo.getSelectionModel().select(DisplayWallet.NONE);
+                workingConfig.setMixToWalletName(null);
+                workingConfig.setMixToWalletFile(null);
+                applyBtn.setDisable(false);
             }
         } else {
             mixToWalletCombo.getSelectionModel().select(DisplayWallet.NONE);
