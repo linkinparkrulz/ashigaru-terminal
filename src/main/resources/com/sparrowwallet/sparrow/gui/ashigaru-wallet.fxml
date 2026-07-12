@@ -54,6 +54,14 @@
                styleClass="coordinator-warning-text" wrapText="true"/>
     </HBox>
 
+    <!-- Syncing bar (shown while the wallet history is refreshing) -->
+    <HBox fx:id="syncingBar" styleClass="syncing-bar" alignment="CENTER_LEFT" spacing="10" visible="false" managed="false">
+        <padding><Insets top="10" right="20" bottom="10" left="20"/></padding>
+        <ProgressIndicator styleClass="syncing-spinner" prefWidth="16" prefHeight="16" minWidth="16" minHeight="16"/>
+        <Label text="Syncing wallet to the latest block — balances and mixing update once this finishes."
+               styleClass="syncing-text" wrapText="true"/>
+    </HBox>
+
     <!-- ③ View toggle: UTXOs / Transactions + Mix Selected (right-aligned) -->
     <HBox styleClass="view-toggle-bar" alignment="CENTER_LEFT" spacing="0">
         <padding><Insets top="8" right="20" bottom="8" left="20"/></padding>

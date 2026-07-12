@@ -657,6 +657,16 @@
 .coordinator-warning-icon { -fx-text-fill: -ag-accent; -fx-font-size: 14px; }
 .coordinator-warning-text { -fx-text-fill: -ag-accent; -fx-font-size: 11px; }
 
+/* ── Syncing bar (wallet history refreshing) ──────────────────────────────── */
+.syncing-bar {
+    -fx-background-color: derive(-ag-blue, -75%);
+    -fx-border-color: -ag-blue;
+    -fx-border-width: 0 0 1 0;
+}
+.syncing-text { -fx-text-fill: -ag-blue; -fx-font-size: 11px; }
+.syncing-spinner { -fx-progress-color: -ag-blue; }
+.syncing-spinner .percentage { visibility: hidden; }
+
 /* ── Copy icon button (used in tables and receive dialog) ─────────────────── */
 .copy-icon-btn {
     -fx-background-color: transparent;

@@ -57,6 +57,7 @@ public class AshigaruWalletController implements Initializable {
     @FXML private HBox badbankInfoBar;
     @FXML private Label badbankInfoLabel;
     @FXML private HBox coordinatorWarningBar;
+    @FXML private HBox syncingBar;
     @FXML private ToggleButton utxoViewBtn;
     @FXML private ToggleButton txnViewBtn;
     @FXML private ListView<UtxoRow> utxoTable;
@@ -69,6 +70,7 @@ public class AshigaruWalletController implements Initializable {
 
     private WalletForm currentWalletForm;   // master wallet form
     private WalletForm activeAccountForm;   // currently shown account form
+    private boolean activeAccountSyncing;   // true while the active account's history is refreshing
 
     private final ObservableList<UtxoRow> utxoRows = FXCollections.observableArrayList();
     private final ObservableList<TxnRow> txnRows   = FXCollections.observableArrayList();
@@ -188,6 +190,10 @@ public class AshigaruWalletController implements Initializable {
         // Reset coordinator-reachability tracking when switching accounts; the next mix
         // event for the newly active account repopulates it if mixing is still stuck.
         clearCoordinatorWarning();
+        // A freshly selected account has no in-flight sync of its own; hide the banner until
+        // a WalletHistoryStartedEvent for this account arrives.
+        activeAccountSyncing = false;
+        setSyncingBarVisible(false);
         refreshAccountView();
     }
 
@@ -529,11 +535,34 @@ public class AshigaruWalletController implements Initializable {
                 .collect(Collectors.toList());
         if (selectedEntries.isEmpty()) return;
 
+        // Don't let a click silently no-op while the wallet/Whirlpool isn't ready yet.
+        if (!AppServices.isConnected()) {
+            AppServices.showAlertDialog("Not connected yet",
+                    "Ashigaru isn't connected to a server yet. Mixing will be available once the "
+                            + "connection is established — please try again in a moment.",
+                    Alert.AlertType.INFORMATION);
+            return;
+        }
+        if (activeAccountSyncing) {
+            AppServices.showAlertDialog("Still syncing",
+                    "Your wallet is still syncing to the latest block. Please wait until syncing "
+                            + "finishes, then try mixing again.",
+                    Alert.AlertType.INFORMATION);
+            return;
+        }
+
         Wallet activeWallet = activeAccountForm.getWallet();
         if (activeWallet.getStandardAccountType() == StandardAccount.WHIRLPOOL_POSTMIX) {
             Whirlpool wp = AppServices.getWhirlpoolServices().getWhirlpool(activeAccountForm.getMasterWalletId());
             if (wp == null) {
                 AppServices.showErrorDialog("Mix error", "Whirlpool service not available for this wallet");
+                return;
+            }
+            if (!wp.isStarted()) {
+                AppServices.showAlertDialog("Mixing is starting up",
+                        "The mixing service is still starting up for this wallet. Please try again "
+                                + "in a moment.",
+                        Alert.AlertType.INFORMATION);
                 return;
             }
             int queued = 0;
@@ -546,6 +575,15 @@ public class AshigaruWalletController implements Initializable {
                 }
             }
             log.info("Queued " + queued + " of " + selectedEntries.size() + " Postmix UTXO(s) for remix");
+            if (queued == 0) {
+                AppServices.showErrorDialog("Could not queue remix",
+                        "None of the selected UTXOs could be queued for remixing. See the log file "
+                                + "(Help menu) for details.");
+            } else {
+                AppServices.showSuccessDialog("Remix queued",
+                        "Queued " + queued + " UTXO" + (queued == 1 ? "" : "s") + " for remix. They'll "
+                                + "mix as coordinator rounds become available.");
+            }
             return;
         }
 
@@ -614,9 +652,14 @@ public class AshigaruWalletController implements Initializable {
     @Subscribe
     public void walletHistoryStarted(WalletHistoryStartedEvent event) {
         if (activeAccountForm != null && event.getWallet().equals(activeAccountForm.getWallet())) {
+            activeAccountSyncing = true;
             Platform.runLater(() -> {
                 refreshBtn.setDisable(true);
                 refreshBtn.setText("⟳  Syncing…");
+                setSyncingBarVisible(true);
+                // Disable mixing while syncing so a click can't be silently swallowed.
+                mixSelectedBtn.setDisable(true);
+                startMixBtn.setDisable(true);
             });
         }
     }
@@ -624,15 +667,26 @@ public class AshigaruWalletController implements Initializable {
     @Subscribe
     public void walletHistoryFinished(WalletHistoryFinishedEvent event) {
         if (activeAccountForm != null && event.getWallet().equals(activeAccountForm.getWallet())) {
+            activeAccountSyncing = false;
             Platform.runLater(() -> {
                 refreshBtn.setDisable(false);
                 refreshBtn.setText("⟳  Refresh");
+                setSyncingBarVisible(false);
+                startMixBtn.setDisable(false);
+                // Re-enable Mix Selected based on the current selection.
+                mixSelectedBtn.setDisable(utxoRows.stream().noneMatch(r -> r.selected.get()));
                 // Always refresh the view when a sync finishes — ensures UTXOs are shown
                 // even when the history was already current (no WalletHistoryChangedEvent fired).
                 activeAccountForm.getWalletUtxosEntry().updateUtxos();
                 refreshAccountView();
             });
         }
+    }
+
+    private void setSyncingBarVisible(boolean visible) {
+        if (syncingBar == null) return;
+        syncingBar.setVisible(visible);
+        syncingBar.setManaged(visible);
     }
 
     @Subscribe

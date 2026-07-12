@@ -807,7 +807,7 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void walletHistoryStarted(WalletHistoryStartedEvent event) {
         if (event.getWallet().isMasterWallet()) {
-            Platform.runLater(() -> statusLabel.setText("Syncing " + event.getWallet().getDisplayName() + "…"));
+            Platform.runLater(() -> statusLabel.setText("⟳  Syncing " + event.getWallet().getDisplayName() + "…"));
         }
     }
 
