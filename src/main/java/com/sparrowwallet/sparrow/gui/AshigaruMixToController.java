@@ -91,6 +91,10 @@ public class AshigaruMixToController implements Initializable {
                 .filter(w -> w.isValid()
                         && (w.getScriptType() == ScriptType.P2WPKH || w.getScriptType() == ScriptType.P2WSH)
                         && w != wallet && w != wallet.getMasterWallet()
+                        // Exclude BIP47/PayNym contact accounts — they're counterparty receive
+                        // chains named by their payment code (e.g. "…- PM8T…"), not spendable
+                        // mix destinations. (Matches how the account tabs skip payment codes.)
+                        && !w.isBip47()
                         && (w.getStandardAccountType() == null
                             || !List.of(StandardAccount.WHIRLPOOL_PREMIX, StandardAccount.WHIRLPOOL_BADBANK)
                                     .contains(w.getStandardAccountType())))
