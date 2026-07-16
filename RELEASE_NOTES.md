@@ -1,3 +1,32 @@
+# Ashigaru Desktop 1.1.1
+
+*Released 2026-07-16*
+
+A bug-fix release focused on repairing the **Mix To** flow and fixing Linux desktop
+integration.
+
+## Fixes
+
+### Mix To
+- **"Mix To…" now actually works.** Choosing a destination wallet and minimum mix count
+  and clicking **Apply** previously did nothing — the dialog silently discarded every
+  setting, so postmix outputs were never redirected. Apply now applies and persists the
+  configuration (and survives a restart).
+- **Clear a stale destination.** When the configured mix-to wallet isn't currently open,
+  the dialog now enables **Apply** so you can clear the stale target, instead of leaving
+  it stuck.
+- **Cleaner destination list.** BIP47/PayNym contact accounts (which appeared as
+  `wallet — PM8T…` and were never valid mix destinations) are no longer listed — only real
+  spendable accounts are shown.
+
+### Linux
+- **No longer grouped with Sparrow Wallet.** Ashigaru's windows reported the same
+  `WM_CLASS` as Sparrow, so desktop environments merged the two under one taskbar/dock
+  icon and you couldn't run both at once. Ashigaru now identifies as its own application,
+  matching its `.desktop` launcher. (Fixes #20)
+
+---
+
 # Ashigaru Desktop 1.1.0
 
 *Released 2026-07-11*
