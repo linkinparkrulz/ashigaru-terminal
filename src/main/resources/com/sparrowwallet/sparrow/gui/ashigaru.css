@@ -119,6 +119,8 @@
 
 .connected    { -fx-text-fill: -ag-green !important; }
 .disconnected { -fx-text-fill: -ag-red !important; }
+.connecting   { -fx-text-fill: #e5a00c !important; }
+.connection-toggle { -fx-cursor: hand; }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
 .sidebar {

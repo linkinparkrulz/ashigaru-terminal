@@ -11,6 +11,7 @@ import com.sparrowwallet.drongo.wallet.StandardAccount;
 import com.sparrowwallet.drongo.wallet.Wallet;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
+import com.sparrowwallet.sparrow.Mode;
 import com.sparrowwallet.sparrow.control.SeedDisplayDialog;
 import com.sparrowwallet.sparrow.control.WalletPasswordDialog;
 import com.sparrowwallet.sparrow.event.*;
@@ -112,7 +113,13 @@ public class AshigaruMainController implements Initializable {
         showWelcome();
         EventManager.get().register(this);
         updateNetworkLabel();
-        updateConnectionLabel(AppServices.isConnected());
+        if(AppServices.isConnected()) {
+            setConnState(ConnState.CONNECTED);
+        } else if(AppServices.isConnecting() || Config.get().getMode() == Mode.ONLINE) {
+            setConnState(ConnState.CONNECTING);
+        } else {
+            setConnState(ConnState.DISCONNECTED);
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -255,15 +262,48 @@ public class AshigaruMainController implements Initializable {
         networkLabel.getStyleClass().add(network == Network.MAINNET ? "mainnet" : "testnet");
     }
 
-    private void updateConnectionLabel(boolean connected) {
-        if (connected) {
-            connectionLabel.setText("● Connected");
-            connectionLabel.getStyleClass().removeAll("disconnected");
-            connectionLabel.getStyleClass().add("connected");
-        } else {
-            connectionLabel.setText("○ Disconnected");
-            connectionLabel.getStyleClass().removeAll("connected");
-            connectionLabel.getStyleClass().add("disconnected");
+    private enum ConnState { DISCONNECTED, CONNECTING, CONNECTED }
+
+    private ConnState connState = ConnState.DISCONNECTED;
+
+    private void setConnState(ConnState state) {
+        connState = state;
+        connectionLabel.getStyleClass().removeAll("connected", "disconnected", "connecting");
+        switch (state) {
+            case CONNECTED -> {
+                connectionLabel.setText("● Connected");
+                connectionLabel.getStyleClass().add("connected");
+                connectionLabel.setTooltip(new Tooltip("Click to disconnect"));
+            }
+            case CONNECTING -> {
+                connectionLabel.setText("◍ Connecting…");
+                connectionLabel.getStyleClass().add("connecting");
+                connectionLabel.setTooltip(new Tooltip("Connecting…"));
+            }
+            case DISCONNECTED -> {
+                connectionLabel.setText("○ Disconnected");
+                connectionLabel.getStyleClass().add("disconnected");
+                connectionLabel.setTooltip(new Tooltip("Click to connect"));
+            }
+        }
+    }
+
+    @FXML
+    private void onConnectionLabelClicked() {
+        switch (connState) {
+            case DISCONNECTED -> {
+                // Remember the choice so future launches auto-connect, then request a connection.
+                Config.get().setMode(Mode.ONLINE);
+                setConnState(ConnState.CONNECTING);
+                EventManager.get().post(new RequestConnectEvent());
+            }
+            case CONNECTED -> {
+                Config.get().setMode(Mode.OFFLINE);
+                EventManager.get().post(new RequestDisconnectEvent());
+            }
+            case CONNECTING -> {
+                // Connection attempt already in flight — ignore clicks to avoid interrupting it.
+            }
         }
     }
 
@@ -781,7 +821,7 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void connectionEvent(ConnectionEvent event) {
         Platform.runLater(() -> {
-            updateConnectionLabel(true);
+            setConnState(ConnState.CONNECTED);
             Integer height = AppServices.getCurrentBlockHeight();
             if (height != null) {
                 blockHeightLabel.setText("Block " + height);
@@ -791,7 +831,22 @@ public class AshigaruMainController implements Initializable {
 
     @Subscribe
     public void disconnectionEvent(DisconnectionEvent event) {
-        Platform.runLater(() -> updateConnectionLabel(false));
+        Platform.runLater(() -> setConnState(ConnState.DISCONNECTED));
+    }
+
+    @Subscribe
+    public void connectionStartEvent(ConnectionStartEvent event) {
+        Platform.runLater(() -> setConnState(ConnState.CONNECTING));
+    }
+
+    @Subscribe
+    public void torBootStatusEvent(TorBootStatusEvent event) {
+        Platform.runLater(() -> setConnState(ConnState.CONNECTING));
+    }
+
+    @Subscribe
+    public void connectionFailedEvent(ConnectionFailedEvent event) {
+        Platform.runLater(() -> setConnState(ConnState.DISCONNECTED));
     }
 
     @Subscribe
