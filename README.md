@@ -12,12 +12,14 @@ A graphical Bitcoin wallet and desktop GUI front-end for [Ashigaru Terminal](htt
 - **Receive Only** — Decreases attack surface (spend is done on mobile)
 - **Import/Export Labels** — Transport your labels to any BIP-329 adhering wallet software
 - **BIP47 Message Verifier** — Verify that a message was signed by a specific entity
+- **PepeHash PayNym Integration** — BIP47 based transactions include the corresponding pepehash avatar in their transaction card for easy identification
+- **Whirlpoolstats.xyz Tool** — Want to know the latest Tx0? Pool totals? Unspent Capacity? It's all available as a tool now h/t to Black Coffee.
+- **AmIExposed or BitHypha UTXO analysis** — Do analysis on your own UTXO's
+- **Dojo Bay Integration** — Connect to geographically dispersed electrum servers with BIP47 Verified reputations. 
 
 ### Future Features
 
 - **Eigenwallet Integration** — Post bad bank funds for atomic swap into XMR
-- **AmIExposed or BitHypha UTXO analysis** — Do analysis on your own UTXO's
-- **Dojo Bay Integration** — Connect to geographically dispersed electrum servers with BIP47 Verified reputations. 
 - **Dojo Integration** — Get all the benefits of Dojo such as Nextblock estimates, personal electrum server detail and more
 
 ---
