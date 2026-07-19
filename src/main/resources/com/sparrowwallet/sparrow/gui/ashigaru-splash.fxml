@@ -14,9 +14,9 @@
 
         <HBox alignment="CENTER_LEFT" spacing="18">
             <StackPane styleClass="splash-logo-frame">
-                <ImageView fitWidth="88" fitHeight="88" preserveRatio="true">
+                <ImageView fitWidth="88" fitHeight="88" preserveRatio="true" smooth="true">
                     <image>
-                        <Image url="@/image/Ashigaru_Terminal_Logo_Circle.png"/>
+                        <Image url="@/image/Ashigaru_Terminal_Logo_Circle.png" requestedWidth="176" requestedHeight="176" preserveRatio="true" smooth="true"/>
                     </image>
                 </ImageView>
             </StackPane>

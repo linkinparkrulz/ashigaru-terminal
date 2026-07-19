@@ -32,6 +32,7 @@ public class WalletSummaryDialog extends Dialog<Void> {
 
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getStylesheets().add(AppServices.class.getResource("dialog.css").toExternalForm());
         dialogPane.getStylesheets().add(AppServices.class.getResource("wallet/wallet.css").toExternalForm());
         dialogPane.getStylesheets().add(AppServices.class.getResource("wallet/transactions.css").toExternalForm());

@@ -17,6 +17,8 @@ import com.sparrowwallet.sparrow.io.Storage;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -166,6 +168,25 @@ public class WalletForm {
                 });
                 historyService.setOnFailed(workerStateEvent -> {
                     if(workerStateEvent.getSource().getException() instanceof AllHistoryChangedException) {
+                        //A non-empty wallet that needs a passphrase and whose entire history changed most
+                        //likely had a mistyped passphrase (which derives an entirely different wallet). Warn
+                        //and offer to reopen it (re-prompting the passphrase) before discarding history.
+                        if(wallet.isMasterWallet() && wallet.getKeystores().stream().anyMatch(Keystore::needsPassphrase)) {
+                            Optional<ButtonType> optType = AppServices.showWarningDialog(
+                                    "Reopen " + wallet.getMasterName() + "?",
+                                    "It appears that the history of this wallet has changed, which may be caused by an " +
+                                    "incorrect passphrase. Note that any typos when entering the passphrase will create an " +
+                                    "entirely different wallet, with a correspondingly different history.\n\nYou can proceed " +
+                                    "with a full refresh of this wallet, or you can reopen it to enter the passphrase again.",
+                                    new ButtonType("Refresh Wallet", ButtonBar.ButtonData.CANCEL_CLOSE),
+                                    new ButtonType("Reopen Wallet", ButtonBar.ButtonData.OK_DONE));
+                            if(optType.isPresent() && optType.get().getButtonData() == ButtonBar.ButtonData.OK_DONE) {
+                                EventManager.get().post(new RequestWalletOpenEvent(
+                                        AppServices.get().getWindowForWallet(getWalletId()), storage.getWalletFile()));
+                                return;
+                            }
+                        }
+
                         try {
                             storage.backupWallet();
                         } catch(IOException e) {

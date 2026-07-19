@@ -33,6 +33,7 @@ public class WalletLabelDialog extends Dialog<String> {
         setTitle(walletType + " Name");
         dialogPane.setHeaderText("Enter a name for this " + walletType.toLowerCase(Locale.ROOT) + ":");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getButtonTypes().addAll(ButtonType.CANCEL);
         dialogPane.setPrefWidth(400);
         dialogPane.setPrefHeight(200);

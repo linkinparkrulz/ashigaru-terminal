@@ -41,6 +41,7 @@ public class SendToManyDialog extends Dialog<List<Payment>> {
         setDialogPane(dialogPane);
         setTitle("Send to Many");
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.setHeaderText("Send to many recipients by specifying addresses and amounts.\nOnly the first row's label is necessary.");
         Image image = new Image("/image/sparrow-small.png");
         dialogPane.setGraphic(new ImageView(image));

@@ -49,6 +49,10 @@
                 <ComboBox fx:id="blockExplorers" />
                 <HelpLabel helpText="An external block explorer can be configured to open a transaction from any transaction tab."/>
             </Field>
+            <Field text="Am I Exposed:">
+                <ComboBox fx:id="amIExposedServers" />
+                <HelpLabel helpText="An Am I Exposed instance can be configured to check a transaction's privacy exposure. If present, the characters {0} in a custom URL will be replaced with the txid."/>
+            </Field>
         </Fieldset>
         <Fieldset inputGrow="SOMETIMES" text="Wallet" styleClass="wideLabelFieldSet">
             <Field text="Load recent wallets:">

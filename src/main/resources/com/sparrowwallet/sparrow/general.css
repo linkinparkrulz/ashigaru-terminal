@@ -106,11 +106,11 @@
 .hyperlink {
     -fx-padding: 0;
     -fx-border-width: 0;
-    -fx-fill: #1e88cf;
+    -fx-fill: #42a5f5;
 }
 
 .hyperlink:visited {
-    -fx-text-fill: #1e88cf;
+    -fx-text-fill: #42a5f5;
     -fx-underline: false;
 }
 
@@ -134,11 +134,11 @@
 }
 
 .copyable-text-field .copy-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .copyable-text-field .copy-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .combo-text-field .combo-button {
@@ -153,11 +153,11 @@
 }
 
 .combo-text-field .combo-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .combo-text-field .combo-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .view-password-text-field .view-password-button > .graphic {
@@ -175,11 +175,11 @@
 }
 
 .view-password-text-field .view-password-button:hover > .graphic, .view-password-text-field .hide-password-button:hover > .graphic {
-    -fx-background-color: #0184bc;
+    -fx-background-color: #cc1111;
 }
 
 .view-password-text-field .view-password-button:pressed > .graphic, .view-password-text-field .hide-password-button:pressed > .graphic {
-    -fx-background-color: #116a8d;
+    -fx-background-color: #991010;
 }
 
 .readonly.text-input {
@@ -239,11 +239,11 @@
 }
 
 .icon-button .glyph-font {
-    -fx-text-fill: #1e88cf;
+    -fx-text-fill: #42a5f5;
 }
 
 .icon-button:hover .glyph-font {
-    -fx-text-fill: #259cf5;
+    -fx-text-fill: #6cbaf7;
 }
 
 .number-field {

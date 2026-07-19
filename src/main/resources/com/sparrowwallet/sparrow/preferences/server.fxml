@@ -18,7 +18,7 @@
 <?import com.sparrowwallet.sparrow.control.CopyableLabel?>
 <?import com.sparrowwallet.sparrow.control.ComboBoxTextField?>
 
-<GridPane hgap="10.0" vgap="14.0" stylesheets="@../general.css, @../gui/ashigaru.css, @preferences.css" styleClass="preferences-detail" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sparrowwallet.sparrow.preferences.ServerPreferencesController">
+<GridPane fx:id="serverDetailPane" hgap="10.0" vgap="14.0" stylesheets="@../general.css, @../gui/ashigaru.css, @preferences.css" styleClass="preferences-detail" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.sparrowwallet.sparrow.preferences.ServerPreferencesController">
     <padding>
         <Insets left="28.0" right="32.0" top="24.0" bottom="28.0" />
     </padding>
@@ -72,11 +72,19 @@
                         <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="EXCLAMATION_TRIANGLE" styleClass="public-warning" />
                         <Label text="Warning!" styleClass="warning-title" />
                     </HBox>
-                    <Label text="Using a public server means it can see your transactions." wrapText="true" styleClass="warning-body" />
+                    <Label fx:id="warningBodyShort" text="Using a public server means it can see your transactions." wrapText="true" styleClass="warning-body" />
+                    <Label fx:id="warningBodyLong" text="These public servers are the Electrum servers of Dojos listed at dojobay.pw. A verified server means the Dojo operator signed the pairing, but any public server can still see your addresses — pick one you trust." wrapText="true" styleClass="warning-body" />
                 </VBox>
             </Field>
             <Field text="URL:">
                 <ComboBox fx:id="publicElectrumServer" />
+            </Field>
+            <Field text="Discover:">
+                <Hyperlink fx:id="discoverNodesLink" text="Discover Dojo Electrum servers" onAction="#discoverNodes" />
+                <HelpLabel helpText="Fetches the Dojo directory (dojobay.pw) over Tor and adds the Electrum (Fulcrum) server of each reachable, cryptographically verified Dojo running version 1.28 or later to the list above. Runs automatically in the background at startup." />
+            </Field>
+            <Field text="">
+                <Label fx:id="discoverNodesStatus" wrapText="true" />
             </Field>
             <Field text="Use Proxy:">
                 <UnlabeledToggleSwitch fx:id="publicUseProxy"/>

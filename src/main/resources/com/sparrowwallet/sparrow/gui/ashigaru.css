@@ -3,25 +3,60 @@
    Dark theme, monospace-friendly
    ========================================================================== */
 
-/* ── Palette ──────────────────────────────────────────────────────────────── */
+/* ── Palette ──────────────────────────────────────────────────────────────────
+   Canonical Ashigaru design tokens. These same values are mirrored in
+   general.css and darktheme.css (JavaFX CSS has no @import) so that inherited
+   Sparrow screens share the identity. Keep the three files in sync.
+   ──────────────────────────────────────────────────────────────────────────── */
 * {
-    -ag-bg:           #121212;
-    -ag-bg-mid:       #1A1B20;
-    -ag-bg-light:     #242429;
-    -ag-bg-raised:    #2E2F36;
-    -ag-border:       #333340;
-    -ag-text:         #e0e0e0;
-    -ag-text-dim:     #A0A0A0;
-    -ag-text-faint:   #808080;
-    -ag-accent:       #cc1111;   /* Ashigaru red */
-    -ag-accent-dark:  #991010;
-    -ag-green:        #4caf50;
-    -ag-red:          #cc1111;
-    -ag-blue:         #42a5f5;
-    -ag-testnet:      #e57c00;
-    -ag-mainnet:      #4caf50;
-    -ag-radius:       3px;
+    /* Elevation ramp — deep, neutral, dark */
+    -ag-bg:            #0E0F12;   /* app canvas                */
+    -ag-bg-mid:        #16171C;   /* sidebar / header / bars   */
+    -ag-bg-light:      #1E2026;   /* cards / inputs            */
+    -ag-bg-raised:     #282A32;   /* hover / elevated surfaces */
+    -ag-border:        #2E3038;   /* hairline dividers         */
+    -ag-border-strong: #3A3D47;   /* emphasized borders        */
+
+    /* Text */
+    -ag-text:          #ECECEC;
+    -ag-text-dim:      #A6A7AD;
+    -ag-text-faint:    #6E7077;
+
+    /* Brand + semantic — hues preserved (identity) */
+    -ag-accent:        #cc1111;   /* Ashigaru red */
+    -ag-accent-hover:  #e11414;
+    -ag-accent-dark:   #991010;
+    -ag-accent-tint:   derive(#cc1111, -62%);   /* selection fills   */
+    -ag-accent-faint:  derive(#cc1111, -74%);   /* subtle accent bg  */
+    -ag-green:         #4caf50;
+    -ag-red:           #cc1111;
+    -ag-blue:          #42a5f5;
+    -ag-testnet:       #e57c00;
+    -ag-mainnet:       #4caf50;
+
+    /* Shape scale */
+    -ag-radius-sm:     4px;
+    -ag-radius:        6px;
+    -ag-radius-lg:     10px;
 }
+
+/* ── Reusable surfaces ──────────────────────────────────────────────────────── */
+.ag-card {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.28), 10, 0, 0, 3);
+}
+.ag-chip {
+    -fx-background-color: -ag-bg-raised;
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 9 3 9;
+    -fx-background-radius: 999;
+}
+.ag-chip.accent { -fx-background-color: -ag-accent-faint; -fx-text-fill: -ag-accent; }
 
 /* ── Root / Scene ─────────────────────────────────────────────────────────── */
 .root {
@@ -49,9 +84,23 @@
 }
 
 .app-title {
-    -fx-text-fill: -ag-accent;
+    -fx-text-fill: -ag-text;
     -fx-font-size: 16px;
     -fx-font-weight: bold;
+}
+.app-title-sub {
+    -fx-text-fill: -ag-accent;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 0 0 0;
+}
+.header-logo-frame {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: derive(-ag-accent, -45%);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 4;
 }
 
 .network-label {
@@ -123,11 +172,12 @@
 
 .primary-btn {
     -fx-background-color: -ag-accent;
-    -fx-text-fill: #000;
+    -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
     -fx-font-weight: bold;
 }
-.primary-btn:hover { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
+.primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
+.primary-btn:armed { -fx-background-color: -ag-accent-dark; }
 
 .secondary-btn {
     -fx-background-color: transparent;
@@ -138,11 +188,36 @@
 
 .action-btn { -fx-background-color: -ag-bg-light; }
 
+/* Subordinate wallet-management actions (sidebar) */
+.sidebar-manage-group { -fx-padding: 4 0 0 0; }
+.manage-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ag-text-dim;
+    -fx-border-color: transparent;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 12px;
+    -fx-padding: 5 10 5 10;
+    -fx-cursor: hand;
+}
+.manage-btn:hover { -fx-background-color: -ag-bg-raised; -fx-text-fill: -ag-text; }
+
+/* Bottom nav buttons (Tools / Settings) */
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ag-text-dim;
+    -fx-border-color: transparent;
+    -fx-alignment: CENTER_LEFT;
+    -fx-font-size: 13px;
+    -fx-padding: 8 12 8 12;
+    -fx-cursor: hand;
+}
+.nav-btn:hover { -fx-background-color: -ag-bg-raised; -fx-text-fill: -ag-text; }
+
 .mix-btn { -fx-min-width: 140; }
 .refresh-btn { -fx-font-size: 11px; -fx-padding: 4 10 4 10; }
 .delete-btn {
     -fx-background-color: derive(-ag-accent, -70%);
-    -fx-text-fill: -ag-accent;
+    -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
     -fx-font-size: 11px;
     -fx-padding: 4 10 4 10;
@@ -156,7 +231,25 @@
 
 /* ── Welcome pane ─────────────────────────────────────────────────────────── */
 .welcome-pane {
+    -fx-background-color:
+        radial-gradient(center 50% 38%, radius 65%, derive(-ag-accent, -82%), -ag-bg 60%),
+        -ag-bg;
+}
+.welcome-card {
+    -fx-background-color: -ag-bg-mid;
+    -fx-background-radius: -ag-radius-lg;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius-lg;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 24, 0, 0, 10);
+}
+.welcome-logo-frame {
     -fx-background-color: -ag-bg;
+    -fx-border-color: derive(-ag-accent, -45%);
+    -fx-border-width: 1;
+    -fx-border-radius: 999;
+    -fx-background-radius: 999;
+    -fx-padding: 12;
+    -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.22), 18, 0, 0, 0);
 }
 .welcome-title {
     -fx-text-fill: -ag-text;
@@ -164,7 +257,7 @@
     -fx-font-weight: bold;
 }
 .welcome-sub   { -fx-text-fill: -ag-text-dim;   -fx-font-size: 14px; }
-.welcome-hint  { -fx-text-fill: -ag-text-faint; -fx-font-size: 12px; }
+.welcome-hint  { -fx-text-fill: -ag-text-faint; -fx-font-size: 12px; -fx-text-alignment: center; }
 .welcome-hint.mono { -fx-font-family: monospace; -fx-text-fill: -ag-accent; }
 
 /* ── Wallet panel ─────────────────────────────────────────────────────────── */
@@ -209,17 +302,29 @@
 
 /* ── Balance row ──────────────────────────────────────────────────────────── */
 .balance-row {
-    -fx-background-color: -ag-bg-mid;
+    -fx-background-color: -ag-bg;
     -fx-border-color: -ag-border;
     -fx-border-width: 0 0 1 0;
+}
+.balance-card {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius;
+    -fx-padding: 12 16 12 16;
+}
+.balance-card.primary {
+    -fx-border-color: derive(-ag-accent, -55%);
+    -fx-background-color: linear-gradient(to bottom right, derive(-ag-accent, -80%), -ag-bg-light 55%);
 }
 .balance-caption {
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
-.balance-value          { -fx-text-fill: -ag-text;     -fx-font-size: 18px; -fx-font-weight: bold; }
-.balance-value.secondary { -fx-text-fill: -ag-text-dim; -fx-font-size: 13px; }
+.balance-value           { -fx-text-fill: -ag-text;     -fx-font-size: 20px; -fx-font-weight: bold; }
+.balance-card.primary .balance-value { -fx-text-fill: #fff; }
+.balance-value.secondary { -fx-text-fill: -ag-text-dim; -fx-font-size: 16px; }
 
 /* ── UTXO table ───────────────────────────────────────────────────────────── */
 .utxo-table {
@@ -253,6 +358,120 @@
     -fx-alignment: CENTER_LEFT;
 }
 .table-placeholder { -fx-text-fill: -ag-text-faint; }
+
+/* ── UTXO / Transaction card lists ────────────────────────────────────────── */
+.utxo-list {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+.utxo-list .list-cell {
+    -fx-background-color: -ag-bg;
+    -fx-text-fill: -ag-text;
+    -fx-padding: 12 16 12 16;
+    -fx-border-color: transparent transparent -ag-border transparent;
+    -fx-border-width: 0 0 1 0;
+}
+.utxo-list .list-cell:filled:hover    { -fx-background-color: -ag-bg-mid; }
+.utxo-list .list-cell:filled:selected { -fx-background-color: -ag-bg-light; }
+.utxo-list .list-cell:empty {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: transparent;
+}
+
+.card-value     { -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
+.card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
+
+/* Whirlpool Stats chart: orange (first pool) + yellow (second pool) series */
+.stats-chart .default-color0.chart-series-line { -fx-stroke: #ff9500; -fx-stroke-width: 2px; }
+.stats-chart .default-color1.chart-series-line { -fx-stroke: #ffcc00; -fx-stroke-width: 2px; }
+.stats-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #ff9500; }
+.stats-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #ffcc00; }
+
+/* Inline link inside a card (e.g. Stats tx explorer / exposure links) */
+.card-link {
+    -fx-text-fill: -ag-accent;
+    -fx-font-size: 11px;
+    -fx-padding: 0;
+    -fx-border-color: transparent;
+}
+.card-link:hover { -fx-underline: true; }
+.card-link:visited { -fx-text-fill: -ag-accent; }
+
+/* Sender PayNym name + abbreviated payment code on an incoming-payment transaction card */
+.paynym-name {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.paynym-code {
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 11px;
+}
+/* Neutral disc shown behind the avatar while it loads (and if unavailable) */
+.avatar-placeholder {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: 20;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 20;
+    -fx-border-width: 1;
+}
+
+/* Consistent left icon on every transaction card (send/receive arrow) */
+.tx-icon {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: 20;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 20;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.tx-icon.received { -fx-text-fill: -ag-green; }
+.tx-icon.sent     { -fx-text-fill: -ag-accent; }
+
+/* Read-only master fingerprint shown on the unlock / passphrase dialog */
+.fingerprint-hex {
+    -fx-opacity: 1.0;
+    -fx-background-color: -ag-bg-light;
+    -fx-text-fill: -ag-text;
+    -fx-prompt-text-fill: -ag-text-faint;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+}
+.fingerprint-hex:disabled { -fx-opacity: 1.0; }
+
+/* Inline editable label inside a card */
+.card-label-field {
+    -fx-background-color: transparent;
+    -fx-text-fill: -ag-text;
+    -fx-prompt-text-fill: -ag-text-faint;
+    -fx-border-color: transparent;
+    -fx-padding: 2 0 2 0;
+    -fx-font-size: 12px;
+}
+.card-label-field:focused {
+    -fx-background-color: -ag-bg-light;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius-sm;
+    -fx-background-radius: -ag-radius-sm;
+    -fx-padding: 2 6 2 6;
+}
+
+/* Mix-status badge on the right of a UTXO card */
+.mix-badge {
+    -fx-padding: 3 9 3 9;
+    -fx-background-color: -ag-bg-raised;
+    -fx-background-radius: 999;
+}
+.mix-badge .mix-badge-text { -fx-text-fill: -ag-text-dim; -fx-font-size: 11px; -fx-font-weight: bold; }
+.mix-badge.active          { -fx-background-color: -ag-accent-faint; }
+.mix-badge.active .mix-badge-text { -fx-text-fill: -ag-accent; }
+.mix-badge.done            { -fx-background-color: derive(-ag-green, -65%); }
+.mix-badge.done .mix-badge-text   { -fx-text-fill: -ag-green; }
 
 /* ── Mix button row ───────────────────────────────────────────────────────── */
 .mix-button-row {
@@ -290,13 +509,40 @@
 
 .section-title {
     -fx-text-fill: -ag-accent;
-    -fx-font-size: 11px;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+/* Tx0 broadcast animation overlay */
+.tx0-overlay {
+    -fx-background-color: -ag-bg-mid;
+}
+.tx0-broadcast-status {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.tx0-step {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 13px;
+}
+.tx0-step.done {
+    -fx-text-fill: -ag-green;
     -fx-font-weight: bold;
 }
 .field-label  { -fx-text-fill: -ag-text-dim; }
 .field-value  { -fx-text-fill: -ag-text;     -fx-font-family: monospace; }
 .total-label  { -fx-text-fill: -ag-text;     -fx-font-weight: bold; }
 .total-value  { -fx-text-fill: -ag-accent;   -fx-font-weight: bold; -fx-font-family: monospace; }
+
+/* Tx0 preview breakdown panel */
+.preview-grid {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius;
+    -fx-padding: 14 16 14 16;
+}
 
 /* ── TextField / ComboBox / Spinner ──────────────────────────────────────── */
 .text-field, .combo-box, .spinner {
@@ -314,6 +560,39 @@
 .combo-box-popup .list-view { -fx-background-color: -ag-bg-light; -fx-border-color: -ag-border; }
 .combo-box-popup .list-cell:hover { -fx-background-color: -ag-bg-raised; }
 .combo-box-popup .list-cell:selected { -fx-background-color: derive(-ag-accent, -60%); -fx-text-fill: -ag-accent; }
+
+/* Monospace text area (seed / descriptor entry) */
+.mono-area {
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 13px;
+}
+.mono-area .content { -fx-background-color: -ag-bg; }
+
+/* ── Wallet create / restore wizard dialogs ──────────────────────────────── */
+.wizard-header {
+    -fx-background-color: -ag-bg;
+    -fx-border-color: -ag-border;
+    -fx-border-width: 0 0 1 0;
+}
+.wizard-eyebrow  { -fx-text-fill: -ag-accent;    -fx-font-size: 10px; -fx-font-weight: bold; }
+.wizard-title    { -fx-text-fill: -ag-text;      -fx-font-size: 18px; -fx-font-weight: bold; }
+.wizard-subtitle { -fx-text-fill: -ag-text-dim;  -fx-font-size: 12px; -fx-padding: 2 0 0 0; }
+
+/* Large selectable choice cards (wallet type / seed length) */
+.type-card {
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius;
+    -fx-padding: 14 16 14 16;
+    -fx-cursor: hand;
+}
+.type-card:hover {
+    -fx-background-color: -ag-bg-raised;
+    -fx-border-color: -ag-accent;
+}
+.type-card-title { -fx-text-fill: -ag-text;     -fx-font-size: 14px; -fx-font-weight: bold; }
+.type-card-desc  { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
 
 /* ── Toggle buttons ───────────────────────────────────────────────────────── */
 .toggle-button {
@@ -369,9 +648,29 @@
 .badbank-warning-icon { -fx-text-fill: -ag-testnet; -fx-font-size: 14px; }
 .badbank-info-text    { -fx-text-fill: -ag-testnet; -fx-font-size: 11px; }
 
+/* ── Coordinator-unreachable warning bar ──────────────────────────────────── */
+.coordinator-warning-bar {
+    -fx-background-color: -ag-accent-faint;
+    -fx-border-color: -ag-accent;
+    -fx-border-width: 0 0 1 0;
+}
+.coordinator-warning-icon { -fx-text-fill: -ag-accent; -fx-font-size: 14px; }
+.coordinator-warning-text { -fx-text-fill: -ag-accent; -fx-font-size: 11px; }
+
+/* ── Syncing bar (wallet history refreshing) ──────────────────────────────── */
+.syncing-bar {
+    -fx-background-color: derive(-ag-blue, -75%);
+    -fx-border-color: -ag-blue;
+    -fx-border-width: 0 0 1 0;
+}
+.syncing-text { -fx-text-fill: -ag-blue; -fx-font-size: 11px; }
+.syncing-spinner { -fx-progress-color: -ag-blue; }
+.syncing-spinner .percentage { visibility: hidden; }
+
 /* ── Copy icon button (used in tables and receive dialog) ─────────────────── */
 .copy-icon-btn {
     -fx-background-color: transparent;
+    -fx-text-fill: -ag-text-dim;
     -fx-padding: 1 3 1 3;
     -fx-cursor: hand;
     -fx-border-color: transparent;
@@ -383,6 +682,7 @@
 }
 .copy-icon-btn:hover {
     -fx-background-color: -ag-bg-raised;
+    -fx-text-fill: -ag-accent;
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
@@ -628,7 +928,52 @@
     -fx-background-radius: 100;
 }
 
+/* ── Seed word display grid (Seed Words dialog) ───────────────────────────── */
+.seed-word-grid {
+    -fx-padding: 4 2 4 2;
+}
+.seed-word-grid .label {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 12px;
+}
+.seed-word-grid .text-field {
+    -fx-background-color: -ag-bg-light;
+    -fx-text-fill: -ag-text;
+    -fx-border-color: -ag-border;
+    -fx-border-radius: -ag-radius-sm;
+    -fx-background-radius: -ag-radius-sm;
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 13px;
+    -fx-padding: 5 8 5 8;
+}
+.seed-word-grid .text-field:focused { -fx-border-color: -ag-accent; }
+
 /* ── BIP47 message verifier ─────────────────────── */
+.verifier-panel { -fx-background-color: -ag-bg; }
+
+.verifier-hero {
+    -fx-background-color: linear-gradient(to right, derive(-ag-accent, -80%), -ag-bg-mid 60%);
+    -fx-background-radius: -ag-radius-lg;
+    -fx-border-color: derive(-ag-accent, -55%);
+    -fx-border-radius: -ag-radius-lg;
+}
+.verifier-hero-icon {
+    -fx-min-width: 46; -fx-min-height: 46; -fx-max-width: 46; -fx-max-height: 46;
+    -fx-background-color: -ag-accent-faint;
+    -fx-background-radius: 999;
+    -fx-border-color: derive(-ag-accent, -35%);
+    -fx-border-radius: 999;
+}
+.verifier-hero-glyph { -fx-text-fill: -ag-accent; -fx-font-size: 22px; -fx-font-weight: bold; }
+.verifier-hero-title { -fx-text-fill: -ag-text;   -fx-font-size: 18px; -fx-font-weight: bold; }
+.verifier-hero-sub   { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
+
+.step-chip   { -fx-min-width: 22; -fx-alignment: CENTER; }
+.step-title  { -fx-text-fill: -ag-text; -fx-font-size: 13px; -fx-font-weight: bold; }
+.step-optional { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; -fx-font-style: italic; }
+
+.verify-btn { -fx-font-size: 14px; -fx-padding: 10 16 10 16; }
+
 .verifier-panel .text-area {
     -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
     -fx-font-size: 12px;

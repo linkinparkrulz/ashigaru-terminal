@@ -83,6 +83,7 @@ public class DownloadVerifierDialog extends Dialog<ButtonBar.ButtonData> {
     public DownloadVerifierDialog(File initialSignatureFile) {
         final DialogPane dialogPane = getDialogPane();
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.getStylesheets().add(AppServices.class.getResource("dialog.css").toExternalForm());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
         dialogPane.setHeader(new Header());

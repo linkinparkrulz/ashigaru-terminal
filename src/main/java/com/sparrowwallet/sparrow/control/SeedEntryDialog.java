@@ -16,6 +16,7 @@ public class SeedEntryDialog extends Dialog<List<String>> {
         final DialogPane dialogPane = new MnemonicGridDialogPane();
         setDialogPane(dialogPane);
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         AppServices.setStageIcon(dialogPane.getScene().getWindow());
 
         int lines = numWords / 3;

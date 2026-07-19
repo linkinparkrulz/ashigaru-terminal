@@ -16,6 +16,11 @@
                     <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="CHECK_CIRCLE" />
                 </graphic>
             </ToggleButton>
+            <ToggleButton fx:id="statsButton" text="Whirlpool Stats" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$toolsMenu">
+                <graphic>
+                    <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="CHART_BAR" />
+                </graphic>
+            </ToggleButton>
         </VBox>
     </left>
     <center>

@@ -8,6 +8,7 @@
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.sparrowwallet.sparrow.gui.AshigaruMixToController"
             prefWidth="440" prefHeight="280"
+            stylesheets="@ashigaru.css, @../darktheme.css"
             styleClass="mixto-pane">
 
     <buttonTypes/><!-- handled programmatically via onApply / onCancel -->

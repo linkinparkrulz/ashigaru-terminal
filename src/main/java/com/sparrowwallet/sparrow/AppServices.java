@@ -24,6 +24,7 @@ import com.sparrowwallet.sparrow.control.TrayManager;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.*;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import com.sparrowwallet.sparrow.soroban.SorobanServices;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolServices;
 import javafx.application.Application;
@@ -67,6 +68,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import static com.sparrowwallet.sparrow.control.DownloadVerifierDialog.*;
@@ -200,10 +202,26 @@ public class AppServices {
                 torService.start();
             } else {
                 restartServices();
+                //Tor is external and assumed already available, so discover Dojo servers now
+                maybeStartDojoDiscovery();
             }
         }
 
         addURIHandlers();
+    }
+
+    private static final AtomicBoolean dojoDiscoveryStarted = new AtomicBoolean(false);
+
+    private static void maybeStartDojoDiscovery() {
+        if(dojoDiscoveryStarted.compareAndSet(false, true)) {
+            DojoNodeDiscovery.discoverInBackground();
+        }
+    }
+
+    @Subscribe
+    public void torReadyStatus(TorReadyStatusEvent event) {
+        //Internal Tor is up; discover the Electrum servers running on directory Dojos
+        maybeStartDojoDiscovery();
     }
 
     private void restartServices() {
@@ -772,8 +790,34 @@ public class AppServices {
         Stage stage = (Stage)window;
         stage.getIcons().add(getWindowIcon());
 
-        if(stage.getScene() != null && Config.get().getTheme() == Theme.DARK) {
-            stage.getScene().getStylesheets().add(AppServices.class.getResource("darktheme.css").toExternalForm());
+        // Ashigaru is a dark-only app: theme every window/dialog unconditionally so
+        // pop-ups (Seed Words, password prompts, alerts, etc.) match the main UI.
+        // darktheme.css carries the re-themed Modena base + -ag-* tokens (dark
+        // surfaces, red accent); ashigaru.css adds the brand font + refined control
+        // skins. (The legacy Theme.DARK gate is intentionally dropped — the config
+        // theme defaults to LIGHT, which used to leave dialogs un-themed.)
+        if(stage.getScene() != null) {
+            addAshigaruStylesheets(stage.getScene().getStylesheets());
+            // Also add at the scene-root (DialogPane) level. Dialogs add general.css
+            // to their pane in the constructor, and in JavaFX a Parent's stylesheets
+            // take precedence over the Scene's — so scene-level theming alone loses to
+            // general.css. Appending here (after general.css) makes the dark theme win.
+            javafx.scene.Parent root = stage.getScene().getRoot();
+            if(root != null) {
+                addAshigaruStylesheets(root.getStylesheets());
+            }
+        }
+    }
+
+    /** Adds the Ashigaru dark theme stylesheets to the given list, avoiding duplicates. */
+    public static void addAshigaruStylesheets(List<String> stylesheets) {
+        String darkCss = AppServices.class.getResource("darktheme.css").toExternalForm();
+        if(!stylesheets.contains(darkCss)) {
+            stylesheets.add(darkCss);
+        }
+        String ashigaruCss = AppServices.class.getResource("gui/ashigaru.css").toExternalForm();
+        if(!stylesheets.contains(ashigaruCss)) {
+            stylesheets.add(ashigaruCss);
         }
     }
 
@@ -829,6 +873,21 @@ public class AppServices {
                 url += "/" + Network.get().getName();
             }
             url += "/tx/" + txid;
+        }
+        AppServices.get().getApplication().getHostServices().showDocument(url);
+    }
+
+    public static void openAmIExposed(String txid) {
+        if(Config.get().isAmIExposedDisabled()) {
+            return;
+        }
+
+        Server amIExposed = Config.get().getAmIExposed() == null ? AmIExposed.AM_I_EXPOSED.getServer() : Config.get().getAmIExposed();
+        String url = amIExposed.getUrl();
+        if(url.contains("{0}")) {
+            url = url.replace("{0}", txid);
+        } else {
+            url += "/#tx=" + txid;
         }
         AppServices.get().getApplication().getHostServices().showDocument(url);
     }
@@ -1050,6 +1109,7 @@ public class AppServices {
             Image image = new Image("/image/sparrow-small.png");
             walletChoiceDialog.getDialogPane().setGraphic(new ImageView(image));
             setStageIcon(walletChoiceDialog.getDialogPane().getScene().getWindow());
+            addAshigaruStylesheets(walletChoiceDialog.getDialogPane().getStylesheets());
             moveToActiveWindowScreen(walletChoiceDialog);
             Optional<Wallet> optWallet = walletChoiceDialog.showAndWait();
             if(optWallet.isPresent()) {

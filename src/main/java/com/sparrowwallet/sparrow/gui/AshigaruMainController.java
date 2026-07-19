@@ -167,8 +167,11 @@ public class AshigaruMainController implements Initializable {
 
         boolean encrypted = false;
         try { encrypted = walletForm.getStorage().isEncrypted(); } catch (IOException ignored) {}
-        lockWalletBtn.setVisible(encrypted);
-        lockWalletBtn.setManaged(encrypted);
+        boolean needsPassphrase = walletForm.getWallet().getKeystores().stream()
+                .anyMatch(ks -> ks.hasSeed() && ks.getSeed().needsPassphrase());
+        boolean lockable = encrypted || needsPassphrase;
+        lockWalletBtn.setVisible(lockable);
+        lockWalletBtn.setManaged(lockable);
 
         // Select Deposit by default
         depositBtn.setSelected(true);
@@ -345,11 +348,13 @@ public class AshigaruMainController implements Initializable {
     private Dialog<String> buildPassphraseDialog(String walletName) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Delete Wallet");
-        dialog.setHeaderText("Enter passphrase to permanently delete \"" + walletName + "\"");
         dialog.initOwner(AshigaruGui.get().getMainStage());
+        WalletCreationFlow.styleWizardDialog(dialog, "DELETE WALLET", "Confirm deletion",
+                "Enter your BIP39 passphrase to permanently delete \"" + walletName + "\".");
 
         ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(deleteBtn, ButtonType.CANCEL);
+        WalletCreationFlow.styleWizardButtons(dialog.getDialogPane());
 
         Label hint = new Label("Enter your BIP39 passphrase (leave empty if none):");
         PasswordField pf = new PasswordField();
@@ -465,6 +470,7 @@ public class AshigaruMainController implements Initializable {
             alert.setTitle(title);
             alert.setHeaderText(title);
             alert.initOwner(AshigaruGui.get().getMainStage());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
             alert.show();
         });
     }
@@ -473,15 +479,25 @@ public class AshigaruMainController implements Initializable {
     private void onLockWallet() {
         if (currentWalletForm == null) return;
         File walletFile = currentWalletForm.getStorage().getWalletFile();
-        // Remove nested wallet forms from the registry (master removal won't clean these)
-        for (WalletForm nested : currentWalletForm.getNestedWalletForms()) {
-            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
-        }
-        AshigaruGui.removeWallet(currentWalletForm.getWalletId());
-        currentWalletForm = null;
+        unloadWalletForm(currentWalletForm);
         unloadedWalletFiles.add(walletFile);
         refreshWalletList();
         showWelcome();
+    }
+
+    /**
+     * Unloads a wallet form (and its nested Premix/Postmix/Badbank forms) from the UI and registry,
+     * returning to the locked state. Shared by the Lock button and the reopen-on-wrong-passphrase flow.
+     */
+    private void unloadWalletForm(WalletForm form) {
+        // Remove nested wallet forms from the registry (master removal won't clean these)
+        for (WalletForm nested : form.getNestedWalletForms()) {
+            AshigaruGui.get().getWalletForms().remove(nested.getWalletId());
+        }
+        AshigaruGui.removeWallet(form.getWalletId());
+        if (currentWalletForm == form) {
+            currentWalletForm = null;
+        }
     }
 
     @FXML
@@ -494,6 +510,7 @@ public class AshigaruMainController implements Initializable {
             alert.setHeaderText("No seed words available");
             alert.setContentText("This wallet does not have seed words stored (e.g. it may be a watch-only wallet).");
             alert.initOwner(AshigaruGui.get().getMainStage());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
             alert.showAndWait();
             return;
         }
@@ -667,11 +684,13 @@ public class AshigaruMainController implements Initializable {
     private Dialog<String> buildPasswordDialog(String walletName) {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Wallet Password");
-        dialog.setHeaderText("Enter password for: " + walletName);
         dialog.initOwner(AshigaruGui.get().getMainStage());
+        WalletCreationFlow.styleWizardDialog(dialog, "OPEN WALLET", "Wallet password",
+                "Enter the password for " + walletName + ".");
 
         ButtonType okBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(okBtn, ButtonType.CANCEL);
+        WalletCreationFlow.styleWizardButtons(dialog.getDialogPane());
 
         PasswordField pf = new PasswordField();
         pf.setPromptText("Password");
@@ -693,11 +712,23 @@ public class AshigaruMainController implements Initializable {
             try {
                 storage.restorePublicKeysFromSeed(wak.getWallet(), wak.getKey());
                 if (!wak.getWallet().isValid()) {
-                    log.warn("Wallet file is not valid (likely a child/aux wallet opened standalone): {}",
-                            storage.getWalletFile().getName());
-                    showError("Cannot open this wallet",
-                            "This file is not a complete wallet on its own. "
-                                    + "If it's a Premix, Postmix or Badbank file, open the parent wallet instead and use the tabs.");
+                    // Distinguish "user cancelled the passphrase prompt" from "aux/child wallet opened standalone"
+                    boolean passphraseCancelled = wak.getWallet().getKeystores().stream()
+                            .anyMatch(ks -> ks.hasSeed() && ks.getSeed().getPassphrase() == null
+                                    && ks.getSeed().needsPassphrase());
+                    if (passphraseCancelled) {
+                        log.info("Wallet not opened — BIP39 passphrase prompt was cancelled: {}",
+                                storage.getWalletFile().getName());
+                        showWizardError("WALLET NOT OPENED", "Passphrase required",
+                                "The BIP39 passphrase is required to open this wallet. "
+                                        + "No passphrase was entered, so the wallet was not opened.");
+                    } else {
+                        log.warn("Wallet file is not valid (likely a child/aux wallet opened standalone): {}",
+                                storage.getWalletFile().getName());
+                        showWizardError("CANNOT OPEN", "Not a standalone wallet",
+                                "This file is not a complete wallet on its own. "
+                                        + "If it's a Premix, Postmix or Badbank file, open the parent wallet instead and use the tabs.");
+                    }
                     Platform.runLater(() -> walletSelector.getSelectionModel().select(PLACEHOLDER));
                     return;
                 }
@@ -776,7 +807,7 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void walletHistoryStarted(WalletHistoryStartedEvent event) {
         if (event.getWallet().isMasterWallet()) {
-            Platform.runLater(() -> statusLabel.setText("Syncing " + event.getWallet().getDisplayName() + "…"));
+            Platform.runLater(() -> statusLabel.setText("⟳  Syncing " + event.getWallet().getDisplayName() + "…"));
         }
     }
 
@@ -790,6 +821,28 @@ public class AshigaruMainController implements Initializable {
     @Subscribe
     public void walletHistoryFailed(WalletHistoryFailedEvent event) {
         walletHistoryFinished(new WalletHistoryFinishedEvent(event.getWallet()));
+    }
+
+    /**
+     * Posted by WalletForm when an all-history change on a passphrase wallet suggests a mistyped
+     * passphrase and the user chose "Reopen Wallet". Unload the (wrong-passphrase) wallet and reopen
+     * it so the passphrase is prompted again — the same lock/unlock plumbing the Lock button uses.
+     */
+    @Subscribe
+    public void requestWalletOpen(RequestWalletOpenEvent event) {
+        File file = event.getFile();
+        if (file == null) return;
+        Platform.runLater(() -> {
+            WalletForm form = AshigaruGui.get().getWalletForms().values().stream()
+                    .filter(f -> f.getWallet().isMasterWallet() && file.equals(f.getStorage().getWalletFile()))
+                    .findFirst().orElse(null);
+            if (form != null) {
+                unloadWalletForm(form);
+            }
+            unloadedWalletFiles.add(file);
+            refreshWalletList();
+            openWalletFile(file);
+        });
     }
 
     @Subscribe
@@ -869,7 +922,21 @@ public class AshigaruMainController implements Initializable {
         alert.setTitle(title);
         alert.setHeaderText(title);
         alert.initOwner(AshigaruGui.get().getMainStage());
+        AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
         return alert.showAndWait();
+    }
+
+    private void showWizardError(String eyebrow, String title, String message) {
+        Dialog<Void> dlg = new Dialog<>();
+        dlg.setTitle(title);
+        dlg.initOwner(AshigaruGui.get().getMainStage());
+        WalletCreationFlow.styleWizardDialog(dlg, eyebrow, title, message);
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.OK);
+        WalletCreationFlow.styleWizardButtons(dlg.getDialogPane());
+        dlg.getDialogPane().setPrefWidth(460);
+        AppServices.moveToActiveWindowScreen(dlg);
+        dlg.setResultConverter(bt -> null);
+        dlg.showAndWait();
     }
 
     private static String deriveWalletName(File file) {
