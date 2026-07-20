@@ -51,7 +51,7 @@ public class DojoNodeDiscovery {
 
     private static final int MIN_MAJOR = 1;
     private static final int MIN_MINOR = 28;
-    private static final int MAX_THREADS = 6;
+    private static final int MAX_THREADS = 3;
     private static final int PER_NODE_TIMEOUT_SECONDS = 60;
 
     public static class DiscoveredNode {

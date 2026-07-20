@@ -202,8 +202,6 @@ public class AppServices {
                 torService.start();
             } else {
                 restartServices();
-                //Tor is external and assumed already available, so discover Dojo servers now
-                maybeStartDojoDiscovery();
             }
         }
 
@@ -216,12 +214,6 @@ public class AppServices {
         if(dojoDiscoveryStarted.compareAndSet(false, true)) {
             DojoNodeDiscovery.discoverInBackground();
         }
-    }
-
-    @Subscribe
-    public void torReadyStatus(TorReadyStatusEvent event) {
-        //Internal Tor is up; discover the Electrum servers running on directory Dojos
-        maybeStartDojoDiscovery();
     }
 
     private void restartServices() {
@@ -297,6 +289,10 @@ public class AppServices {
             if(connectionService.getValue() != null) {
                 EventManager.get().post(connectionService.getValue());
             }
+
+            //Now that the user's server is connected, discover Dojo servers in the background.
+            //Deferring until after connect avoids saturating Tor circuits during the initial connection.
+            maybeStartDojoDiscovery();
         });
         connectionService.setOnFailed(failEvent -> {
             //Close connection here to create a new transport next time we try
