@@ -1102,8 +1102,11 @@ public class AppServices {
             walletChoiceDialog.initOwner(getActiveWindow());
             walletChoiceDialog.setTitle("Choose Wallet");
             walletChoiceDialog.setHeaderText("Choose a wallet to " + actionDescription);
-            Image image = new Image("/image/sparrow-small.png");
-            walletChoiceDialog.getDialogPane().setGraphic(new ImageView(image));
+            Image image = new Image("/image/Ashigaru_Terminal_Logo_Circle.png");
+            ImageView imageView = new ImageView(image);
+            imageView.setPreserveRatio(true);
+            imageView.setFitHeight(50);
+            walletChoiceDialog.getDialogPane().setGraphic(imageView);
             setStageIcon(walletChoiceDialog.getDialogPane().getScene().getWindow());
             addAshigaruStylesheets(walletChoiceDialog.getDialogPane().getStylesheets());
             moveToActiveWindowScreen(walletChoiceDialog);

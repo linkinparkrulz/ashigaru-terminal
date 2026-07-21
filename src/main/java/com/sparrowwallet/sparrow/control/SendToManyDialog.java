@@ -43,8 +43,11 @@ public class SendToManyDialog extends Dialog<List<Payment>> {
         dialogPane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
         AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.setHeaderText("Send to many recipients by specifying addresses and amounts.\nOnly the first row's label is necessary.");
-        Image image = new Image("/image/sparrow-small.png");
-        dialogPane.setGraphic(new ImageView(image));
+        Image image = new Image("/image/Ashigaru_Terminal_Logo_Circle.png");
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitHeight(50);
+        dialogPane.setGraphic(imageView);
 
         List<Payment> initialPayments = IntStream.range(0, 100).mapToObj(i -> new Payment(null, null, -1, false)).collect(Collectors.toList());
         Grid grid = getGrid(initialPayments);

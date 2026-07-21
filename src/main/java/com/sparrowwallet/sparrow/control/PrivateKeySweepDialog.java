@@ -370,7 +370,7 @@ public class PrivateKeySweepDialog extends Dialog<Transaction> {
             });
 
             if(Config.get().getServerType() == ServerType.BITCOIN_CORE) {
-                ServiceProgressDialog serviceProgressDialog = new ServiceProgressDialog("Address Scan", "Scanning address for transactions...", "/image/sparrow.png", addressUtxosService);
+                ServiceProgressDialog serviceProgressDialog = new ServiceProgressDialog("Address Scan", "Scanning address for transactions...", "/image/Ashigaru_Terminal_Logo_Circle.png", addressUtxosService);
                 serviceProgressDialog.initOwner(getDialogPane().getScene().getWindow());
                 AppServices.moveToActiveWindowScreen(serviceProgressDialog);
             }

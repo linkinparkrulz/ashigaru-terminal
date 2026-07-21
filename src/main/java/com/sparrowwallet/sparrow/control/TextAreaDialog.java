@@ -44,8 +44,11 @@ public class TextAreaDialog extends Dialog<String> {
         final DialogPane dialogPane = new TextAreaDialogPane();
         setDialogPane(dialogPane);
 
-        Image image = new Image("/image/sparrow-small.png");
-        dialogPane.setGraphic(new ImageView(image));
+        Image image = new Image("/image/Ashigaru_Terminal_Logo_Circle.png");
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitHeight(50);
+        dialogPane.setGraphic(imageView);
 
         HBox hbox = new HBox();
         this.textArea = new TextArea(defaultValue);
