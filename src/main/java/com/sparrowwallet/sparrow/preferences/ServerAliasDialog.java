@@ -40,8 +40,11 @@ public class ServerAliasDialog extends Dialog<Server> {
         AppServices.addAshigaruStylesheets(dialogPane.getStylesheets());
         dialogPane.setHeaderText("Configure aliases for recently connected servers.\nNew servers are added to this list on successful connections.");
 
-        Image image = new Image("/image/sparrow-small.png");
-        dialogPane.setGraphic(new ImageView(image));
+        Image image = new Image("/image/Ashigaru_Terminal_Logo_Circle.png");
+        ImageView imageView = new ImageView(image);
+        imageView.setPreserveRatio(true);
+        imageView.setFitHeight(50);
+        dialogPane.setGraphic(imageView);
 
         serverTable = new TableView<>();
         serverTable.setPlaceholder(new Label("No servers added yet"));

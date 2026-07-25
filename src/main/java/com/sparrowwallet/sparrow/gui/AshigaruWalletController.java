@@ -729,18 +729,25 @@ public class AshigaruWalletController implements Initializable {
      * Detects when mixing can no longer reach the Whirlpool coordinator. While the coordinator
      * is down the client loops re-emitting the CONNECTING step, so a UTXO that stays in
      * CONNECTING beyond {@link #COORDINATOR_WARN_MS} is treated as unreachable and the warning
-     * bar is shown. Any forward progress, failure, or move-on clears that UTXO's tracking.
+     * bar is shown. Because coordinator reachability is global (a single connection), any forward
+     * progress or completed round clears tracking for ALL UTXOs so the bar drops as soon as the
+     * coordinator is reachable again; a failure only clears the UTXO that failed.
      * Runs on the FX thread (called from within {@code whirlpoolMix}'s Platform.runLater).
      */
     private void trackCoordinatorReachability(WhirlpoolMixEvent event) {
         BlockTransactionHashIndex utxo = event.getUtxo();
         MixProgress mixProgress = event.getMixProgress();
-        if (event.getMixFailReason() != null || event.getNextUtxo() != null) {
-            connectingSince.remove(utxo);
-        } else if (mixProgress != null && mixProgress.getMixStep() == MixStep.CONNECTING) {
+        if (mixProgress != null && mixProgress.getMixStep() == MixStep.CONNECTING) {
+            // Still trying to reach the coordinator for this UTXO; track how long it's been stuck.
             connectingSince.putIfAbsent(utxo, System.currentTimeMillis());
-        } else {
+        } else if (event.getMixFailReason() != null) {
+            // A failure doesn't prove the coordinator is reachable; just stop tracking this UTXO.
             connectingSince.remove(utxo);
+        } else {
+            // Any forward progress (CONNECTED, REGISTERED_INPUT, ...) or a completed round (nextUtxo)
+            // proves the coordinator is reachable again — clear ALL stuck-tracking so the banner drops
+            // immediately, including UTXOs that went idle while it was down.
+            connectingSince.clear();
         }
         refreshCoordinatorWarning();
     }

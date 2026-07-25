@@ -130,7 +130,7 @@
             <Label text="|" styleClass="status-separator"/>
             <Label fx:id="blockHeightLabel" text="Block —" styleClass="status-label"/>
             <Label text="|" styleClass="status-separator"/>
-            <Label fx:id="connectionLabel" text="○ Disconnected" styleClass="status-label disconnected"/>
+            <Label fx:id="connectionLabel" text="○ Disconnected" styleClass="status-label disconnected connection-toggle" onMouseClicked="#onConnectionLabelClicked"/>
         </HBox>
     </bottom>
 
