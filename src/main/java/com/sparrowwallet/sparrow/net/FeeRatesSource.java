@@ -22,6 +22,13 @@ public enum FeeRatesSource {
             return getThreeTierFeeRates(this, defaultblockTargetFeeRates, url);
         }
     },
+    MEMPOOL_SPACE_PRECISE("mempool.space (precise)") {
+        @Override
+        public Map<Integer, Double> getBlockTargetFeeRates(Map<Integer, Double> defaultblockTargetFeeRates) {
+            String url = AppServices.isUsingProxy() ? "http://mempoolhqx4isw62xs7abwphsq7ldayuidyx2v2oethdhhj6mlo2r6ad.onion/api/v1/fees/precise" : "https://mempool.space/api/v1/fees/precise";
+            return getThreeTierFeeRates(this, defaultblockTargetFeeRates, url);
+        }
+    },
     BITCOINFEES_EARN_COM("bitcoinfees.earn.com") {
         @Override
         public Map<Integer, Double> getBlockTargetFeeRates(Map<Integer, Double> defaultblockTargetFeeRates) {
