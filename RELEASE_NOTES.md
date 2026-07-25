@@ -1,3 +1,35 @@
+# Ashigaru Desktop 1.1.2
+
+*Released 2026-07-25*
+
+A quality-of-life release focused on faster, clearer server connection and finishing the
+Ashigaru rebrand.
+
+## Server & connectivity
+
+- **Live connection status.** The bottom status indicator now shows a **"Connecting…"** state
+  during Tor bootstrap and while the Electrum connection is established, so you can see it
+  working instead of a stale "Disconnected".
+- **One-click connect / disconnect.** Click the status indicator to connect or disconnect —
+  a fast alternative to Server Settings → Test Connection. The choice is remembered, so the
+  app auto-connects on future launches.
+- **Faster startup connection.** Dojo server discovery now runs *after* your server connects
+  instead of competing with it for Tor circuits, so you connect right away — for both private
+  and public servers.
+
+## Whirlpool / mixing
+
+- **Coordinator warning clears on recovery.** The "Can't reach the Whirlpool coordinator"
+  banner now disappears as soon as the coordinator is reachable again (for example, once an
+  input registers), instead of staying stuck until you switched accounts.
+
+## Interface
+
+- **Finished the rebrand.** Replaced the remaining Sparrow logos with the Ashigaru logo in the
+  Server Aliases window and the other dialogs that still showed it.
+
+---
+
 # Ashigaru Desktop 1.1.1
 
 *Released 2026-07-16*
