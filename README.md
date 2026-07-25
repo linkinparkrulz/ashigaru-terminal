@@ -4,6 +4,10 @@ A graphical Bitcoin wallet and desktop GUI front-end for [Ashigaru Terminal](htt
 
 ---
 
+<img width="1092" height="829" alt="2026-07-25_12-10" src="https://github.com/user-attachments/assets/31386ed2-2dc7-49b4-97fc-f12de9f46dfc" />
+
+---
+
 ### Features
 
 - **Whirlpool coinjoin** — Tx0, zeroleak coinjoin, Premix/Postmix/Badbank account management
