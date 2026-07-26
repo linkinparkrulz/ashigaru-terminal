@@ -170,10 +170,45 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
+ 12. WHIRLPOOL ENGINE CLEANUP ON DELETE / MIX BUTTON RECOVERY
+--------------------------------------------------------------------
+  [ ] Start Postmix mixing on a wallet, then Delete that wallet ->
+      no error, wallet disappears from the sidebar as normal.
+      (Can't observe the background engine directly from the UI -
+      this is really confirming the delete path doesn't hang or
+      throw; the engine teardown itself is covered by an automated
+      test, see WhirlpoolServicesTest.)
+  [ ] Configure wallet B's Mix To -> wallet A, then Delete wallet A ->
+      re-open wallet B's Mix To dialog: it should show "Mix To..."
+      (cleared), not still pointing at the deleted wallet.
+  [ ] Lock (not delete) a wallet that is actively mixing -> mixing
+      keeps running in the background as before (this is intentional,
+      NOT a regression - only Delete should stop it).
+  [ ] Click "Start Mixing" on a Premix/Postmix account with nothing
+      currently eligible to mix (e.g. right after a fresh Tx0, before
+      confirmations) -> button should NOT get stuck on "Starting...";
+      it should settle back to a normal Start/Stop state once the
+      engine actually starts.
+  [ ] Switch between wallets (or between Deposit/Premix/Postmix/
+      Badbank tabs) repeatedly while one wallet has mixing running ->
+      the Start/Stop Mixing button always reflects the correct state
+      for whichever account is currently active, never stuck from a
+      previously-viewed account.
+  [ ] Disconnect Tor/network, then click "Start Mixing" so the start
+      attempt fails -> button recovers to a clickable state instead
+      of staying on "Starting..." forever.
+
+
+--------------------------------------------------------------------
  NOTES
 --------------------------------------------------------------------
   - Needs Tor + a mainnet wallet with real history for the passphrase
     and discovery items.
-  - Manual testing only; no automated tests on this branch.
+  - Manual testing only; no automated tests on this branch, EXCEPT:
+    WhirlpoolServicesTest (src/test/.../whirlpool/) now covers the
+    closeWallet() engine-cleanup logic exercised in section 12 above
+    via `./gradlew test`. Sections 12's UI-facing items still need
+    manual verification - the button-recovery behavior is FXML-bound
+    and not covered by that automated test.
 
 ====================================================================

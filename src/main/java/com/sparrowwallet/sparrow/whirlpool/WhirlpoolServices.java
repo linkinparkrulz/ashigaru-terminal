@@ -266,6 +266,43 @@ public class WhirlpoolServices {
         });
     }
 
+    /**
+     * Stops and removes the Whirlpool engine for a wallet that has been permanently deleted,
+     * and unlinks it from any wallet configured to mix into it. Ashigaru's single-window UI
+     * doesn't post WalletTabsClosedEvent (that's only wired up by the legacy tabbed AppController
+     * UI), so wallet deletion needs to call this directly instead of relying on walletTabsClosed.
+     */
+    public void closeWallet(String walletId) {
+        Platform.runLater(() -> {
+            Whirlpool whirlpool = whirlpoolMap.remove(walletId);
+            if (whirlpool != null) {
+                if (whirlpool.isStarted()) {
+                    Whirlpool.ShutdownService shutdownService = new Whirlpool.ShutdownService(whirlpool);
+                    shutdownService.setOnSucceeded(workerStateEvent -> {
+                        WhirlpoolEventService.getInstance().unregister(whirlpool);
+                    });
+                    shutdownService.setOnFailed(workerStateEvent -> {
+                        log.error("Failed to shutdown whirlpool", workerStateEvent.getSource().getException());
+                    });
+                    shutdownService.start();
+                } else {
+                    //Ensure http clients are shutdown
+                    whirlpool.shutdown();
+                    WhirlpoolEventService.getInstance().unregister(whirlpool);
+                }
+            }
+
+            Whirlpool mixToWhirlpool = getWhirlpoolForMixToWallet(walletId);
+            if (mixToWhirlpool != null && !walletId.equals(mixToWhirlpool.getWalletId())) {
+                mixToWhirlpool.setMixToWallet(null, null);
+                if (mixToWhirlpool.isStarted()) {
+                    //Will automatically restart
+                    stopWhirlpool(mixToWhirlpool, false);
+                }
+            }
+        });
+    }
+
     @Subscribe
     public void walletTabsClosed(WalletTabsClosedEvent event) {
         Platform.runLater(() -> {
