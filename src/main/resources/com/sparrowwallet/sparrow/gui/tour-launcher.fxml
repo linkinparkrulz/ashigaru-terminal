@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<ScrollPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.sparrowwallet.sparrow.gui.TourLauncherController"
+            stylesheets="@ashigaru.css"
+            styleClass="wallet-panel"
+            fitToWidth="true">
+    <content>
+        <VBox spacing="16" styleClass="tour-launcher">
+            <padding><Insets top="22" right="22" bottom="22" left="22"/></padding>
+
+            <Label text="Guided Tour" styleClass="tour-step-title"/>
+            <Label styleClass="tour-step-body" wrapText="true"
+                   text="Take a quick walkthrough of Ashigaru — your wallets, accounts, receiving funds and balance, and collaborative CoinJoin mixing. It starts with a short intro, then highlights the real controls on screen. If you haven't opened a wallet yet, the tour continues automatically once you do."/>
+
+            <HBox>
+                <Button fx:id="startTourBtn" text="Start guided tour" onAction="#onStart" styleClass="primary-btn"/>
+            </HBox>
+        </VBox>
+    </content>
+</ScrollPane>

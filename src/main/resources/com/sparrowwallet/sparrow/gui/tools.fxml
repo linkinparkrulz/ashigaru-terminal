@@ -21,6 +21,11 @@
                     <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="CHART_BAR" />
                 </graphic>
             </ToggleButton>
+            <ToggleButton fx:id="tourButton" text="Guided Tour" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$toolsMenu">
+                <graphic>
+                    <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="QUESTION_CIRCLE" />
+                </graphic>
+            </ToggleButton>
         </VBox>
     </left>
     <center>

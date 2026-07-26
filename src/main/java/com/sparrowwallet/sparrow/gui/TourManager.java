@@ -32,6 +32,7 @@ public class TourManager {
 
     private final Stage stage;
     private final List<TourStep> steps;
+    private final Runnable onComplete;
 
     private List<TourStep> active = List.of();
     private int index = -1;
@@ -39,8 +40,17 @@ public class TourManager {
     private Node highlighted;
 
     public TourManager(Stage stage, List<TourStep> steps) {
+        this(stage, steps, null);
+    }
+
+    /**
+     * @param onComplete run when the user finishes the last step (Done). Not invoked when the
+     *                   tour is skipped or when there were no visible steps to show.
+     */
+    public TourManager(Stage stage, List<TourStep> steps, Runnable onComplete) {
         this.stage = stage;
         this.steps = steps;
+        this.onComplete = onComplete;
     }
 
     /** Begin the coach-mark walkthrough, skipping steps whose anchor is not visible right now. */
@@ -89,7 +99,7 @@ public class TourManager {
             if (i < active.size() - 1) {
                 showStep(i + 1);
             } else {
-                finish();
+                finish(true);
             }
             return;
         }
@@ -115,7 +125,7 @@ public class TourManager {
         if (index < active.size() - 1) {
             showStep(index + 1);
         } else {
-            finish();
+            finish(true);
         }
     }
 
@@ -125,9 +135,12 @@ public class TourManager {
         }
     }
 
-    private void finish() {
+    private void finish(boolean completed) {
         hideCurrent();
         index = active.size();
+        if (completed && onComplete != null) {
+            onComplete.run();
+        }
     }
 
     private PopOver buildPopOver(TourStep step, int i, Node node) {
@@ -149,7 +162,7 @@ public class TourManager {
 
         Button skipButton = new Button("Skip");
         skipButton.getStyleClass().add("action-btn");
-        skipButton.setOnAction(e -> finish());
+        skipButton.setOnAction(e -> finish(false));
 
         boolean last = i == active.size() - 1;
         Button nextButton = new Button(last ? "Done" : "Next");

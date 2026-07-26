@@ -86,9 +86,7 @@
             <Separator/>
             <VBox spacing="6" styleClass="sidebar-actions">
                 <padding><Insets top="12" right="14" bottom="14" left="14"/></padding>
-                <Button fx:id="tourBtn" text="❔  Tour" onAction="#onStartTour"
-                        maxWidth="Infinity" styleClass="nav-btn"/>
-                <Button text="⚙  Tools" onAction="#onTools"
+                <Button fx:id="toolsBtn" text="⚙  Tools" onAction="#onTools"
                         maxWidth="Infinity" styleClass="nav-btn"/>
                 <Button text="⚙  Settings" onAction="#onPreferences"
                         maxWidth="Infinity" styleClass="nav-btn"/>
