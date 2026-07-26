@@ -107,6 +107,16 @@ public class AshigaruWalletController implements Initializable {
 
     private ChangeListener<Tab> tabSelectionListener;
 
+    // Tracks whichever Whirlpool engine's start/stop/mixing state the mix button currently
+    // reflects, so its listener can be moved when the active wallet/account changes instead of
+    // leaving the button's text wired to a stale or no-longer-active engine.
+    private Whirlpool boundWhirlpool;
+    private final ChangeListener<Boolean> whirlpoolStateListener = (obs, old, neu) -> {
+        if (activeAccountForm != null) {
+            configureMixButtons(activeAccountForm.getWallet());
+        }
+    };
+
     // -------------------------------------------------------------------------
     // Public API: called by AshigaruMainController after FXML load
     // -------------------------------------------------------------------------
@@ -249,7 +259,44 @@ public class AshigaruWalletController implements Initializable {
         badbankInfoBar.setManaged(isBadbank);
 
         // Buttons
+        bindWhirlpoolState(wallet);
         configureMixButtons(wallet);
+    }
+
+    // Rebinds the mix button's start/stop/mixing listener to the given wallet's Whirlpool
+    // engine, so button text recovers on its own after a start/stop transition (including one
+    // that produces no eligible-to-mix UTXOs, or a failed start) instead of staying stuck on
+    // "Starting..."/"Stopping..." until some unrelated event happens to call configureMixButtons.
+    private void bindWhirlpoolState(Wallet wallet) {
+        rebindWhirlpoolState(AppServices.getWhirlpoolServices().getWhirlpool(wallet));
+    }
+
+    private void rebindWhirlpoolState(Whirlpool wp) {
+        if (wp == boundWhirlpool) {
+            return;
+        }
+        if (boundWhirlpool != null) {
+            boundWhirlpool.startingProperty().removeListener(whirlpoolStateListener);
+            boundWhirlpool.stoppingProperty().removeListener(whirlpoolStateListener);
+            boundWhirlpool.mixingProperty().removeListener(whirlpoolStateListener);
+        }
+        boundWhirlpool = wp;
+        if (boundWhirlpool != null) {
+            boundWhirlpool.startingProperty().addListener(whirlpoolStateListener);
+            boundWhirlpool.stoppingProperty().addListener(whirlpoolStateListener);
+            boundWhirlpool.mixingProperty().addListener(whirlpoolStateListener);
+        }
+    }
+
+    /**
+     * Detaches from whichever Whirlpool engine's state this controller is currently listening
+     * to. The engine itself is deliberately left running (locking/switching away from a wallet
+     * doesn't stop background remixing) — this only prevents the listener from keeping this
+     * discarded controller instance reachable. Call when the controller is being torn down
+     * (e.g. AshigaruMainController.showWelcome() on Lock/Delete).
+     */
+    public void unbindWhirlpoolState() {
+        rebindWhirlpoolState(null);
     }
 
     private void refreshUtxoTable(WalletUtxosEntry utxosEntry, boolean isMixWallet) {

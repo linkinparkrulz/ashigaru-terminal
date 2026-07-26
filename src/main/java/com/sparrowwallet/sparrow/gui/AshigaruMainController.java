@@ -136,6 +136,11 @@ public class AshigaruMainController implements Initializable {
     }
 
     private void showWelcome() {
+        if (currentWalletController != null) {
+            EventManager.get().unregister(currentWalletController);
+            currentWalletController.unbindWhirlpoolState();
+            currentWalletController = null;
+        }
         maybeReconnectOnLeavingPrefs();
         contentPane.setCenter(welcomePane);
         // walletSelector stays visible in the sidebar at all times
@@ -194,6 +199,7 @@ public class AshigaruMainController implements Initializable {
             // Unregister previous controller
             if (currentWalletController != null) {
                 EventManager.get().unregister(currentWalletController);
+                currentWalletController.unbindWhirlpoolState();
                 currentWalletController = null;
             }
 
@@ -439,6 +445,7 @@ public class AshigaruMainController implements Initializable {
         Storage.DeleteWalletService svc = new Storage.DeleteWalletService(form.getStorage(), false);
         svc.setOnSucceeded(e -> {
             svc.cancel();
+            AppServices.getWhirlpoolServices().closeWallet(item.walletId());
             AshigaruGui.removeWallet(item.walletId());
             refreshWalletList();
             showWelcome();
