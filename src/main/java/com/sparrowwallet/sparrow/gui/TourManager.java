@@ -1,5 +1,6 @@
 package com.sparrowwallet.sparrow.gui;
 
+import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -19,20 +20,31 @@ import java.util.List;
 /**
  * Drives the "live" portion of the guided tour: a sequence of coach-marks, each a
  * ControlsFX {@link PopOver} anchored to a real UI node (resolved by fx:id via
- * {@code Scene#lookup}). Steps whose anchor is not currently present/visible are
- * skipped, so the same step list works on first launch (only the sidebar + status
- * bar are on screen) and on replay with a wallet open (the account/balance/mix
- * controls become anchorable too).
+ * {@code Scene#lookup}).
+ *
+ * <p>A step may carry an {@code onEnter} action that runs before its popover shows — used to
+ * establish the right view first (e.g. open the Settings screen). Steps with an {@code onEnter}
+ * are always kept; steps without one are skipped when their anchor is not currently visible. This
+ * lets the same list work on first launch (only sidebar + status bar on screen), on replay with a
+ * wallet open, and for the Settings walk-through whose anchors do not exist until entered.
  */
 public class TourManager {
     private static final String HIGHLIGHT_CLASS = "tour-highlight";
 
-    /** A single coach-mark: the fx:id of the node to point at, plus its copy. */
-    public record TourStep(String anchorId, String title, String body) {}
+    /**
+     * A single coach-mark: the fx:id of the node to point at, its copy, and an optional
+     * {@code onEnter} action run just before the popover is shown (to set up the view).
+     */
+    public record TourStep(String anchorId, String title, String body, Runnable onEnter) {
+        public TourStep(String anchorId, String title, String body) {
+            this(anchorId, title, body, null);
+        }
+    }
 
     private final Stage stage;
     private final List<TourStep> steps;
     private final Runnable onComplete;
+    private final Runnable onExit;
 
     private List<TourStep> active = List.of();
     private int index = -1;
@@ -40,20 +52,25 @@ public class TourManager {
     private Node highlighted;
 
     public TourManager(Stage stage, List<TourStep> steps) {
-        this(stage, steps, null);
+        this(stage, steps, null, null);
+    }
+
+    public TourManager(Stage stage, List<TourStep> steps, Runnable onComplete) {
+        this(stage, steps, onComplete, null);
     }
 
     /**
-     * @param onComplete run when the user finishes the last step (Done). Not invoked when the
-     *                   tour is skipped or when there were no visible steps to show.
+     * @param onComplete run when the user finishes the last step (Done); not on Skip.
+     * @param onExit     run on any termination (finish or Skip); use to restore the underlying view.
      */
-    public TourManager(Stage stage, List<TourStep> steps, Runnable onComplete) {
+    public TourManager(Stage stage, List<TourStep> steps, Runnable onComplete, Runnable onExit) {
         this.stage = stage;
         this.steps = steps;
         this.onComplete = onComplete;
+        this.onExit = onExit;
     }
 
-    /** Begin the coach-mark walkthrough, skipping steps whose anchor is not visible right now. */
+    /** Begin the walkthrough. Keeps steps that have an onEnter action or whose anchor is visible now. */
     public void start() {
         Scene scene = stage.getScene();
         if (scene == null) {
@@ -62,7 +79,7 @@ public class TourManager {
 
         active = new ArrayList<>();
         for (TourStep step : steps) {
-            if (resolve(step.anchorId()) != null) {
+            if (step.onEnter() != null || resolve(step.anchorId()) != null) {
                 active.add(step);
             }
         }
@@ -92,10 +109,24 @@ public class TourManager {
 
     private void showStep(int i) {
         hideCurrent();
+        index = i;
 
-        // The anchor set is fixed at start(), but re-check defensively and skip if it vanished.
+        Runnable onEnter = active.get(i).onEnter();
+        if (onEnter != null) {
+            onEnter.run();
+        }
+        // Defer so any view change from onEnter (and normal layout) settles before anchoring.
+        Platform.runLater(() -> present(i));
+    }
+
+    private void present(int i) {
+        if (i != index) {
+            return;
+        }
+
         Node node = resolve(active.get(i).anchorId());
         if (node == null) {
+            // onEnter did not (yet) reveal the anchor — skip forward rather than stall.
             if (i < active.size() - 1) {
                 showStep(i + 1);
             } else {
@@ -104,21 +135,9 @@ public class TourManager {
             return;
         }
 
-        index = i;
         highlight(node);
-
         popOver = buildPopOver(active.get(i), i, node);
         popOver.show(node);
-
-        // The popover lives in its own scene, so the skin's bubble (.popover > .border)
-        // is only themed if the app stylesheet is attached at that scene's level.
-        Scene poScene = popOver.getScene();
-        if (poScene != null) {
-            String css = getClass().getResource("ashigaru.css").toExternalForm();
-            if (!poScene.getStylesheets().contains(css)) {
-                poScene.getStylesheets().add(css);
-            }
-        }
     }
 
     private void next() {
@@ -140,6 +159,9 @@ public class TourManager {
         index = active.size();
         if (completed && onComplete != null) {
             onComplete.run();
+        }
+        if (onExit != null) {
+            onExit.run();
         }
     }
 
@@ -178,7 +200,9 @@ public class TourManager {
         VBox content = new VBox(10, title, body, buttons);
         content.getStyleClass().add("tour-popover");
         content.setPrefWidth(320);
-        content.getStylesheets().add(getClass().getResource("ashigaru.css").toExternalForm());
+
+        String css = getClass().getResource("ashigaru.css").toExternalForm();
+        content.getStylesheets().add(css);
 
         PopOver po = new PopOver(content);
         po.setDetachable(false);
@@ -186,6 +210,14 @@ public class TourManager {
         po.setCloseButtonEnabled(false);
         po.setAutoHide(false);
         po.setArrowLocation(arrowLocationFor(node));
+        // The popover lives in its own scene (default light theme), so the bubble skin
+        // (.popover > .border) is only themed once the app stylesheet is attached there.
+        po.setOnShown(e -> {
+            Scene poScene = po.getScene();
+            if (poScene != null && !poScene.getStylesheets().contains(css)) {
+                poScene.getStylesheets().add(css);
+            }
+        });
         return po;
     }
 

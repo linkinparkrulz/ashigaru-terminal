@@ -1045,19 +1045,26 @@
     -fx-line-spacing: 2;
 }
 
-/* Live coach-mark popovers */
+/* Live coach-mark popovers — dark app card with an accent edge so they catch the eye. */
+.popover {
+    -fx-background-color: transparent;
+}
 .popover > .border {
     -fx-fill: -ag-bg-light;
-    -fx-stroke: -ag-border-strong;
-    -fx-stroke-width: 1;
-    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0, 0, 4);
+    -fx-stroke: -ag-accent;
+    -fx-stroke-width: 1.25;
+    -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.35), 18, 0.2, 0, 4);
+}
+.popover > .content {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
 }
 .tour-popover {
     -fx-background-color: transparent;
     -fx-padding: 14 16 14 16;
 }
 .tour-pop-title {
-    -fx-text-fill: -ag-text;
+    -fx-text-fill: -ag-accent;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
