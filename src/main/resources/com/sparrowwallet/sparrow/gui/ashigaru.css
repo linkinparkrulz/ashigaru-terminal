@@ -1008,3 +1008,73 @@
 .verifier-result-error .verifier-result-title {
     -fx-text-fill: -ag-accent;
 }
+
+/* ── Guided tour ──────────────────────────────────────────────────────────── */
+
+/* Welcome dialog */
+.tour-dialog {
+    -fx-background-color: -ag-bg;
+}
+.tour-content {
+    -fx-background-color: -ag-bg;
+}
+.tour-logo-frame {
+    -fx-background-color: -ag-bg-mid;
+    -fx-background-radius: -ag-radius;
+    -fx-border-color: derive(-ag-accent, -45%);
+    -fx-border-radius: -ag-radius;
+    -fx-padding: 6;
+}
+.tour-eyebrow {
+    -fx-text-fill: -ag-accent;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.tour-progress {
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-size: 12px;
+}
+.tour-step-title {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+.tour-step-body {
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-size: 13px;
+    -fx-line-spacing: 2;
+}
+
+/* Live coach-mark popovers */
+.popover > .border {
+    -fx-fill: -ag-bg-light;
+    -fx-stroke: -ag-border-strong;
+    -fx-stroke-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.45), 14, 0, 0, 4);
+}
+.tour-popover {
+    -fx-background-color: transparent;
+    -fx-padding: 14 16 14 16;
+}
+.tour-pop-title {
+    -fx-text-fill: -ag-text;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.tour-pop-body {
+    -fx-text-fill: -ag-text-dim;
+    -fx-font-size: 12.5px;
+    -fx-line-spacing: 1.5;
+}
+.tour-pop-counter {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 11px;
+}
+
+/* The node currently being pointed at */
+.tour-highlight {
+    -fx-border-color: -ag-accent;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 4;
+    -fx-effect: dropshadow(gaussian, -ag-accent, 12, 0.4, 0, 0);
+}

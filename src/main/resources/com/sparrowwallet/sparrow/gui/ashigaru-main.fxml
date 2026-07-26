@@ -37,9 +37,9 @@
                 <padding><Insets top="14" right="14" bottom="14" left="14"/></padding>
                 <Label text="CURRENT WALLET" styleClass="sidebar-section-title"/>
                 <ComboBox fx:id="walletSelector" styleClass="wallet-selector" maxWidth="Infinity"/>
-                <Button text="Open Wallet…" onAction="#onOpenWallet"
+                <Button fx:id="openWalletBtn" text="Open Wallet…" onAction="#onOpenWallet"
                         maxWidth="Infinity" styleClass="action-btn"/>
-                <Button text="+  New / Restore…" onAction="#onCreateWallet"
+                <Button fx:id="createWalletBtn" text="+  New / Restore…" onAction="#onCreateWallet"
                         maxWidth="Infinity" styleClass="primary-btn"/>
 
                 <!-- Secondary, wallet-scoped actions: visually subordinate group.
@@ -86,6 +86,8 @@
             <Separator/>
             <VBox spacing="6" styleClass="sidebar-actions">
                 <padding><Insets top="12" right="14" bottom="14" left="14"/></padding>
+                <Button fx:id="tourBtn" text="❔  Tour" onAction="#onStartTour"
+                        maxWidth="Infinity" styleClass="nav-btn"/>
                 <Button text="⚙  Tools" onAction="#onTools"
                         maxWidth="Infinity" styleClass="nav-btn"/>
                 <Button text="⚙  Settings" onAction="#onPreferences"

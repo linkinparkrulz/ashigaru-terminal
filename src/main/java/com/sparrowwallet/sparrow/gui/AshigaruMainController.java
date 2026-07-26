@@ -40,6 +40,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -574,6 +575,68 @@ public class AshigaruMainController implements Initializable {
         SeedDisplayDialog dlg = new SeedDisplayDialog(keystore);
         dlg.initOwner(AshigaruGui.get().getMainStage());
         dlg.showAndWait();
+    }
+
+    // -------------------------------------------------------------------------
+    // Guided tour
+    // -------------------------------------------------------------------------
+
+    /**
+     * Show the welcome tour on first launch only, then remember it has been shown.
+     * Invoked from {@link AshigaruGui} after the main stage is displayed (the scene
+     * must exist for the coach-mark popovers to anchor).
+     */
+    public void maybeShowFirstRunTour() {
+        if (!Config.get().isTourShown()) {
+            Config.get().setTourShown(true);
+            startTour();
+        }
+    }
+
+    @FXML
+    private void onStartTour() {
+        startTour();
+    }
+
+    private void startTour() {
+        AshigaruTourDialog dialog = new AshigaruTourDialog();
+        Optional<Boolean> takeTour = dialog.showAndWait();
+        if (takeTour.isPresent() && takeTour.get()) {
+            Stage stage = AshigaruGui.get().getMainStage();
+            TourManager manager = new TourManager(stage, buildTourSteps());
+            // Defer until the modal dialog has fully closed and layout has settled,
+            // so the popovers anchor to correctly positioned nodes.
+            Platform.runLater(manager::start);
+        }
+    }
+
+    /**
+     * The coach-mark sequence. Wallet-scoped anchors (accounts, balance, receive, mix)
+     * are only present once a wallet is open, and {@link TourManager} skips any whose
+     * node is not currently visible — so on first launch this collapses to the sidebar
+     * and status-bar steps, and becomes the full walkthrough when replayed in-context.
+     */
+    private List<TourManager.TourStep> buildTourSteps() {
+        return List.of(
+                new TourManager.TourStep("walletSelector", "Current wallet",
+                        "Switch between your loaded wallets from this dropdown. It stays here at all times."),
+                new TourManager.TourStep("openWalletBtn", "Open a wallet",
+                        "Load an existing wallet file from disk."),
+                new TourManager.TourStep("createWalletBtn", "New or restore",
+                        "Create a brand-new wallet, or restore one from an existing seed phrase."),
+                new TourManager.TourStep("accountButtonsBox", "Wallet accounts",
+                        "Once a wallet is open, switch between its Deposit, Premix, Postmix and Badbank accounts here."),
+                new TourManager.TourStep("balanceLabel", "Your balance",
+                        "Your confirmed balance for the selected account. Pending mempool balance and UTXO count sit alongside it."),
+                new TourManager.TourStep("receiveBtn", "Receive funds",
+                        "Generate a fresh receive address and QR code to fund your wallet."),
+                new TourManager.TourStep("mixSelectedBtn", "Mixing",
+                        "Select coins and begin collaborative CoinJoin mixing. Start Mix and Mix To drive your mixing from here."),
+                new TourManager.TourStep("connectionLabel", "Connection & network",
+                        "Your network status — click to connect or disconnect. Block height and the active network are shown to its left."),
+                new TourManager.TourStep("tourBtn", "Replay anytime",
+                        "You can reopen this tour whenever you like from here.")
+        );
     }
 
     @FXML

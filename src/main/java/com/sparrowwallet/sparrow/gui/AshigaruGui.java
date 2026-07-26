@@ -191,6 +191,9 @@ public class AshigaruGui extends Application {
         for (File walletFile : toLoad) {
             mainController.addRecentWalletFile(walletFile);
         }
+
+        // First-run guided tour, once the main window is visible and wallets are loaded.
+        Platform.runLater(mainController::maybeShowFirstRunTour);
     }
 
     private static boolean isWalletFile(File file) {
