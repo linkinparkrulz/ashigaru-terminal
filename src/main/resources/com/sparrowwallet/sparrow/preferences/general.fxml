@@ -39,7 +39,6 @@
                         <FXCollections fx:factory="observableArrayList">
                             <FeeRatesSource fx:constant="ELECTRUM_SERVER" />
                             <FeeRatesSource fx:constant="MEMPOOL_SPACE" />
-                            <FeeRatesSource fx:constant="MEMPOOL_SPACE_PRECISE" />
                             <FeeRatesSource fx:constant="MINIMUM" />
                         </FXCollections>
                     </items>
