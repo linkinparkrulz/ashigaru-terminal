@@ -205,6 +205,20 @@ public class MnemonicKeystorePane extends TitledDescriptionPane {
             wordEntries.get(wordEntries.size() - 1).setNextField(passphraseEntry.getEditor());
             passphraseEntry.setPadding(new Insets(0, 26, 10, 10));
             vBox.getChildren().add(passphraseEntry);
+
+            if(editPassphrase) {
+                Label passphraseWeaknessLabel = new Label();
+                passphraseWeaknessLabel.getStyleClass().add("passphrase-weakness");
+                passphraseWeaknessLabel.setPadding(new Insets(0, 26, 8, 36));
+                passphraseWeaknessLabel.managedProperty().bind(passphraseWeaknessLabel.visibleProperty());
+                passphraseWeaknessLabel.setVisible(false);
+                passphraseProperty.addListener((observable, oldValue, newValue) -> {
+                    Optional<String> weakness = passphraseWeakness(newValue);
+                    passphraseWeaknessLabel.setText(weakness.orElse(""));
+                    passphraseWeaknessLabel.setVisible(weakness.isPresent());
+                });
+                vBox.getChildren().add(passphraseWeaknessLabel);
+            }
         }
 
         AnchorPane buttonPane = new AnchorPane();
@@ -434,6 +448,38 @@ public class MnemonicKeystorePane extends TitledDescriptionPane {
         }
     }
 
+    /**
+     * A light, honest weakness check for a hand-typed passphrase. It flags only the unambiguous
+     * failures and is purely advisory — it never blocks saving. A blank passphrase is a valid choice
+     * (no passphrase) and returns no warning. Strong passphrases (including diceware phrases) return
+     * empty. Uses the already-bundled BIP39 and EFF wordlists for the single-dictionary-word check, so
+     * it adds no dependency.
+     */
+    protected static Optional<String> passphraseWeakness(String passphrase) {
+        if(passphrase == null) {
+            return Optional.empty();
+        }
+        String trimmed = passphrase.strip();
+        if(trimmed.isEmpty()) {
+            return Optional.empty();
+        }
+        if(trimmed.length() < 8) {
+            return Optional.of("Short passphrase — consider rolling a diceware passphrase.");
+        }
+        if(trimmed.chars().distinct().count() == 1) {
+            return Optional.of("Repeated characters — weak. Consider rolling a diceware passphrase.");
+        }
+        if(!trimmed.contains(" ")) {
+            String lower = trimmed.toLowerCase();
+            boolean effWord = DicewareWordList.INSTANCE != null && DicewareWordList.INSTANCE.contains(lower);
+            boolean bip39Word = Bip39MnemonicCode.INSTANCE != null && Bip39MnemonicCode.INSTANCE.getWordList().contains(lower);
+            if(effWord || bip39Word) {
+                return Optional.of("Single dictionary word — weak. Consider rolling a diceware passphrase.");
+            }
+        }
+        return Optional.empty();
+    }
+
     protected class PassphraseEntry extends HBox {
         private final TextField passphraseField;
 
@@ -473,12 +519,25 @@ public class MnemonicKeystorePane extends TitledDescriptionPane {
             passphraseField.visibleProperty().bind(usePassphraseCheckbox.visibleProperty().not());
             passphraseProperty.bind(passphraseField.textProperty());
 
+            Button diceButton = new Button("Roll dice…");
+            diceButton.setGraphic(new Glyph(FontAwesome5.FONT_NAME, FontAwesome5.Glyph.RANDOM));
+            diceButton.getStyleClass().add("diceware-button");
+            diceButton.managedProperty().bind(diceButton.visibleProperty());
+            diceButton.visibleProperty().bind(passphraseField.visibleProperty());
+            diceButton.setDisable(!editable || DicewareWordList.INSTANCE == null);
+            diceButton.setOnAction(event -> {
+                DicewareDialog dicewareDialog = new DicewareDialog();
+                dicewareDialog.initOwner(getScene().getWindow());
+                Optional<String> optPassphrase = dicewareDialog.showAndWait();
+                optPassphrase.ifPresent(passphraseField::setText);
+            });
+
             HelpLabel helpLabel = new HelpLabel();
             helpLabel.setPrefHeight(28);
             helpLabel.setStyle("-fx-padding: 0 0 0 0");
             helpLabel.setHelpText("Advanced feature: a passphrase provides optional added security, but it is not stored so it must be remembered!");
 
-            getChildren().addAll(usePassphraseLabel, usePassphraseCheckbox, passphraseLabel, passphraseField, helpLabel);
+            getChildren().addAll(usePassphraseLabel, usePassphraseCheckbox, passphraseLabel, passphraseField, diceButton, helpLabel);
         }
 
         public TextField getEditor() {
