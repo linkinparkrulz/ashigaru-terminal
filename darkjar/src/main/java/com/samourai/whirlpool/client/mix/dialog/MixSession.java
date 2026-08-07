@@ -34,6 +34,11 @@ public class MixSession {
   // connect data
   private Long connectBeginTime;
 
+  // Rotate the Tor circuit on the 1st connect failure, then only every Nth failure, to avoid
+  // churning circuits when the coordinator is simply unreachable for a while.
+  private static final int CHANGE_IDENTITY_EVERY_FAILURES = 3;
+  private int connectFailures;
+
   // session data
   private MixDialog dialog;
   private SubscribePoolResponse subscribePoolResponse;
@@ -235,6 +240,7 @@ public class MixSession {
           log.debug("Connected in " + elapsedTime + "s");
         }
         connectBeginTime = null;
+        connectFailures = 0;
 
         // will get SubscribePoolResponse and start dialog
         subscribe();
@@ -262,8 +268,12 @@ public class MixSession {
           // we were trying connect
           long elapsedTime = (System.currentTimeMillis() - connectBeginTime) / 1000;
 
-          // change Tor circuit
-          config.getTorClientService().changeIdentity();
+          // change Tor circuit, but only on the 1st failure then every Nth, so a sustained
+          // coordinator outage doesn't churn a new circuit on every single retry
+          connectFailures++;
+          if ((connectFailures - 1) % CHANGE_IDENTITY_EVERY_FAILURES == 0) {
+            config.getTorClientService().changeIdentity();
+          }
 
           // wait delay before retrying
           int randomDelaySeconds = RandomUtil.getInstance().random(5, 120);
@@ -272,7 +282,7 @@ public class MixSession {
               " ! connexion failed since "
                   + elapsedTime
                   + "s, retrying in "
-                  + reconnectDelay
+                  + randomDelaySeconds
                   + "s");
           listener.onConnectionFailWillRetry(reconnectDelay);
         } else {
