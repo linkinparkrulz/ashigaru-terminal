@@ -41,8 +41,6 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
@@ -431,24 +429,18 @@ public class WalletCreationFlow {
         body.setWrapText(true);
         body.getStyleClass().add("wizard-subtitle");
 
-        ImageView diceView = new ImageView(new Image("/image/dice.png"));
-        diceView.setPreserveRatio(true);
-        diceView.setFitWidth(160);
-        HBox diceBox = new HBox(diceView);
-        diceBox.setAlignment(Pos.CENTER);
-
         Button yes = typeCard("Yes, I have dice", "Roll your own passphrase — the most secure option.");
         Button no = typeCard("No, I don't have dice", "Type a passphrase instead, or come back with dice.");
         yes.setDisable(DicewareWordList.INSTANCE == null);
         yes.setOnAction(e -> { dlg.setResult(DiceChoice.HAVE_DICE); dlg.close(); });
         no.setOnAction(e -> { dlg.setResult(DiceChoice.NO_DICE); dlg.close(); });
 
-        VBox content = new VBox(14, body, diceBox, yes, no);
+        VBox content = new VBox(14, body, yes, no);
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(480);
-        dlg.getDialogPane().setPrefHeight(420);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -476,6 +468,8 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
