@@ -197,7 +197,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
         //Cap the wrapping labels at the detail pane width so their wrapText actually wraps (inside a
         //tornadofx Field the input container otherwise sizes to the label's unwrapped width and clips
         //to an ellipsis). The binding tracks resizes, so the text stays fully visible responsively.
-        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(120);
+        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(160);
         warningBodyShort.maxWidthProperty().bind(wrapWidth);
         warningBodyLong.maxWidthProperty().bind(wrapWidth);
         discoverNodesStatus.maxWidthProperty().bind(wrapWidth);

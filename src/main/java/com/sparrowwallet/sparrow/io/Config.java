@@ -554,6 +554,17 @@ public class Config {
         return false;
     }
 
+    /**
+     * Clears all discovered Dojo Electrum servers and block explorers. Discovered listings are
+     * ephemeral — wiped on shutdown (and on startup) so the list is always freshly re-verified by
+     * discovery and stale/removed dojos never linger.
+     */
+    public void clearDiscoveredServers() {
+        discoveredServers = null;
+        discoveredExplorers = null;
+        flush();
+    }
+
     public List<Server> getDiscoveredExplorers() {
         return discoveredExplorers == null ? new ArrayList<>() : discoveredExplorers;
     }

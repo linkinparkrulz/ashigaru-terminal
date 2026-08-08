@@ -119,6 +119,7 @@ public class WalletCreationFlow {
     private Button typeCard(String title, String desc) {
         Label t = new Label(title);
         t.getStyleClass().add("type-card-title");
+        t.setWrapText(true);
         Label d = new Label(desc);
         d.getStyleClass().add("type-card-desc");
         d.setWrapText(true);
@@ -129,6 +130,10 @@ public class WalletCreationFlow {
         b.getStyleClass().add("type-card");
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
+        // A Button lays its graphic out at the graphic's preferred (unwrapped) width, so bind the VBox
+        // to the button's actual width to give the wrapping labels a bounded width to wrap into
+        // (otherwise long descriptions clip to an ellipsis). 36 ≈ the .type-card horizontal padding.
+        box.maxWidthProperty().bind(b.widthProperty().subtract(36));
         return b;
     }
 
