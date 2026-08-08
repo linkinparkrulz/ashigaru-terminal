@@ -91,11 +91,13 @@ public class DojoNodeDiscovery {
     public static class DiscoveryResult {
         private final List<DiscoveredNode> nodes;
         private final int attempted;
+        private final int unverified;
         private final int unreachable;
 
-        public DiscoveryResult(List<DiscoveredNode> nodes, int attempted, int unreachable) {
+        public DiscoveryResult(List<DiscoveredNode> nodes, int attempted, int unverified, int unreachable) {
             this.nodes = nodes;
             this.attempted = attempted;
+            this.unverified = unverified;
             this.unreachable = unreachable;
         }
 
@@ -107,12 +109,20 @@ public class DojoNodeDiscovery {
             return attempted;
         }
 
+        /**
+         * Number of candidates whose signed block failed verification (bad/missing signature, or the
+         * signed identity did not match the advertised payment code). These are never authenticated.
+         */
+        public int getUnverified() {
+            return unverified;
+        }
+
         public int getUnreachable() {
             return unreachable;
         }
     }
 
-    private record Candidate(String name, String version, String url, String apikey, String signedBlock) { }
+    private record Candidate(String name, String version, String url, String apikey, String signedBlock, String paymentCode) { }
 
     private record Services(String indexerUrl, String explorerUrl) { }
 
@@ -137,8 +147,8 @@ public class DojoNodeDiscovery {
                 if(changed) {
                     EventManager.get().post(new DiscoveredServersChangedEvent());
                 }
-                log.info("Dojo discovery: " + result.getNodes().size() + " reachable, " + result.getUnreachable()
-                        + " unreachable of " + result.getAttempted() + " candidates");
+                log.info("Dojo discovery: " + result.getNodes().size() + " verified+reachable, " + result.getUnverified()
+                        + " unverified, " + result.getUnreachable() + " unreachable of " + result.getAttempted() + " candidates");
             } catch(Exception e) {
                 log.warn("Background Dojo discovery failed: " + e.getMessage());
             }
@@ -184,24 +194,39 @@ public class DojoNodeDiscovery {
                         continue;
                     }
 
-                    candidates.add(new Candidate(displayName(node), optString(node, "version"), rawUrl, apikey, optString(node, "signed")));
+                    candidates.add(new Candidate(displayName(node), optString(node, "version"), rawUrl, apikey, optString(node, "signed"), optString(node, "paymentCode")));
                 } catch(Exception e) {
                     log.warn("Skipping malformed dojo directory entry: " + e.getMessage());
                 }
             }
         }
 
+        // Step 2 (verify) before step 3 (authenticate): the signature check is pure crypto with no
+        // network I/O, so gate on it first. Only candidates whose signed block verifies — and whose
+        // signed identity matches the advertised payment code — are ever authenticated, so no apikey
+        // or onion circuit is spent on an unverified or spoofed listing.
+        List<Candidate> verifiedCandidates = new ArrayList<>();
+        int unverified = 0;
+        for(Candidate candidate : candidates) {
+            if(SignedMessageVerifier.verify(candidate.signedBlock(), candidate.url(), candidate.paymentCode())) {
+                verifiedCandidates.add(candidate);
+            } else {
+                unverified++;
+                log.info("Skipping unverified dojo directory entry: " + candidate.name());
+            }
+        }
+
         List<DiscoveredNode> discovered = new ArrayList<>();
         int unreachable = 0;
-        if(!candidates.isEmpty()) {
-            ExecutorService executor = Executors.newFixedThreadPool(Math.min(MAX_THREADS, candidates.size()), r -> {
+        if(!verifiedCandidates.isEmpty()) {
+            ExecutorService executor = Executors.newFixedThreadPool(Math.min(MAX_THREADS, verifiedCandidates.size()), r -> {
                 Thread t = new Thread(r, "dojo-discovery");
                 t.setDaemon(true);
                 return t;
             });
             try {
                 List<Future<DiscoveredNode>> futures = new ArrayList<>();
-                for(Candidate candidate : candidates) {
+                for(Candidate candidate : verifiedCandidates) {
                     futures.add(executor.submit(() -> resolveNode(http, candidate)));
                 }
 
@@ -225,9 +250,15 @@ public class DojoNodeDiscovery {
             }
         }
 
-        return new DiscoveryResult(discovered, candidates.size(), unreachable);
+        return new DiscoveryResult(discovered, candidates.size(), unverified, unreachable);
     }
 
+    /**
+     * Authenticates to an already-verified Dojo and derives its Electrum server (and block explorer)
+     * from the {@code /support/services} endpoint. Callers must only pass candidates that have passed
+     * {@link SignedMessageVerifier#verify(String, String, String)}; returned nodes are therefore
+     * always verified. Returns null if the Dojo is unreachable.
+     */
     private static DiscoveredNode resolveNode(HttpClientService http, Candidate candidate) {
         try {
             String base = candidate.url();
@@ -242,8 +273,7 @@ public class DojoNodeDiscovery {
 
             Server indexerServer = new Server(services.indexerUrl(), candidate.name());
             Server explorerServer = services.explorerUrl() == null ? null : new Server(services.explorerUrl(), candidate.name());
-            boolean verified = SignedMessageVerifier.verify(candidate.signedBlock(), candidate.url());
-            return new DiscoveredNode(indexerServer, explorerServer, candidate.name(), verified);
+            return new DiscoveredNode(indexerServer, explorerServer, candidate.name(), true);
         } catch(Exception e) {
             log.warn("Dojo unreachable during discovery (" + candidate.name() + "): " + e.getMessage());
             return null;

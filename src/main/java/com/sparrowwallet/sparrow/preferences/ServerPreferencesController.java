@@ -964,7 +964,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
         task.setOnSucceeded(e -> {
             DojoNodeDiscovery.DiscoveryResult result = task.getValue();
             int verified = 0;
-            int unverified = 0;
+            int unverified = result.getUnverified();
             for(DojoNodeDiscovery.DiscoveredNode node : result.getNodes()) {
                 if(node.isVerified()) {
                     Config.get().addDiscoveredServer(node.getIndexerServer());
@@ -972,8 +972,6 @@ public class ServerPreferencesController extends PreferencesDetailController {
                         Config.get().addDiscoveredExplorer(node.getExplorerServer());
                     }
                     verified++;
-                } else {
-                    unverified++;
                 }
             }
 
