@@ -426,15 +426,14 @@ public class WalletCreationFlow {
                 "Do you have dice handy?");
         dlg.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
 
-        Label body = new Label("A password is a single word — far too short to protect your wallet. "
-                + "A passphrase is several words, which is dramatically harder to guess. The strongest way "
-                + "to choose those words is to roll physical dice: real randomness no computer can predict.");
+        Label body = new Label("A password is a single word — too short to protect your wallet. "
+                + "A passphrase is several words, and the strongest way to choose them is to roll physical dice.");
         body.setWrapText(true);
         body.getStyleClass().add("wizard-subtitle");
 
         ImageView diceView = new ImageView(new Image("/image/dice.png"));
         diceView.setPreserveRatio(true);
-        diceView.setFitWidth(300);
+        diceView.setFitWidth(160);
         HBox diceBox = new HBox(diceView);
         diceBox.setAlignment(Pos.CENTER);
 
@@ -444,10 +443,12 @@ public class WalletCreationFlow {
         yes.setOnAction(e -> { dlg.setResult(DiceChoice.HAVE_DICE); dlg.close(); });
         no.setOnAction(e -> { dlg.setResult(DiceChoice.NO_DICE); dlg.close(); });
 
-        VBox content = new VBox(16, body, diceBox, yes, no);
+        VBox content = new VBox(14, body, diceBox, yes, no);
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefHeight(420);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
