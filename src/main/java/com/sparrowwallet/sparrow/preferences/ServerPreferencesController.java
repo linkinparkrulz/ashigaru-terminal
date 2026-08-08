@@ -194,20 +194,26 @@ public class ServerPreferencesController extends PreferencesDetailController {
     public void initializeView(Config config) {
         EventManager.get().register(this);
 
-        //Cap the wrapping labels so their wrapText actually wraps. Bind to the SCENE (window) width,
-        //NOT serverDetailPane's own width: the detail GridPane gets inflated by its content (a
-        //tornadofx Field sizes the input area to the label's unwrapped width), so a self-referential
-        //binding resolves too wide and never forces a wrap. The scene width is independent of the
-        //content and tracks the window, so the warning re-wraps as the window is resized. The offset
-        //covers the sidebar + scroll bar + field label column + padding; a smaller cap only wraps
-        //earlier, never clips. The scene is null during FXML load, so (re)bind once it is attached.
+        //These labels wrap but were still ellipsizing — that is a HEIGHT problem, not a width one. A
+        //wrapText Label asked for its preferred height without a width (prefHeight(-1)) reports the
+        //height of a SINGLE line, so the enclosing row/field only allocates one line of vertical
+        //space; the label then wraps at its real width and everything past that is clipped. Setting
+        //minHeight to USE_PREF_SIZE makes the parent query minHeight(width) at the actual layout
+        //width, which returns the true wrapped height and forces the warning box to grow.
+        warningBodyShort.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        warningBodyLong.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        discoverNodesStatus.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+        //Cap the width off the SCENE (window), not serverDetailPane's own width: the detail GridPane
+        //is inflated by its content, so a self-referential binding never bounds anything. The scene
+        //width is content-independent and tracks the window, so the text re-flows on resize.
         Runnable bindWrap = () -> {
             javafx.scene.Scene scene = serverDetailPane.getScene();
             if(scene == null) {
                 return;
             }
             javafx.beans.binding.NumberBinding wrapWidth =
-                    javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(320));
+                    javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(80));
             warningBodyShort.maxWidthProperty().bind(wrapWidth);
             warningBodyLong.maxWidthProperty().bind(wrapWidth);
             discoverNodesStatus.maxWidthProperty().bind(wrapWidth);

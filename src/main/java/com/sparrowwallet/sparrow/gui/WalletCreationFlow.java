@@ -42,6 +42,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -105,14 +106,19 @@ public class WalletCreationFlow {
     private static final double WIZARD_WRAP_WIDTH = 410;
 
     /**
-     * Makes a wrapping label actually wrap instead of clipping to an ellipsis. Uses a fixed max width
-     * rather than binding to the dialog pane/scene: a dialog sizes itself to its content, so any
-     * container-derived width is circular (it resolves to the label's own unwrapped width) and never
-     * forces a wrap. A concrete cap does.
+     * Makes a wrapping label actually wrap instead of clipping to an ellipsis.
+     *
+     * <p>Two parts, and the height one is what actually matters: a wrapText Label asked for its
+     * preferred height without a width (prefHeight(-1)) reports the height of a <em>single line</em>,
+     * so its parent allocates one line of vertical space, the label then wraps at its real width, and
+     * everything past that first line is ellipsized. Setting minHeight to USE_PREF_SIZE makes the
+     * parent query minHeight(width) at the actual layout width, which returns the true wrapped height
+     * and forces enough room. The fixed max width simply keeps the wrap inside the dialog.
      */
     private static void bindWrap(Label label) {
         label.setWrapText(true);
         label.setMaxWidth(WIZARD_WRAP_WIDTH);
+        label.setMinHeight(Region.USE_PREF_SIZE);
     }
 
     /** Gives the dialog's buttons a consistent primary/secondary hierarchy. */
@@ -134,9 +140,11 @@ public class WalletCreationFlow {
         Label t = new Label(title);
         t.getStyleClass().add("type-card-title");
         t.setWrapText(true);
+        t.setMinHeight(Region.USE_PREF_SIZE);
         Label d = new Label(desc);
         d.getStyleClass().add("type-card-desc");
         d.setWrapText(true);
+        d.setMinHeight(Region.USE_PREF_SIZE);
         VBox box = new VBox(4, t, d);
         box.setAlignment(Pos.CENTER_LEFT);
         Button b = new Button();
@@ -190,7 +198,6 @@ public class WalletCreationFlow {
             content.setPrefWidth(460);
             dlg.getDialogPane().setContent(content);
             dlg.getDialogPane().setPrefWidth(460);
-            dlg.getDialogPane().setPrefHeight(180);
             AppServices.moveToActiveWindowScreen(dlg);
 
             Button continueNode = (Button) dlg.getDialogPane().lookupButton(continueType);
@@ -238,7 +245,6 @@ public class WalletCreationFlow {
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(460);
-        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -299,7 +305,6 @@ public class WalletCreationFlow {
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(460);
-        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -459,7 +464,6 @@ public class WalletCreationFlow {
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(480);
-        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -488,7 +492,6 @@ public class WalletCreationFlow {
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(480);
-        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
