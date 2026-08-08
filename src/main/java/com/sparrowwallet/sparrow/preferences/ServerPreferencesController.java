@@ -206,7 +206,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
             if(scene == null) {
                 return;
             }
-            javafx.beans.binding.DoubleBinding wrapWidth =
+            javafx.beans.binding.NumberBinding wrapWidth =
                     javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(320));
             warningBodyShort.maxWidthProperty().bind(wrapWidth);
             warningBodyLong.maxWidthProperty().bind(wrapWidth);
