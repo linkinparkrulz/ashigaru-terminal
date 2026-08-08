@@ -94,11 +94,21 @@ public class WalletCreationFlow {
         if(subtitle != null) {
             Label subtitleLabel = new Label(subtitle);
             subtitleLabel.getStyleClass().add("wizard-subtitle");
-            subtitleLabel.setWrapText(true);
+            bindWrap(subtitleLabel, pane);
             header.getChildren().add(subtitleLabel);
         }
         pane.setHeaderText(null);
         pane.setHeader(header);
+    }
+
+    /**
+     * Binds a wrapping label's max width to the dialog pane so long text wraps instead of clipping to
+     * an ellipsis (a wrapText Label placed directly in a VBox/DialogPane otherwise keeps its unwrapped
+     * single-line width). The -48 clears the header/content VBox horizontal padding plus slack.
+     */
+    private static void bindWrap(Label label, DialogPane pane) {
+        label.setWrapText(true);
+        label.maxWidthProperty().bind(pane.widthProperty().subtract(48));
     }
 
     /** Gives the dialog's buttons a consistent primary/secondary hierarchy. */
@@ -313,7 +323,7 @@ public class WalletCreationFlow {
         // Advisory (never blocking) weak-passphrase hint for hand-typed input.
         Label weaknessLabel = new Label();
         weaknessLabel.getStyleClass().add("passphrase-weakness");
-        weaknessLabel.setWrapText(true);
+        bindWrap(weaknessLabel, dlg.getDialogPane());
         weaknessLabel.managedProperty().bind(weaknessLabel.visibleProperty());
         weaknessLabel.setVisible(false);
         passField.textProperty().addListener((obs, old, text) -> {
@@ -431,8 +441,8 @@ public class WalletCreationFlow {
 
         Label body = new Label("A password is a single word — too short to protect your wallet. "
                 + "A passphrase is several words, and the strongest way to choose them is to roll physical dice.");
-        body.setWrapText(true);
         body.getStyleClass().add("wizard-subtitle");
+        bindWrap(body, dlg.getDialogPane());
 
         Button yes = typeCard("Yes, I have dice", "Roll your own passphrase — the most secure option.");
         Button no = typeCard("No, I don't have dice", "Type a passphrase instead, or come back with dice.");
@@ -588,8 +598,8 @@ public class WalletCreationFlow {
                 passWords.size() + " words · " + bits + " bits of entropy");
 
         Label phrase = new Label(String.join(" ", passWords));
-        phrase.setWrapText(true);
         phrase.getStyleClass().add("diceware-passphrase");
+        bindWrap(phrase, dlg.getDialogPane());
 
         ObjectProperty<byte[]> masterFingerprint = new SimpleObjectProperty<>();
         HBox fingerprintBox = new HBox(10);
@@ -626,8 +636,8 @@ public class WalletCreationFlow {
 
         Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly. "
                 + "They are never stored — if you lose them, your funds cannot be recovered.");
-        warning.setWrapText(true);
         warning.getStyleClass().add("passphrase-warning");
+        bindWrap(warning, dlg.getDialogPane());
 
         VBox content = new VBox(14, phrase, fingerprintBox, warning);
         content.setPadding(new Insets(20));
@@ -760,7 +770,7 @@ public class WalletCreationFlow {
             styleWizardButtons(progress.getDialogPane());
 
             Label descLabel = new Label("Looking for previous transactions on the blockchain.");
-            descLabel.setWrapText(true);
+            bindWrap(descLabel, progress.getDialogPane());
 
             Label statusLabel = new Label();
             statusLabel.textProperty().bind(svc.messageProperty());
