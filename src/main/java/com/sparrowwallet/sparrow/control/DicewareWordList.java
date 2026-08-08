@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * Loads the EFF "large" diceware wordlist (7776 = 6^5 words) bundled at
- * {@code /wordlist/eff-large.txt}, verifying its integrity with a hardcoded SHA-256 digest so a
+ * {@code eff-large.txt} (co-located with this class), verifying its integrity with a hardcoded SHA-256 digest so a
  * tampered list fails fast. Modelled on {@link com.sparrowwallet.drongo.wallet.Bip39MnemonicCode}.
  *
  * <p>The wordlist is the EFF Long Wordlist by the Electronic Frontier Foundation, made available
@@ -36,7 +36,9 @@ import java.util.Set;
 public class DicewareWordList {
     private static final Logger log = LoggerFactory.getLogger(DicewareWordList.class);
 
-    private static final String EFF_LARGE_RESOURCE_NAME = "/wordlist/eff-large.txt";
+    // Resolved relative to this class's package (co-located resource) to avoid a JPMS split package
+    // with drongo's /wordlist package.
+    private static final String EFF_LARGE_RESOURCE_NAME = "eff-large.txt";
     // SHA-256 of the concatenated word column (no separators), matching the read loop below.
     private static final String EFF_LARGE_SHA256 = "68bf9af582305329a9b30476ff584c7077aecefa4e4644e54b8ab422b0c66872";
 

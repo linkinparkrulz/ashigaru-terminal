@@ -4,7 +4,7 @@ This project bundles third-party data files, listed here with their attributions
 
 ## EFF Long Wordlist (diceware)
 
-- **File:** `src/main/resources/wordlist/eff-large.txt`
+- **File:** `src/main/resources/com/sparrowwallet/sparrow/control/eff-large.txt`
 - **Source:** Electronic Frontier Foundation — <https://www.eff.org/dice>
 - **Used by:** the diceware passphrase helper (`DicewareWordList`, `DicewareDialog`)
 - **License:** Creative Commons Attribution 3.0 United States (CC BY 3.0 US) —
