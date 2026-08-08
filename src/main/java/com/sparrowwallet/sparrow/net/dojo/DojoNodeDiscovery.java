@@ -14,45 +14,33 @@ import com.sparrowwallet.sparrow.net.HttpClientService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Discovers the Electrum (Fulcrum) servers — and block explorers — running on Dojos listed in the
  * public dojobay.pw directory.
  *
- * <p>The directory lists Dojos, each carrying a {@code dojo.api} pairing payload ({@code url},
- * {@code apikey}). For Dojos running version 1.28+ we authenticate against the Dojo backend and read
- * its {@code /support/services} endpoint, which exposes the Dojo's indexer (a Fulcrum instance
- * speaking the Electrum protocol) and its block explorer.
+ * <p>Each directory entry carries a {@code signed} block: a Bitcoin signed message wrapping the
+ * Dojo's pairing payload and embedding the operator's BIP47 payment code. Discovery verifies that
+ * block against the payment code the directory advertises for the node
+ * ({@link SignedMessageVerifier#verify(String, String, String)}), which proves the listing belongs
+ * to its claimed operator (paynym). For every entry that verifies, the Dojo's {@code indexer_url}
+ * (a Fulcrum instance speaking the Electrum protocol) is taken directly from the directory JSON and
+ * offered as a public Electrum server, labelled with the operator's paynym.
  *
- * <p>Flow per Dojo (matches the manual curl flow):
- * <ol>
- *     <li>{@code POST <base>/auth/login} form-encoded {@code apikey=<key>} &rarr; {@code access_token}</li>
- *     <li>{@code GET  <base>/support/services?at=<token>} &rarr; the {@code indexer} and {@code explorer} urls</li>
- * </ol>
- *
- * All requests go through {@link HttpClientService}, which routes over the configured Tor proxy
- * (the directory and every Dojo are onion services). Dojos are probed in parallel with a per-Dojo
- * timeout so one unreachable Dojo cannot stall discovery.
+ * <p>The only network I/O is fetching the directory itself (an onion service, routed over the Tor
+ * proxy via {@link HttpClientService}); verification is pure local crypto, so there is no per-Dojo
+ * probing. Note that {@code indexer_url} is <em>not</em> part of the signed message — the signature
+ * proves the operator identity, not the indexer endpoint, which is trusted to the directory.
  */
 public class DojoNodeDiscovery {
     private static final Logger log = LoggerFactory.getLogger(DojoNodeDiscovery.class);
 
     public static final String DIRECTORY_URL = "http://dojobayeryasshgghz537de5ckgd5hhi4z5sdeil3roeh65fwhdnu2yd.onion/data/dojos.json";
-
-    private static final int MIN_MAJOR = 1;
-    private static final int MIN_MINOR = 28;
-    private static final int MAX_THREADS = 3;
-    private static final int PER_NODE_TIMEOUT_SECONDS = 60;
 
     public static class DiscoveredNode {
         private final Server indexerServer;
@@ -81,7 +69,7 @@ public class DojoNodeDiscovery {
 
         /**
          * True if the Dojo's {@code signed} block cryptographically verifies against its embedded
-         * BIP47 payment code and references this Dojo's pairing url.
+         * BIP47 payment code and matches the payment code the directory advertises for this node.
          */
         public boolean isVerified() {
             return verified;
@@ -92,13 +80,11 @@ public class DojoNodeDiscovery {
         private final List<DiscoveredNode> nodes;
         private final int attempted;
         private final int unverified;
-        private final int unreachable;
 
-        public DiscoveryResult(List<DiscoveredNode> nodes, int attempted, int unverified, int unreachable) {
+        public DiscoveryResult(List<DiscoveredNode> nodes, int attempted, int unverified) {
             this.nodes = nodes;
             this.attempted = attempted;
             this.unverified = unverified;
-            this.unreachable = unreachable;
         }
 
         public List<DiscoveredNode> getNodes() {
@@ -111,20 +97,14 @@ public class DojoNodeDiscovery {
 
         /**
          * Number of candidates whose signed block failed verification (bad/missing signature, or the
-         * signed identity did not match the advertised payment code). These are never authenticated.
+         * signed identity did not match the advertised payment code). These are never surfaced.
          */
         public int getUnverified() {
             return unverified;
         }
-
-        public int getUnreachable() {
-            return unreachable;
-        }
     }
 
-    private record Candidate(String name, String version, String url, String apikey, String signedBlock, String paymentCode) { }
-
-    private record Services(String indexerUrl, String explorerUrl) { }
+    private record Candidate(String name, String pairingUrl, String signedBlock, String paymentCode, String indexerUrl, String explorerUrl) { }
 
     /**
      * Runs discovery on a daemon thread, persists each verified Dojo's Electrum server and block
@@ -147,8 +127,8 @@ public class DojoNodeDiscovery {
                 if(changed) {
                     EventManager.get().post(new DiscoveredServersChangedEvent());
                 }
-                log.info("Dojo discovery: " + result.getNodes().size() + " verified+reachable, " + result.getUnverified()
-                        + " unverified, " + result.getUnreachable() + " unreachable of " + result.getAttempted() + " candidates");
+                log.info("Dojo discovery: " + result.getNodes().size() + " verified, " + result.getUnverified()
+                        + " unverified of " + result.getAttempted() + " candidates");
             } catch(Exception e) {
                 log.warn("Background Dojo discovery failed: " + e.getMessage());
             }
@@ -158,12 +138,13 @@ public class DojoNodeDiscovery {
     }
 
     /**
-     * Fetches the directory and derives an Electrum server (and block explorer) for each eligible
-     * Dojo (version &ge; 1.28, matching the current network). Dojos are probed in parallel;
-     * reachability is decided by a successful login + services fetch, so the directory's own
-     * (10-minute snapshot) active flag is not used. Unreachable Dojos are counted, not surfaced.
+     * Fetches the directory and, for each entry matching the current network that carries an
+     * {@code indexer_url}, verifies its signed block against the advertised BIP47 payment code. Every
+     * entry that verifies yields an Electrum server (and, where present, a block explorer) built from
+     * the directory's own urls. Unverified entries are counted, not surfaced.
      *
-     * <p>Performs blocking network I/O over Tor — must be called off the UI thread.
+     * <p>Performs blocking network I/O (the directory fetch) over Tor — must be called off the UI
+     * thread.
      */
     public static DiscoveryResult discover(HttpClientService http) throws Exception {
         String directoryJson = http.requestJson(DIRECTORY_URL, String.class, null);
@@ -175,181 +156,92 @@ public class DojoNodeDiscovery {
             for(JsonElement element : nodes) {
                 try {
                     JsonObject node = element.getAsJsonObject();
-                    if(!versionAtLeast(optString(node, "version"), MIN_MAJOR, MIN_MINOR)) {
+                    if(!matchesNetwork(optString(node, "network"))) {
                         continue;
                     }
-                    if(!matchesNetwork(optString(node, "network"))) {
+
+                    String indexerUrl = optString(node, "indexer_url");
+                    if(indexerUrl == null || indexerUrl.isEmpty()) {
                         continue;
                     }
 
                     JsonObject payload = node.getAsJsonObject("payload");
                     JsonObject pairing = payload == null ? null : payload.getAsJsonObject("pairing");
-                    if(pairing == null) {
+                    String pairingUrl = pairing == null ? null : optString(pairing, "url");
+                    if(pairingUrl == null || pairingUrl.isEmpty()) {
                         continue;
                     }
 
-                    String rawUrl = optString(pairing, "url");
-                    String apikey = optString(pairing, "apikey");
-                    if(rawUrl == null || rawUrl.isEmpty() || apikey == null || apikey.isEmpty()) {
-                        continue;
-                    }
-
-                    candidates.add(new Candidate(displayName(node), optString(node, "version"), rawUrl, apikey, optString(node, "signed"), optString(node, "paymentCode")));
+                    candidates.add(new Candidate(displayName(node), pairingUrl, optString(node, "signed"),
+                            optString(node, "paymentCode"), indexerUrl, explorerUrl(payload)));
                 } catch(Exception e) {
                     log.warn("Skipping malformed dojo directory entry: " + e.getMessage());
                 }
             }
         }
 
-        // Step 2 (verify) before step 3 (authenticate): the signature check is pure crypto with no
-        // network I/O, so gate on it first. Only candidates whose signed block verifies — and whose
-        // signed identity matches the advertised payment code — are ever authenticated, so no apikey
-        // or onion circuit is spent on an unverified or spoofed listing.
-        List<Candidate> verifiedCandidates = new ArrayList<>();
+        // Verify each listing's signature and payment-code binding (pure local crypto — no network),
+        // then take the indexer url straight from the directory for every entry that verifies.
+        List<DiscoveredNode> discovered = new ArrayList<>();
         int unverified = 0;
+        Set<String> seenHosts = new HashSet<>();
         for(Candidate candidate : candidates) {
-            if(SignedMessageVerifier.verify(candidate.signedBlock(), candidate.url(), candidate.paymentCode())) {
-                verifiedCandidates.add(candidate);
-            } else {
+            if(!SignedMessageVerifier.verify(candidate.signedBlock(), candidate.pairingUrl(), candidate.paymentCode())) {
                 unverified++;
                 log.info("Skipping unverified dojo directory entry: " + candidate.name());
-            }
-        }
-
-        List<DiscoveredNode> discovered = new ArrayList<>();
-        int unreachable = 0;
-        if(!verifiedCandidates.isEmpty()) {
-            ExecutorService executor = Executors.newFixedThreadPool(Math.min(MAX_THREADS, verifiedCandidates.size()), r -> {
-                Thread t = new Thread(r, "dojo-discovery");
-                t.setDaemon(true);
-                return t;
-            });
-            try {
-                List<Future<DiscoveredNode>> futures = new ArrayList<>();
-                for(Candidate candidate : verifiedCandidates) {
-                    futures.add(executor.submit(() -> resolveNode(http, candidate)));
-                }
-
-                Set<String> seenHosts = new HashSet<>();
-                for(Future<DiscoveredNode> future : futures) {
-                    DiscoveredNode node;
-                    try {
-                        node = future.get(PER_NODE_TIMEOUT_SECONDS, TimeUnit.SECONDS);
-                    } catch(Exception e) {
-                        node = null;
-                    }
-
-                    if(node == null) {
-                        unreachable++;
-                    } else if(seenHosts.add(node.getIndexerServer().getHost())) {
-                        discovered.add(node);
-                    }
-                }
-            } finally {
-                executor.shutdownNow();
-            }
-        }
-
-        return new DiscoveryResult(discovered, candidates.size(), unverified, unreachable);
-    }
-
-    /**
-     * Authenticates to an already-verified Dojo and derives its Electrum server (and block explorer)
-     * from the {@code /support/services} endpoint. Callers must only pass candidates that have passed
-     * {@link SignedMessageVerifier#verify(String, String, String)}; returned nodes are therefore
-     * always verified. Returns null if the Dojo is unreachable.
-     */
-    private static DiscoveredNode resolveNode(HttpClientService http, Candidate candidate) {
-        try {
-            String base = candidate.url();
-            while(base.endsWith("/")) {
-                base = base.substring(0, base.length() - 1);
-            }
-
-            Services services = fetchServices(http, base, candidate.apikey());
-            if(services == null || services.indexerUrl() == null) {
-                return null;
-            }
-
-            Server indexerServer = new Server(services.indexerUrl(), candidate.name());
-            Server explorerServer = services.explorerUrl() == null ? null : new Server(services.explorerUrl(), candidate.name());
-            return new DiscoveredNode(indexerServer, explorerServer, candidate.name(), true);
-        } catch(Exception e) {
-            log.warn("Dojo unreachable during discovery (" + candidate.name() + "): " + e.getMessage());
-            return null;
-        }
-    }
-
-    private static Services fetchServices(HttpClientService http, String base, String apikey) throws Exception {
-        String loginBody = http.postString(base + "/auth/login", null,
-                "application/x-www-form-urlencoded",
-                "apikey=" + URLEncoder.encode(apikey, "UTF-8"));
-        JsonObject loginObj = JsonParser.parseString(loginBody).getAsJsonObject();
-        JsonObject auth = loginObj.getAsJsonObject("authorizations");
-        if(auth == null || !auth.has("access_token") || auth.get("access_token").isJsonNull()) {
-            return null;
-        }
-        String token = auth.get("access_token").getAsString();
-
-        String servicesJson = http.requestJson(base + "/support/services?at=" + token, String.class, null);
-        JsonObject servicesObj = JsonParser.parseString(servicesJson).getAsJsonObject();
-        JsonArray services = servicesObj.getAsJsonArray("services");
-        if(services == null) {
-            return null;
-        }
-
-        String indexerUrl = null;
-        String explorerUrl = null;
-        for(JsonElement s : services) {
-            JsonObject service = s.getAsJsonObject();
-            String type = optString(service, "type");
-            String url = optString(service, "url");
-            if(url == null || url.isEmpty() || "N/A".equalsIgnoreCase(url)) {
                 continue;
             }
 
-            if("indexer".equalsIgnoreCase(type) && indexerUrl == null) {
-                indexerUrl = url;
-            } else if("explorer".equalsIgnoreCase(type) && explorerUrl == null) {
-                String kind = optString(service, "kind");
-                if(kind == null || !kind.toLowerCase(Locale.ROOT).contains("null")) {
-                    explorerUrl = url;
-                }
+            Server indexerServer = new Server(candidate.indexerUrl(), candidate.name());
+            if(seenHosts.add(indexerServer.getHost())) {
+                Server explorerServer = candidate.explorerUrl() == null ? null : new Server(candidate.explorerUrl(), candidate.name());
+                discovered.add(new DiscoveredNode(indexerServer, explorerServer, candidate.name(), true));
             }
         }
-        return new Services(indexerUrl, explorerUrl);
-    }
 
-    private static String displayName(JsonObject node) {
-        String name = optString(node, "name");
-        if(name == null || name.isEmpty()) {
-            name = optString(node, "paynym");
-        }
-        if(name == null || name.isEmpty()) {
-            name = optString(node, "id");
-        }
-        return name;
+        return new DiscoveryResult(discovered, candidates.size(), unverified);
     }
 
     /**
-     * Returns true if {@code version} (e.g. "1.28.2") is at least {@code minMajor.minMinor}.
-     * Tolerates trailing patch/qualifier segments and malformed values (which return false).
+     * Reads the block-explorer url from a node's signed {@code payload.explorer} object, skipping the
+     * {@code explorer.null} placeholder type. Returns null when no usable explorer is present.
      */
-    static boolean versionAtLeast(String version, int minMajor, int minMinor) {
-        if(version == null || version.isEmpty()) {
-            return false;
+    private static String explorerUrl(JsonObject payload) {
+        JsonObject explorer = payload == null ? null : payload.getAsJsonObject("explorer");
+        if(explorer == null) {
+            return null;
         }
-        try {
-            String[] parts = version.trim().split("[.\\-+]");
-            int major = Integer.parseInt(parts[0]);
-            int minor = parts.length > 1 ? Integer.parseInt(parts[1]) : 0;
-            if(major != minMajor) {
-                return major > minMajor;
-            }
-            return minor >= minMinor;
-        } catch(NumberFormatException e) {
-            return false;
+        String url = optString(explorer, "url");
+        if(url == null || url.isEmpty()) {
+            return null;
         }
+        String type = optString(explorer, "type");
+        if(type != null && type.toLowerCase(Locale.ROOT).contains("null")) {
+            return null;
+        }
+        return url;
+    }
+
+    /**
+     * Builds the dropdown label for a node as {@code name (paynym)} — e.g. {@code jordan
+     * (+linkinparkrulz)}. Falls back to whichever of {@code name}/{@code paynym} is present alone, or
+     * to the node {@code id} when both are absent.
+     */
+    private static String displayName(JsonObject node) {
+        String name = optString(node, "name");
+        String paynym = optString(node, "paynym");
+        boolean hasName = name != null && !name.isEmpty();
+        boolean hasPaynym = paynym != null && !paynym.isEmpty();
+        if(hasName && hasPaynym) {
+            return name + " (" + paynym + ")";
+        }
+        if(hasName) {
+            return name;
+        }
+        if(hasPaynym) {
+            return paynym;
+        }
+        return optString(node, "id");
     }
 
     /**

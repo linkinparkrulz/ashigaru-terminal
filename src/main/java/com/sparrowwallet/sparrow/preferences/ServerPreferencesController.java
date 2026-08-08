@@ -977,11 +977,11 @@ public class ServerPreferencesController extends PreferencesDetailController {
 
             refreshPublicServerList();
 
-            if(verified == 0 && unverified == 0 && result.getUnreachable() == 0) {
-                discoverNodesStatus.setText("No Dojos found (need version 1.28+ on this network).");
+            if(verified == 0 && unverified == 0) {
+                discoverNodesStatus.setText("No Dojos found for this network.");
             } else {
                 discoverNodesStatus.setText("Added " + verified + " Dojo Electrum server" + (verified == 1 ? "" : "s")
-                        + "; " + unverified + " unverified, " + result.getUnreachable() + " unreachable. Directory courtesy of dojobay.pw");
+                        + "; " + unverified + " unverified. Directory courtesy of dojobay.pw");
             }
             discoverNodesLink.setDisable(false);
         });
