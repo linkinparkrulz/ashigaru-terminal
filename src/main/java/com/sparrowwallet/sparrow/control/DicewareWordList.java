@@ -1,5 +1,6 @@
 package com.sparrowwallet.sparrow.control;
 
+import com.sparrowwallet.drongo.wallet.Bip39MnemonicCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,5 +135,37 @@ public class DicewareWordList {
      */
     public boolean contains(String word) {
         return word != null && wordSet.contains(word);
+    }
+
+    /**
+     * A light, honest weakness check for a hand-typed passphrase. It flags only the unambiguous
+     * failures and is purely advisory — callers must never block on it. A blank passphrase is a valid
+     * choice (no passphrase) and returns no warning. Strong passphrases (including diceware phrases)
+     * return empty. Uses the already-bundled BIP39 and EFF wordlists for the single-dictionary-word
+     * check, so it adds no dependency.
+     */
+    public static Optional<String> passphraseWeakness(String passphrase) {
+        if(passphrase == null) {
+            return Optional.empty();
+        }
+        String trimmed = passphrase.strip();
+        if(trimmed.isEmpty()) {
+            return Optional.empty();
+        }
+        if(trimmed.length() < 8) {
+            return Optional.of("Short passphrase — consider rolling a diceware passphrase.");
+        }
+        if(trimmed.chars().distinct().count() == 1) {
+            return Optional.of("Repeated characters — weak. Consider rolling a diceware passphrase.");
+        }
+        if(!trimmed.contains(" ")) {
+            String lower = trimmed.toLowerCase();
+            boolean effWord = INSTANCE != null && INSTANCE.contains(lower);
+            boolean bip39Word = Bip39MnemonicCode.INSTANCE != null && Bip39MnemonicCode.INSTANCE.getWordList().contains(lower);
+            if(effWord || bip39Word) {
+                return Optional.of("Single dictionary word — weak. Consider rolling a diceware passphrase.");
+            }
+        }
+        return Optional.empty();
     }
 }

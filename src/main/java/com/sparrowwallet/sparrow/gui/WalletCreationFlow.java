@@ -14,10 +14,13 @@ import com.sparrowwallet.drongo.protocol.ScriptType;
 import com.sparrowwallet.drongo.wallet.*;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
+import com.sparrowwallet.sparrow.control.DicewareDialog;
+import com.sparrowwallet.sparrow.control.DicewareWordList;
 import com.sparrowwallet.sparrow.control.HelpLabel;
 import com.sparrowwallet.sparrow.control.LifeHashIcon;
 import com.sparrowwallet.sparrow.control.SeedEntryDialog;
 import com.sparrowwallet.sparrow.control.ViewPasswordField;
+import com.sparrowwallet.sparrow.glyphfont.FontAwesome5;
 import com.sparrowwallet.sparrow.event.StorageEvent;
 import com.sparrowwallet.sparrow.event.TimedEvent;
 import com.sparrowwallet.sparrow.io.Bip39;
@@ -41,8 +44,11 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
+import org.controlsfx.glyphfont.Glyph;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -304,6 +310,37 @@ public class WalletCreationFlow {
         ViewPasswordField passConfirmField = new ViewPasswordField();
         passConfirmField.setPromptText("Re-enter passphrase");
 
+        // "Roll dice…" — build a strong passphrase from physical dice via the EFF diceware list.
+        Button diceButton = new Button("Roll dice…");
+        diceButton.setGraphic(new Glyph(FontAwesome5.FONT_NAME, FontAwesome5.Glyph.RANDOM));
+        diceButton.getStyleClass().add("action-btn");
+        diceButton.setDisable(DicewareWordList.INSTANCE == null);
+        diceButton.setOnAction(e -> {
+            DicewareDialog dicewareDialog = new DicewareDialog();
+            dicewareDialog.initOwner(owner);
+            Optional<String> optPassphrase = dicewareDialog.showAndWait();
+            optPassphrase.ifPresent(p -> {
+                passField.setText(p);
+                passConfirmField.setText(p);
+            });
+        });
+        Region passHeaderSpacer = new Region();
+        HBox.setHgrow(passHeaderSpacer, Priority.ALWAYS);
+        HBox passHeader = new HBox(10, passLabel, passHeaderSpacer, diceButton);
+        passHeader.setAlignment(Pos.CENTER_LEFT);
+
+        // Advisory (never blocking) weak-passphrase hint for hand-typed input.
+        Label weaknessLabel = new Label();
+        weaknessLabel.getStyleClass().add("passphrase-weakness");
+        weaknessLabel.setWrapText(true);
+        weaknessLabel.managedProperty().bind(weaknessLabel.visibleProperty());
+        weaknessLabel.setVisible(false);
+        passField.textProperty().addListener((obs, old, text) -> {
+            Optional<String> weakness = DicewareWordList.passphraseWeakness(text);
+            weaknessLabel.setText(weakness.orElse(""));
+            weaknessLabel.setVisible(weakness.isPresent());
+        });
+
         ObjectProperty<byte[]> masterFingerprint = new SimpleObjectProperty<>();
 
         HBox fingerprintBox = new HBox(10);
@@ -339,7 +376,7 @@ public class WalletCreationFlow {
         });
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon, helpLabel);
 
-        VBox content = new VBox(12, passLabel, passField, passConfirmLabel, passConfirmField, fingerprintBox);
+        VBox content = new VBox(12, passHeader, passField, passConfirmLabel, passConfirmField, weaknessLabel, fingerprintBox);
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
