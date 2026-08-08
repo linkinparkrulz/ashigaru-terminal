@@ -194,13 +194,33 @@ public class ServerPreferencesController extends PreferencesDetailController {
     public void initializeView(Config config) {
         EventManager.get().register(this);
 
-        //Cap the wrapping labels at the detail pane width so their wrapText actually wraps (inside a
-        //tornadofx Field the input container otherwise sizes to the label's unwrapped width and clips
-        //to an ellipsis). The binding tracks resizes, so the text stays fully visible responsively.
-        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(160);
-        warningBodyShort.maxWidthProperty().bind(wrapWidth);
-        warningBodyLong.maxWidthProperty().bind(wrapWidth);
-        discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+        //Cap the wrapping labels so their wrapText actually wraps. Bind to the SCENE (window) width,
+        //NOT serverDetailPane's own width: the detail GridPane gets inflated by its content (a
+        //tornadofx Field sizes the input area to the label's unwrapped width), so a self-referential
+        //binding resolves too wide and never forces a wrap. The scene width is independent of the
+        //content and tracks the window, so the warning re-wraps as the window is resized. The offset
+        //covers the sidebar + scroll bar + field label column + padding; a smaller cap only wraps
+        //earlier, never clips. The scene is null during FXML load, so (re)bind once it is attached.
+        Runnable bindWrap = () -> {
+            javafx.scene.Scene scene = serverDetailPane.getScene();
+            if(scene == null) {
+                return;
+            }
+            javafx.beans.binding.DoubleBinding wrapWidth =
+                    javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(320));
+            warningBodyShort.maxWidthProperty().bind(wrapWidth);
+            warningBodyLong.maxWidthProperty().bind(wrapWidth);
+            discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+        };
+        if(serverDetailPane.getScene() != null) {
+            bindWrap.run();
+        } else {
+            serverDetailPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if(newScene != null) {
+                    bindWrap.run();
+                }
+            });
+        }
 
         getMasterController().closingProperty().addListener((observable, oldValue, newValue) -> {
             EventManager.get().unregister(this);
