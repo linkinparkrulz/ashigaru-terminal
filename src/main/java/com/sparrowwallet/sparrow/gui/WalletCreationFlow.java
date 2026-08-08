@@ -14,13 +14,11 @@ import com.sparrowwallet.drongo.protocol.ScriptType;
 import com.sparrowwallet.drongo.wallet.*;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.EventManager;
-import com.sparrowwallet.sparrow.control.DicewareDialog;
 import com.sparrowwallet.sparrow.control.DicewareWordList;
 import com.sparrowwallet.sparrow.control.HelpLabel;
 import com.sparrowwallet.sparrow.control.LifeHashIcon;
 import com.sparrowwallet.sparrow.control.SeedEntryDialog;
 import com.sparrowwallet.sparrow.control.ViewPasswordField;
-import com.sparrowwallet.sparrow.glyphfont.FontAwesome5;
 import com.sparrowwallet.sparrow.event.StorageEvent;
 import com.sparrowwallet.sparrow.event.TimedEvent;
 import com.sparrowwallet.sparrow.io.Bip39;
@@ -43,12 +41,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
-import org.controlsfx.glyphfont.Glyph;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -249,8 +246,8 @@ public class WalletCreationFlow {
         if (seedResult.isEmpty() || seedResult.get() == null) return;
         List<String> words = seedResult.get();
 
-        // Step 3: BIP39 passphrase (required, must match) + master fingerprint preview
-        String passphrase = askBip39Passphrase(walletName, words);
+        // Step 3: BIP39 passphrase — guided, dice-first flow (dice wizard or typed dialog).
+        String passphrase = askPassphrase(walletName, words);
         if (passphrase == null) return;
 
         try {
@@ -310,25 +307,6 @@ public class WalletCreationFlow {
         ViewPasswordField passConfirmField = new ViewPasswordField();
         passConfirmField.setPromptText("Re-enter passphrase");
 
-        // "Roll dice…" — build a strong passphrase from physical dice via the EFF diceware list.
-        Button diceButton = new Button("Roll dice…");
-        diceButton.setGraphic(new Glyph(FontAwesome5.FONT_NAME, FontAwesome5.Glyph.RANDOM));
-        diceButton.getStyleClass().add("action-btn");
-        diceButton.setDisable(DicewareWordList.INSTANCE == null);
-        diceButton.setOnAction(e -> {
-            DicewareDialog dicewareDialog = new DicewareDialog();
-            dicewareDialog.initOwner(owner);
-            Optional<String> optPassphrase = dicewareDialog.showAndWait();
-            optPassphrase.ifPresent(p -> {
-                passField.setText(p);
-                passConfirmField.setText(p);
-            });
-        });
-        Region passHeaderSpacer = new Region();
-        HBox.setHgrow(passHeaderSpacer, Priority.ALWAYS);
-        HBox passHeader = new HBox(10, passLabel, passHeaderSpacer, diceButton);
-        passHeader.setAlignment(Pos.CENTER_LEFT);
-
         // Advisory (never blocking) weak-passphrase hint for hand-typed input.
         Label weaknessLabel = new Label();
         weaknessLabel.getStyleClass().add("passphrase-weakness");
@@ -376,7 +354,7 @@ public class WalletCreationFlow {
         });
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon, helpLabel);
 
-        VBox content = new VBox(12, passHeader, passField, passConfirmLabel, passConfirmField, weaknessLabel, fingerprintBox);
+        VBox content = new VBox(12, passLabel, passField, passConfirmLabel, passConfirmField, weaknessLabel, fingerprintBox);
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
@@ -414,6 +392,256 @@ public class WalletCreationFlow {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    // -------------------------------------------------------------------------
+    // Step 3 – passphrase (guided, dice-first)
+    // -------------------------------------------------------------------------
+
+    private static final int DICEWARE_MIN_WORDS = 6;
+
+    private enum DiceChoice { HAVE_DICE, NO_DICE }
+
+    /**
+     * Orchestrates the passphrase step: teach why a passphrase matters and branch on whether the user
+     * has physical dice. Returns the chosen passphrase, or null if the user cancels / decides to wait.
+     */
+    private String askPassphrase(String walletName, List<String> words) {
+        DiceChoice choice = askHaveDice(walletName);
+        if (choice == null) return null;
+        if (choice == DiceChoice.HAVE_DICE) {
+            return askDicewarePassphrase(walletName, words);
+        }
+        Boolean continueWithout = askNoDice(walletName);
+        if (continueWithout == null || !continueWithout) return null; // "wait" => cancel creation
+        return askBip39Passphrase(walletName, words);
+    }
+
+    /** "A passphrase, not a password" intro + "Do you have dice?" choice. */
+    private DiceChoice askHaveDice(String walletName) {
+        Dialog<DiceChoice> dlg = new Dialog<>();
+        dlg.setTitle("Create BIP39 Wallet – " + walletName);
+        dlg.initOwner(owner);
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "A passphrase, not a password",
+                "Do you have dice handy?");
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Label body = new Label("A password is a single word — far too short to protect your wallet. "
+                + "A passphrase is several words, which is dramatically harder to guess. The strongest way "
+                + "to choose those words is to roll physical dice: real randomness no computer can predict.");
+        body.setWrapText(true);
+        body.getStyleClass().add("wizard-subtitle");
+
+        ImageView diceView = new ImageView(new Image("/image/dice.png"));
+        diceView.setPreserveRatio(true);
+        diceView.setFitWidth(300);
+        HBox diceBox = new HBox(diceView);
+        diceBox.setAlignment(Pos.CENTER);
+
+        Button yes = typeCard("Yes, I have dice", "Roll your own passphrase — the most secure option.");
+        Button no = typeCard("No, I don't have dice", "Type a passphrase instead, or come back with dice.");
+        yes.setDisable(DicewareWordList.INSTANCE == null);
+        yes.setOnAction(e -> { dlg.setResult(DiceChoice.HAVE_DICE); dlg.close(); });
+        no.setOnAction(e -> { dlg.setResult(DiceChoice.NO_DICE); dlg.close(); });
+
+        VBox content = new VBox(16, body, diceBox, yes, no);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(480);
+        dlg.getDialogPane().setContent(content);
+        AppServices.moveToActiveWindowScreen(dlg);
+        styleWizardButtons(dlg.getDialogPane());
+
+        dlg.setResultConverter(bt -> null);
+        return dlg.showAndWait().orElse(null);
+    }
+
+    /** No dice: wait until they have some, or continue to the typed passphrase dialog. */
+    private Boolean askNoDice(String walletName) {
+        Dialog<Boolean> dlg = new Dialog<>();
+        dlg.setTitle("Create BIP39 Wallet – " + walletName);
+        dlg.initOwner(owner);
+        styleWizardDialog(dlg, "NEW / RESTORE WALLET", "No dice?",
+                "Dice give you the strongest passphrase.");
+        dlg.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        Button wait = typeCard("Wait — I'll get dice first",
+                "Stop here and create your wallet once you have five dice.");
+        Button cont = typeCard("Continue without dice",
+                "Type your own passphrase now. Make it long — several unrelated words.");
+        wait.setOnAction(e -> { dlg.setResult(Boolean.FALSE); dlg.close(); });
+        cont.setOnAction(e -> { dlg.setResult(Boolean.TRUE); dlg.close(); });
+
+        VBox content = new VBox(12, wait, cont);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(480);
+        dlg.getDialogPane().setContent(content);
+        AppServices.moveToActiveWindowScreen(dlg);
+        styleWizardButtons(dlg.getDialogPane());
+
+        dlg.setResultConverter(bt -> null);
+        return dlg.showAndWait().orElse(null);
+    }
+
+    /**
+     * Dice path: roll one word per screen (minimum {@value #DICEWARE_MIN_WORDS}), then review the
+     * assembled phrase + fingerprint and either add another word or create the wallet. Physical dice
+     * only — the app never generates the rolls. Returns the space-joined passphrase, or null to cancel.
+     */
+    private String askDicewarePassphrase(String walletName, List<String> seedWords) {
+        if (DicewareWordList.INSTANCE == null) {
+            showError("Wordlist unavailable", "The diceware wordlist could not be loaded.");
+            return null;
+        }
+        List<String> passWords = new ArrayList<>();
+        while (passWords.size() < DICEWARE_MIN_WORDS) {
+            String word = rollWordDialog(walletName, passWords.size() + 1);
+            if (word == null) return null;
+            passWords.add(word);
+        }
+        while (true) {
+            int action = reviewDicewareDialog(walletName, seedWords, passWords);
+            if (action < 0) return null;                 // cancel
+            if (action == 1) return String.join(" ", passWords); // create wallet
+            String word = rollWordDialog(walletName, passWords.size() + 1); // add another word
+            if (word != null) passWords.add(word);       // null add => back to review unchanged
+        }
+    }
+
+    /** One word: five dice inputs (1–6) resolving live to its EFF word. Returns the word, or null. */
+    private String rollWordDialog(String walletName, int wordNumber) {
+        Dialog<String> dlg = new Dialog<>();
+        dlg.setTitle("Create BIP39 Wallet – " + walletName);
+        dlg.initOwner(owner);
+        styleWizardDialog(dlg, "ROLL YOUR PASSPHRASE", "Word " + wordNumber,
+                "Roll five dice and enter each result (1–6).");
+
+        List<TextField> dieFields = new ArrayList<>();
+        HBox diceRow = new HBox(8);
+        diceRow.setAlignment(Pos.CENTER_LEFT);
+        Label wordLabel = new Label("—");
+        wordLabel.getStyleClass().add("diceware-word");
+
+        ButtonType addType = new ButtonType("Add word", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(addType, ButtonType.CANCEL);
+        Button addNode = (Button) dlg.getDialogPane().lookupButton(addType);
+        addNode.setDisable(true);
+
+        Runnable recompute = () -> {
+            StringBuilder sb = new StringBuilder();
+            for (TextField f : dieFields) sb.append(f.getText());
+            Optional<String> word = DicewareWordList.INSTANCE.wordForRoll(sb.toString());
+            wordLabel.setText(word.orElse("—"));
+            addNode.setDisable(word.isEmpty());
+        };
+
+        for (int i = 0; i < 5; i++) {
+            TextField die = new TextField();
+            die.setPrefWidth(46);
+            die.setAlignment(Pos.CENTER);
+            die.getStyleClass().add("dice-die-input");
+            die.setTextFormatter(new TextFormatter<>(c -> {
+                String proposed = c.getControlNewText();
+                return (proposed.length() <= 1 && proposed.matches("[1-6]?")) ? c : null;
+            }));
+            final int idx = i;
+            die.textProperty().addListener((obs, old, val) -> {
+                if (val.length() == 1 && idx < 4) dieFields.get(idx + 1).requestFocus();
+                recompute.run();
+            });
+            dieFields.add(die);
+            diceRow.getChildren().add(die);
+        }
+
+        Label arrow = new Label("→");
+        arrow.getStyleClass().add("diceware-arrow");
+        HBox resolvedRow = new HBox(10, diceRow, arrow, wordLabel);
+        resolvedRow.setAlignment(Pos.CENTER_LEFT);
+
+        Label hint = new Label("Each word adds " + String.format("%.1f", DicewareWordList.BITS_PER_WORD)
+                + " bits of entropy.");
+        hint.getStyleClass().add("diceware-instruction");
+
+        VBox content = new VBox(14, resolvedRow, hint);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(480);
+        dlg.getDialogPane().setContent(content);
+        AppServices.moveToActiveWindowScreen(dlg);
+        styleWizardButtons(dlg.getDialogPane());
+        Platform.runLater(() -> dieFields.get(0).requestFocus());
+
+        dlg.setResultConverter(bt -> {
+            if (bt != addType) return null;
+            StringBuilder sb = new StringBuilder();
+            for (TextField f : dieFields) sb.append(f.getText());
+            return DicewareWordList.INSTANCE.wordForRoll(sb.toString()).orElse(null);
+        });
+        return dlg.showAndWait().orElse(null);
+    }
+
+    /** Review the rolled phrase + fingerprint. Returns 1 = create wallet, 0 = add a word, -1 = cancel. */
+    private int reviewDicewareDialog(String walletName, List<String> seedWords, List<String> passWords) {
+        Dialog<Integer> dlg = new Dialog<>();
+        dlg.setTitle("Create BIP39 Wallet – " + walletName);
+        dlg.initOwner(owner);
+        long bits = Math.round(passWords.size() * DicewareWordList.BITS_PER_WORD);
+        styleWizardDialog(dlg, "ROLL YOUR PASSPHRASE", "Your passphrase",
+                passWords.size() + " words · " + bits + " bits of entropy");
+
+        Label phrase = new Label(String.join(" ", passWords));
+        phrase.setWrapText(true);
+        phrase.getStyleClass().add("diceware-passphrase");
+
+        ObjectProperty<byte[]> masterFingerprint = new SimpleObjectProperty<>();
+        HBox fingerprintBox = new HBox(10);
+        fingerprintBox.setAlignment(Pos.CENTER_LEFT);
+        Label fingerprintLabel = new Label("Master fingerprint:");
+        fingerprintLabel.getStyleClass().add("field-label");
+        TextField fingerprintHex = new TextField();
+        fingerprintHex.setDisable(true);
+        fingerprintHex.setMaxWidth(80);
+        fingerprintHex.getStyleClass().add("fixed-width");
+        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        masterFingerprint.addListener((obs, oldVal, newVal) ->
+                fingerprintHex.setText(newVal != null ? Utils.bytesToHex(newVal) : ""));
+        LifeHashIcon lifeHashIcon = new LifeHashIcon();
+        lifeHashIcon.dataProperty().bind(masterFingerprint);
+        Button copyFpBtn = new Button("⎘");
+        copyFpBtn.getStyleClass().add("copy-icon-btn");
+        copyFpBtn.setPrefSize(28, 28);
+        copyFpBtn.disableProperty().bind(masterFingerprint.isNull());
+        copyFpBtn.setOnAction(e -> {
+            if (fingerprintHex.getText().isEmpty()) return;
+            ClipboardContent cc = new ClipboardContent();
+            cc.putString(fingerprintHex.getText());
+            Clipboard.getSystemClipboard().setContent(cc);
+            copyFpBtn.setText("✓");
+            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
+            pause.setOnFinished(ev -> copyFpBtn.setText("⎘"));
+            pause.play();
+        });
+        fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon);
+
+        Bip39 importer = new Bip39();
+        masterFingerprint.set(computeFingerprint(importer, String.join(" ", seedWords), String.join(" ", passWords)));
+
+        Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly. "
+                + "They are never stored — if you lose them, your funds cannot be recovered.");
+        warning.setWrapText(true);
+        warning.getStyleClass().add("passphrase-warning");
+
+        VBox content = new VBox(14, phrase, fingerprintBox, warning);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(480);
+        dlg.getDialogPane().setContent(content);
+
+        ButtonType addType = new ButtonType("Add another word", ButtonBar.ButtonData.LEFT);
+        ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
+        dlg.getDialogPane().getButtonTypes().addAll(addType, createType, ButtonType.CANCEL);
+        AppServices.moveToActiveWindowScreen(dlg);
+        styleWizardButtons(dlg.getDialogPane());
+
+        dlg.setResultConverter(bt -> bt == createType ? 1 : bt == addType ? 0 : -1);
+        return dlg.showAndWait().orElse(-1);
     }
 
     // -------------------------------------------------------------------------

@@ -1107,12 +1107,32 @@
     -fx-font-weight: bold;
 }
 .diceware-passphrase {
-    -fx-text-fill: -ag-text-dim;
+    -fx-text-fill: -ag-text;
     -fx-font-family: "monospace";
+    -fx-font-size: 15px;
+}
+
+/* Five per-word dice-roll inputs (1–6) on the dice path */
+.dice-die-input {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
 }
 
 /* Advisory (never blocking) warning for a weak hand-typed passphrase */
 .passphrase-weakness {
     -fx-text-fill: -ag-testnet;
     -fx-font-size: 12px;
+}
+
+/* Serious "write this down or lose your funds" warning on the dice review screen */
+.passphrase-warning {
+    -fx-text-fill: -ag-testnet;
+    -fx-font-size: 12.5px;
+    -fx-font-weight: bold;
+    -fx-background-color: derive(-ag-testnet, -78%);
+    -fx-border-color: derive(-ag-testnet, -40%);
+    -fx-border-radius: -ag-radius;
+    -fx-background-radius: -ag-radius;
+    -fx-padding: 10 12 10 12;
 }
