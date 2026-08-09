@@ -1059,10 +1059,25 @@
     -fx-background-color: transparent;
     -fx-padding: 0;
 }
+/* The card paints its own background rather than relying on the skin's border shape being
+   themed in time — the arrow above is the only part the skin must draw. */
 .tour-popover {
-    -fx-background-color: transparent;
+    -fx-background-color: -ag-bg-light;
+    -fx-background-radius: 6;
     -fx-padding: 14 16 14 16;
 }
+/* Modena's .button:default (two class selectors) out-specifies .primary-btn (one), and would
+   otherwise override -fx-text-fill on the default Next/Done button — red text on red. */
+.tour-popover .primary-btn,
+.tour-popover .primary-btn:default {
+    -fx-background-color: -ag-accent;
+    -fx-text-fill: #fff;
+}
+.tour-popover .primary-btn:hover,
+.tour-popover .primary-btn:default:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
+.tour-popover .primary-btn:armed,
+.tour-popover .primary-btn:default:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
+.tour-popover .action-btn { -fx-background-color: -ag-bg-raised; -fx-text-fill: -ag-text; }
 .tour-pop-title {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 14px;

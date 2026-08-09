@@ -1,5 +1,6 @@
 package com.sparrowwallet.sparrow.gui;
 
+import com.sparrowwallet.sparrow.AppServices;
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
@@ -30,6 +31,8 @@ import java.util.List;
  */
 public class TourManager {
     private static final String HIGHLIGHT_CLASS = "tour-highlight";
+    /** Fixed card width, so every coach-mark is identically sized. */
+    private static final double CARD_WIDTH = 320;
 
     /**
      * A single coach-mark: the fx:id of the node to point at, its copy, and an optional
@@ -171,9 +174,12 @@ public class TourManager {
 
         Label body = new Label(step.body());
         body.setWrapText(true);
-        body.setMaxWidth(300);
+        // The card is CARD_WIDTH wide with .tour-popover's 16px side padding, so this is the
+        // real inner width. Letting the body ask for more made the card's width follow the
+        // length of each step's copy.
+        body.setMaxWidth(CARD_WIDTH - 32);
         // Wrapped labels report a single line's preferred height unless pinned, which clips
-        // the longer step bodies at the 300px cap.
+        // the longer step bodies at the width cap.
         body.setMinHeight(Region.USE_PREF_SIZE);
         body.getStyleClass().add("tour-pop-body");
 
@@ -195,6 +201,12 @@ public class TourManager {
         nextButton.setDefaultButton(true);
         nextButton.setOnAction(e -> next());
 
+        // Without a pinned minimum these shrink to an ellipsis ("Ba…", "Ne…", "6 / …") whenever
+        // the popover is width-constrained, e.g. anchored near a screen edge.
+        for(Region control : List.of(counter, backButton, skipButton, nextButton)) {
+            control.setMinWidth(Region.USE_PREF_SIZE);
+        }
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
         HBox buttons = new HBox(8, counter, spacer, backButton, skipButton, nextButton);
@@ -202,10 +214,11 @@ public class TourManager {
 
         VBox content = new VBox(10, title, body, buttons);
         content.getStyleClass().add("tour-popover");
-        content.setPrefWidth(320);
-
-        String css = getClass().getResource("ashigaru.css").toExternalForm();
-        content.getStylesheets().add(css);
+        // Pin all three so every coach-mark is the same width, whatever its copy.
+        content.setMinWidth(CARD_WIDTH);
+        content.setPrefWidth(CARD_WIDTH);
+        content.setMaxWidth(CARD_WIDTH);
+        AppServices.addAshigaruStylesheets(content.getStylesheets());
 
         PopOver po = new PopOver(content);
         po.setDetachable(false);
@@ -213,15 +226,22 @@ public class TourManager {
         po.setCloseButtonEnabled(false);
         po.setAutoHide(false);
         po.setArrowLocation(arrowLocationFor(node));
-        // The popover lives in its own scene (default light theme), so the bubble skin
-        // (.popover > .border) is only themed once the app stylesheet is attached there.
-        po.setOnShown(e -> {
-            Scene poScene = po.getScene();
-            if (poScene != null && !poScene.getStylesheets().contains(css)) {
-                poScene.getStylesheets().add(css);
-            }
-        });
+        // The popover lives in its own PopupControl scene, which defaults to the Modena light
+        // theme, so the bubble skin (.popover > .border, including the arrow) is only themed
+        // once the app stylesheets are attached there. Attach before show() so the very first
+        // paint is themed: doing it only in setOnShown re-applies CSS after the bubble is
+        // already on screen, which is what made otherwise-identical steps look different.
+        applyAppTheme(po);
+        po.setOnShown(e -> applyAppTheme(po));
         return po;
+    }
+
+    /** Theme the popover's own scene, if it exists yet. Safe to call more than once. */
+    private static void applyAppTheme(PopOver po) {
+        Scene poScene = po.getScene();
+        if (poScene != null) {
+            AppServices.addAshigaruStylesheets(poScene.getStylesheets());
+        }
     }
 
     /**
