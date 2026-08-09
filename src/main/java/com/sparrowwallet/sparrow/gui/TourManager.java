@@ -172,6 +172,9 @@ public class TourManager {
         Label body = new Label(step.body());
         body.setWrapText(true);
         body.setMaxWidth(300);
+        // Wrapped labels report a single line's preferred height unless pinned, which clips
+        // the longer step bodies at the 300px cap.
+        body.setMinHeight(Region.USE_PREF_SIZE);
         body.getStyleClass().add("tour-pop-body");
 
         Label counter = new Label((i + 1) + " / " + active.size());

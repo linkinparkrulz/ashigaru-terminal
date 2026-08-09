@@ -36,36 +36,36 @@
             <!-- ── Step 1: Overview ─────────────────────────────────── -->
             <VBox fx:id="step1" spacing="10" styleClass="tour-step">
                 <Label text="Welcome to Ashigaru" styleClass="tour-step-title"/>
-                <Label styleClass="tour-step-body" wrapText="true"
+                <Label styleClass="tour-step-body" wrapText="true" minHeight="-Infinity"
                        text="Ashigaru is a privacy-first Bitcoin wallet with built-in collaborative mixing (Whirlpool CoinJoin). This quick tour walks you through the essentials — your wallets, accounts, receiving funds, and mixing."/>
             </VBox>
 
             <!-- ── Step 2: Wallets ──────────────────────────────────── -->
             <VBox fx:id="step2" spacing="10" styleClass="tour-step">
                 <Label text="Wallets" styleClass="tour-step-title"/>
-                <Label styleClass="tour-step-body" wrapText="true"
+                <Label styleClass="tour-step-body" wrapText="true" minHeight="-Infinity"
                        text="The sidebar's Current Wallet section is your home base. Pick a loaded wallet from the dropdown, use “Open Wallet…” to load one from disk, or “New / Restore…” to create a fresh wallet or restore from a seed."/>
             </VBox>
 
             <!-- ── Step 3: Accounts ─────────────────────────────────── -->
             <VBox fx:id="step3" spacing="10" styleClass="tour-step">
                 <Label text="Accounts" styleClass="tour-step-title"/>
-                <Label styleClass="tour-step-body" wrapText="true"
+                <Label styleClass="tour-step-body" wrapText="true" minHeight="-Infinity"
                        text="Each wallet has four accounts, selectable in the sidebar once a wallet is open:&#10;&#10;•  Deposit — incoming, un-mixed funds&#10;•  Premix — funds queued for mixing&#10;•  Postmix — coins that have been mixed&#10;•  Badbank — flagged, do-not-mix coins"/>
             </VBox>
 
             <!-- ── Step 4: Receiving & balance ──────────────────────── -->
             <VBox fx:id="step4" spacing="10" styleClass="tour-step">
                 <Label text="Receiving &amp; balance" styleClass="tour-step-title"/>
-                <Label styleClass="tour-step-body" wrapText="true"
+                <Label styleClass="tour-step-body" wrapText="true" minHeight="-Infinity"
                        text="Open the Deposit account and click Receive to get a fresh address and QR code to fund your wallet. The cards at the top of the wallet view show your confirmed balance, pending mempool balance, and UTXO count."/>
             </VBox>
 
             <!-- ── Step 5: Mixing ───────────────────────────────────── -->
             <VBox fx:id="step5" spacing="10" styleClass="tour-step">
                 <Label text="Mixing" styleClass="tour-step-title"/>
-                <Label styleClass="tour-step-body" wrapText="true"
-                       text="Enter the mix from Deposit with a Tx0, then Start Mix to run collaborative CoinJoin rounds that break the on-chain link to your coins. Use Mix To to set a destination for your postmix funds.&#10;&#10;Choose “Take the tour” to see these controls highlighted on the live screen — you can replay it anytime from the Tour button in the sidebar."/>
+                <Label styleClass="tour-step-body" wrapText="true" minHeight="-Infinity"
+                       text="Enter the mix from Deposit with a Tx0, then Start Mix to run collaborative CoinJoin rounds that break the on-chain link to your coins. Use Mix To to set a destination for your postmix funds.&#10;&#10;Choose “Take the tour” to see these controls highlighted on the live screen — you can replay it anytime from Tools → Guided Tour."/>
             </VBox>
         </VBox>
     </content>

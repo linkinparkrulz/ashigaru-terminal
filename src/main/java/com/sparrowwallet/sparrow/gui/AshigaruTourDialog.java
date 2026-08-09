@@ -14,7 +14,7 @@ import java.io.IOException;
 
 /**
  * The welcome tour dialog: a multi-slide introduction shown on first launch (and
- * replayable from the sidebar). The result is {@code true} when the user chooses
+ * replayable from Tools → Guided Tour). The result is {@code true} when the user chooses
  * "Take the tour" (proceed to the live coach-marks), {@code false} otherwise.
  */
 public class AshigaruTourDialog extends Dialog<Boolean> {
