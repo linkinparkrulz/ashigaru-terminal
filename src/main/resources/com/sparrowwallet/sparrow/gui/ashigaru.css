@@ -1049,9 +1049,11 @@
 .popover {
     -fx-background-color: transparent;
 }
+/* Literals, not -ag-* lookups: the bubble skin sits outside .tour-popover, so a lookup here would
+   resolve through the anchored node's subtree (see .tour-popover below). */
 .popover > .border {
-    -fx-fill: -ag-bg-light;
-    -fx-stroke: -ag-accent;
+    -fx-fill: #1E2026;
+    -fx-stroke: #cc1111;
     -fx-stroke-width: 1.25;
     -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.35), 18, 0.2, 0, 4);
 }
@@ -1059,39 +1061,69 @@
     -fx-background-color: transparent;
     -fx-padding: 0;
 }
-/* The card paints its own background rather than relying on the skin's border shape being
-   themed in time — the arrow above is the only part the skin must draw. */
+/* A JavaFX popup's root reports the *anchored node* as its styleable parent, so inherited
+   properties and -ag-* lookups otherwise resolve through whichever subtree the coach-mark happens
+   to point at — giving a different-looking bubble per anchor (e.g. .balance-value's 20px font
+   inflated the whole card). Re-declaring the tokens here terminates every lookup at the card, and
+   pinning font family/size stops anything inheriting in. Keep these values in step with the
+   canonical set at the top of this file. */
 .tour-popover {
+    -ag-bg-light:     #1E2026;
+    -ag-bg-raised:    #282A32;
+    -ag-border:       #2E3038;
+    -ag-text:         #ECECEC;
+    -ag-text-dim:     #A6A7AD;
+    -ag-text-faint:   #6E7077;
+    -ag-accent:       #cc1111;
+    -ag-accent-hover: #e11414;
+    -ag-accent-dark:  #991010;
+
+    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-size: 13px;
+    /* The card paints its own background rather than relying on the skin's border shape being
+       themed in time — the arrow is the only part the skin must draw. */
     -fx-background-color: -ag-bg-light;
     -fx-background-radius: 6;
     -fx-padding: 14 16 14 16;
 }
-/* Modena's .button:default (two class selectors) out-specifies .primary-btn (one), and would
-   otherwise override -fx-text-fill on the default Next/Done button — red text on red. */
-.tour-popover .primary-btn,
-.tour-popover .primary-btn:default {
-    -fx-background-color: -ag-accent;
-    -fx-text-fill: #fff;
-}
-.tour-popover .primary-btn:hover,
-.tour-popover .primary-btn:default:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
-.tour-popover .primary-btn:armed,
-.tour-popover .primary-btn:default:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
-.tour-popover .action-btn { -fx-background-color: -ag-bg-raised; -fx-text-fill: -ag-text; }
-.tour-pop-title {
+/* Every rule below is scoped under .tour-popover and sets size and fill explicitly, so no ambient
+   rule from the anchor's subtree can reach in. */
+.tour-popover .tour-pop-title {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
-.tour-pop-body {
+.tour-popover .tour-pop-body {
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 12.5px;
+    -fx-font-weight: normal;
     -fx-line-spacing: 1.5;
 }
-.tour-pop-counter {
+.tour-popover .tour-pop-counter {
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 11px;
+    -fx-font-weight: normal;
 }
+.tour-popover .button {
+    -fx-font-size: 12px;
+    -fx-font-weight: normal;
+    -fx-padding: 6 14 6 14;
+}
+.tour-popover .action-btn {
+    -fx-background-color: -ag-bg-raised;
+    -fx-text-fill: -ag-text;
+    -fx-border-color: -ag-border;
+}
+.tour-popover .action-btn:hover { -fx-background-color: derive(#282A32, 20%); -fx-text-fill: -ag-text; }
+.tour-popover .action-btn:disabled { -fx-opacity: 0.45; }
+.tour-popover .primary-btn {
+    -fx-background-color: -ag-accent;
+    -fx-text-fill: #fff;
+    -fx-border-color: -ag-accent-dark;
+    -fx-font-weight: bold;
+}
+.tour-popover .primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
+.tour-popover .primary-btn:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
 
 /* The node currently being pointed at */
 .tour-highlight {

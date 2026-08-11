@@ -1,6 +1,7 @@
 package com.sparrowwallet.sparrow.gui;
 
 import com.sparrowwallet.sparrow.AppServices;
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.geometry.Bounds;
 import javafx.geometry.Pos;
@@ -13,6 +14,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 import org.controlsfx.control.PopOver;
 
 import java.util.ArrayList;
@@ -33,6 +35,9 @@ public class TourManager {
     private static final String HIGHLIGHT_CLASS = "tour-highlight";
     /** Fixed card width, so every coach-mark is identically sized. */
     private static final double CARD_WIDTH = 320;
+    /** How many times to wait for a step's anchor to lay out before skipping the step. */
+    private static final int MAX_ANCHOR_ATTEMPTS = 5;
+    private static final Duration ANCHOR_RETRY_DELAY = Duration.millis(60);
 
     /**
      * A single coach-mark: the fx:id of the node to point at, its copy, and an optional
@@ -51,6 +56,10 @@ public class TourManager {
 
     private List<TourStep> active = List.of();
     private int index = -1;
+    /** Direction of travel, +1 forward / -1 back, so an unresolvable anchor is skipped the way the user is moving. */
+    private int direction = 1;
+    /** Layout attempts spent on the current step; reset by showStep, bounded by MAX_ANCHOR_ATTEMPTS. */
+    private int anchorAttempts;
     private PopOver popOver;
     private Node highlighted;
 
@@ -113,6 +122,7 @@ public class TourManager {
     private void showStep(int i) {
         hideCurrent();
         index = i;
+        anchorAttempts = 0;
 
         Runnable onEnter = active.get(i).onEnter();
         if (onEnter != null) {
@@ -129,11 +139,15 @@ public class TourManager {
 
         Node node = resolve(active.get(i).anchorId());
         if (node == null) {
-            // onEnter did not (yet) reveal the anchor — skip forward rather than stall.
-            if (i < active.size() - 1) {
-                showStep(i + 1);
+            // onEnter may have swapped the whole content pane — leaving Settings reloads the wallet
+            // view — which cannot lay out within a single pulse. Retry on a real timer rather than a
+            // nested runLater, which is not guaranteed to yield a frame between attempts.
+            if (++anchorAttempts < MAX_ANCHOR_ATTEMPTS) {
+                PauseTransition retry = new PauseTransition(ANCHOR_RETRY_DELAY);
+                retry.setOnFinished(e -> present(i));
+                retry.play();
             } else {
-                finish(true);
+                skipUnresolved(i);
             }
             return;
         }
@@ -143,7 +157,31 @@ public class TourManager {
         popOver.show(node);
     }
 
+    /**
+     * The anchor never appeared (e.g. mixSelectedBtn is hidden outside Premix/Postmix). Continue the
+     * way the user was travelling — always skipping forward used to bounce Back into the step it
+     * came from, trapping the tour at the Settings boundary.
+     */
+    private void skipUnresolved(int i) {
+        int target = i + direction;
+        if (target >= 0 && target < active.size()) {
+            showStep(target);
+        } else if (direction < 0) {
+            // Ran off the front going back: return to the step we came from rather than leaving the
+            // tour running with no popover on screen.
+            direction = 1;
+            if (i < active.size() - 1) {
+                showStep(i + 1);
+            } else {
+                finish(true);
+            }
+        } else {
+            finish(true);
+        }
+    }
+
     private void next() {
+        direction = 1;
         if (index < active.size() - 1) {
             showStep(index + 1);
         } else {
@@ -152,6 +190,7 @@ public class TourManager {
     }
 
     private void back() {
+        direction = -1;
         if (index > 0) {
             showStep(index - 1);
         }
