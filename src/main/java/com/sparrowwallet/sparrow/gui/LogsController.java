@@ -5,6 +5,7 @@ import com.sparrowwallet.drongo.wallet.Wallet;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.AshigaruTerminal;
 import com.sparrowwallet.sparrow.io.Storage;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -237,8 +238,13 @@ public class LogsController implements Initializable {
         }
 
         logArea.setText(text);
-        logArea.positionCaret(text.length());
-        logArea.setScrollTop(Double.MAX_VALUE);
+        //Show the newest lines, but keep each line's start in view. positionCaret() would scroll right
+        //to the caret's column on a long last line. Deferred so the new text has been laid out and the
+        //maximum scroll value is known.
+        Platform.runLater(() -> {
+            logArea.setScrollTop(Double.MAX_VALUE);
+            logArea.setScrollLeft(0);
+        });
     }
 
     private String selectedLevel() {
