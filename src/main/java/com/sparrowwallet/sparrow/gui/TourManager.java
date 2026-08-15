@@ -33,6 +33,8 @@ import java.util.List;
  */
 public class TourManager {
     private static final String HIGHLIGHT_CLASS = "tour-highlight";
+    /** Node id on the popover card; paired with the #tourPopover rules in ashigaru.css. */
+    private static final String POPOVER_ID = "tourPopover";
     /** Fixed card width, so every coach-mark is identically sized. */
     private static final double CARD_WIDTH = 320;
     /** How many times to wait for a step's anchor to lay out before skipping the step. */
@@ -213,7 +215,7 @@ public class TourManager {
 
         Label body = new Label(step.body());
         body.setWrapText(true);
-        // The card is CARD_WIDTH wide with .tour-popover's 16px side padding, so this is the
+        // The card is CARD_WIDTH wide with #tourPopover's 16px side padding, so this is the
         // real inner width. Letting the body ask for more made the card's width follow the
         // length of each step's copy.
         body.setMaxWidth(CARD_WIDTH - 32);
@@ -252,7 +254,11 @@ public class TourManager {
         buttons.setAlignment(Pos.CENTER_LEFT);
 
         VBox content = new VBox(10, title, body, buttons);
-        content.getStyleClass().add("tour-popover");
+        // The card is keyed by id rather than style class so its rules carry ID-level specificity,
+        // which outranks any number of classes. A popup's content counts as a styleable descendant
+        // of the node it is anchored to, so without this a broad rule in the anchor's own stylesheet
+        // can repaint the card.
+        content.setId(POPOVER_ID);
         // Pin all three so every coach-mark is the same width, whatever its copy.
         content.setMinWidth(CARD_WIDTH);
         content.setPrefWidth(CARD_WIDTH);

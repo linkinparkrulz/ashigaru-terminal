@@ -34,8 +34,12 @@
     -fx-cursor: hand;
 }
 
+/* "> .text" rather than "*": a JavaFX popup's root reports its owner node as its styleable parent,
+   so a universal descendant selector here also matched every node inside any popover anchored to
+   this button — which repainted the whole guided-tour coach-mark. The child combinator reaches the
+   button's own label and nothing outside it. */
 .preferences-nav-item .glyph-font,
-.preferences-nav-item * {
+.preferences-nav-item > .text {
     -fx-fill: -ag-text-dim;
     -fx-text-fill: -ag-text-dim;
 }
@@ -46,7 +50,7 @@
 }
 
 .preferences-nav-item:hover .glyph-font,
-.preferences-nav-item:hover * {
+.preferences-nav-item:hover > .text {
     -fx-fill: -ag-text;
     -fx-text-fill: -ag-text;
 }
@@ -60,8 +64,8 @@
 }
 
 .preferences-nav-item:selected .glyph-font,
-.preferences-nav-item:selected *,
-.preferences-nav-item:focused:selected * {
+.preferences-nav-item:selected > .text,
+.preferences-nav-item:focused:selected > .text {
     -fx-fill: -ag-accent;
     -fx-text-fill: -ag-accent;
 }

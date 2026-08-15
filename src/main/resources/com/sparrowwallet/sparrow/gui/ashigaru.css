@@ -1049,8 +1049,8 @@
 .popover {
     -fx-background-color: transparent;
 }
-/* Literals, not -ag-* lookups: the bubble skin sits outside .tour-popover, so a lookup here would
-   resolve through the anchored node's subtree (see .tour-popover below). */
+/* Literals, not -ag-* lookups: the bubble skin sits outside the card, so a lookup here would
+   resolve through the anchored node's subtree (see #tourPopover below). */
 .popover > .border {
     -fx-fill: #1E2026;
     -fx-stroke: #cc1111;
@@ -1067,7 +1067,7 @@
    inflated the whole card). Re-declaring the tokens here terminates every lookup at the card, and
    pinning font family/size stops anything inheriting in. Keep these values in step with the
    canonical set at the top of this file. */
-.tour-popover {
+#tourPopover {
     -ag-bg-light:     #1E2026;
     -ag-bg-raised:    #282A32;
     -ag-border:       #2E3038;
@@ -1086,44 +1086,45 @@
     -fx-background-radius: 6;
     -fx-padding: 14 16 14 16;
 }
-/* Every rule below is scoped under .tour-popover and sets size and fill explicitly, so no ambient
-   rule from the anchor's subtree can reach in. */
-.tour-popover .tour-pop-title {
+/* Keyed on the card's id, not its style class: an id outranks any number of classes, so a broad
+   rule in the anchored node's own stylesheet cannot repaint the card. Each rule states size and
+   fill explicitly for the same reason. */
+#tourPopover .tour-pop-title {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 14px;
     -fx-font-weight: bold;
 }
-.tour-popover .tour-pop-body {
+#tourPopover .tour-pop-body {
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 12.5px;
     -fx-font-weight: normal;
     -fx-line-spacing: 1.5;
 }
-.tour-popover .tour-pop-counter {
+#tourPopover .tour-pop-counter {
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 11px;
     -fx-font-weight: normal;
 }
-.tour-popover .button {
+#tourPopover .button {
     -fx-font-size: 12px;
     -fx-font-weight: normal;
     -fx-padding: 6 14 6 14;
 }
-.tour-popover .action-btn {
+#tourPopover .action-btn {
     -fx-background-color: -ag-bg-raised;
     -fx-text-fill: -ag-text;
     -fx-border-color: -ag-border;
 }
-.tour-popover .action-btn:hover { -fx-background-color: derive(#282A32, 20%); -fx-text-fill: -ag-text; }
-.tour-popover .action-btn:disabled { -fx-opacity: 0.45; }
-.tour-popover .primary-btn {
+#tourPopover .action-btn:hover { -fx-background-color: derive(#282A32, 20%); -fx-text-fill: -ag-text; }
+#tourPopover .action-btn:disabled { -fx-opacity: 0.45; }
+#tourPopover .primary-btn {
     -fx-background-color: -ag-accent;
     -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
     -fx-font-weight: bold;
 }
-.tour-popover .primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
-.tour-popover .primary-btn:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
+#tourPopover .primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
+#tourPopover .primary-btn:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
 
 /* The node currently being pointed at */
 .tour-highlight {
