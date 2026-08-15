@@ -42,7 +42,13 @@ public class ToolsController implements Initializable {
             }
         });
 
-        Platform.runLater(() -> toolsMenu.selectToggle(bip47VerifierButton));
+        // Select whichever tool is listed first rather than naming one, so the highlight follows
+        // the sidebar order. getToggles() is in FXML declaration order.
+        Platform.runLater(() -> {
+            if(!toolsMenu.getToggles().isEmpty()) {
+                toolsMenu.selectToggle(toolsMenu.getToggles().get(0));
+            }
+        });
     }
 
     private void setToolPane(String fxmlName) {
