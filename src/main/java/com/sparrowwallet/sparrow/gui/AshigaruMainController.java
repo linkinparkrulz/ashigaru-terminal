@@ -40,6 +40,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -221,6 +222,12 @@ public class AshigaruMainController implements Initializable {
                     childForm.refreshHistory(AppServices.getCurrentBlockHeight());
                 }
             });
+
+            // Continue the guided tour with the wallet-scoped steps once the first wallet appears.
+            if (tourAwaitingWallet) {
+                tourAwaitingWallet = false;
+                runTour(walletTourSteps(), null, this::ensureWalletTourView);
+            }
         } catch (Exception e) {
             log.error("Error loading wallet panel", e);
             showError("Error", "Could not load wallet view: " + e.getMessage());
@@ -581,6 +588,124 @@ public class AshigaruMainController implements Initializable {
         SeedDisplayDialog dlg = new SeedDisplayDialog(keystore);
         dlg.initOwner(AshigaruGui.get().getMainStage());
         dlg.showAndWait();
+    }
+
+    // -------------------------------------------------------------------------
+    // Guided tour
+    // -------------------------------------------------------------------------
+
+    /** Set true when the intro/shell tour has completed but no wallet was open yet, so the
+     *  wallet-scoped steps should resume as soon as a wallet's account view appears. */
+    private boolean tourAwaitingWallet;
+
+    /**
+     * Show the welcome tour on first launch only, then remember it has been shown.
+     * Invoked from {@link AshigaruGui} after the main stage is displayed (the scene
+     * must exist for the coach-mark popovers to anchor).
+     */
+    public void maybeShowFirstRunTour() {
+        if (!Config.get().isTourShown()) {
+            Config.get().setTourShown(true);
+            startTour();
+        }
+    }
+
+    /**
+     * Launch the tour from the Tools view: leave Tools first (restoring the wallet or welcome
+     * view) so the coach-mark anchors are present, then run the tour.
+     */
+    public void startGuidedTour() {
+        closeTool();
+        startTour();
+    }
+
+    private void startTour() {
+        AshigaruTourDialog dialog = new AshigaruTourDialog();
+        Optional<Boolean> takeTour = dialog.showAndWait();
+        if (takeTour.isEmpty() || !takeTour.get()) {
+            return;
+        }
+
+        tourAwaitingWallet = false;
+        if (currentWalletController != null) {
+            // A wallet is already open — everything is on screen, so run it in one pass.
+            List<TourManager.TourStep> allSteps = new ArrayList<>(shellTourSteps());
+            allSteps.addAll(walletTourSteps());
+            runTour(allSteps, null, this::ensureWalletTourView);
+        } else {
+            // No wallet yet — run the shell steps, then wait for the first wallet to continue.
+            runTour(shellTourSteps(), () -> tourAwaitingWallet = true, this::ensureWalletTourView);
+        }
+    }
+
+    private void runTour(List<TourManager.TourStep> steps, Runnable onComplete, Runnable onExit) {
+        Stage stage = AshigaruGui.get().getMainStage();
+        TourManager manager = new TourManager(stage, steps, onComplete, onExit);
+        // Defer until the modal dialog has fully closed and layout has settled,
+        // so the popovers anchor to correctly positioned nodes.
+        Platform.runLater(manager::start);
+    }
+
+    /** Ensure the wallet/welcome view is showing (leave Settings if the tour opened it). Idempotent. */
+    private void ensureWalletTourView() {
+        if (contentPane.getUserData() instanceof PreferencesController) {
+            closePreferences();
+        }
+    }
+
+    /** Open the Settings screen (if not already there) and select the given group. */
+    private void ensureSettingsTourView(PreferenceGroup group) {
+        if (!(contentPane.getUserData() instanceof PreferencesController)) {
+            onPreferences();
+        }
+        if (contentPane.getUserData() instanceof PreferencesController prefsController) {
+            prefsController.selectGroup(group);
+        }
+    }
+
+    /** Intro steps — always present, even with no wallet open (sidebar + status bar). */
+    private List<TourManager.TourStep> shellTourSteps() {
+        return List.of(
+                new TourManager.TourStep("walletSelector", "Current wallet",
+                        "Switch between your loaded wallets from this dropdown. It stays here at all times."),
+                new TourManager.TourStep("openWalletBtn", "Open a wallet",
+                        "Load an existing wallet file from disk."),
+                new TourManager.TourStep("createWalletBtn", "New or restore",
+                        "Create a brand-new wallet, or restore one from an existing seed phrase. The tour continues automatically once you open your first wallet."),
+                new TourManager.TourStep("connectionLabel", "Connection & network",
+                        "Your network status — click to connect or disconnect. Block height and the active network are shown to its left.")
+        );
+    }
+
+    /**
+     * Wallet-scoped steps, plus the Settings walk-through. Each wallet step re-establishes the
+     * wallet view on entry, and the Settings steps open the Settings screen in place, so Back/Next
+     * navigation stays correct across the Settings boundary.
+     */
+    private List<TourManager.TourStep> walletTourSteps() {
+        return List.of(
+                new TourManager.TourStep("accountButtonsBox", "Wallet accounts",
+                        "Switch between this wallet's Deposit, Premix, Postmix and Badbank accounts here.",
+                        this::ensureWalletTourView),
+                new TourManager.TourStep("balanceLabel", "Your balance",
+                        "Your confirmed balance for the selected account. Pending mempool balance and UTXO count sit alongside it.",
+                        this::ensureWalletTourView),
+                new TourManager.TourStep("receiveBtn", "Receive funds",
+                        "Generate a fresh receive address and QR code to fund your wallet.",
+                        this::ensureWalletTourView),
+                new TourManager.TourStep("mixSelectedBtn", "Mixing",
+                        "Select coins and begin collaborative CoinJoin mixing. Start Mix and Mix To drive your mixing from here.",
+                        this::ensureWalletTourView),
+                new TourManager.TourStep("generalPrefsBtn", "General settings",
+                        "This is Settings. Under General you'll find your units, fee-rates source and appearance options.",
+                        () -> ensureSettingsTourView(PreferenceGroup.GENERAL)),
+                new TourManager.TourStep("serverPrefsBtn", "Server settings",
+                        "Under Server you choose how Ashigaru connects to Bitcoin — your own node or a public Electrum server, over Tor.",
+                        () -> ensureSettingsTourView(PreferenceGroup.SERVER)),
+                new TourManager.TourStep("toolsBtn", "Replay anytime",
+                        "That's the tour! You can replay it whenever you like from Tools → Guided Tour.",
+                        this::ensureWalletTourView)
+        );
     }
 
     @FXML

@@ -9,7 +9,7 @@
     <left>
         <VBox styleClass="preferences-sidebar" spacing="6">
             <Label text="PREFERENCES" styleClass="preferences-sidebar-title" />
-            <ToggleButton text="General" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$preferencesMenu">
+            <ToggleButton fx:id="generalPrefsBtn" text="General" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$preferencesMenu">
                 <toggleGroup>
                     <ToggleGroup fx:id="preferencesMenu" />
                 </toggleGroup>
@@ -20,7 +20,7 @@
                     <PreferenceGroup fx:constant="GENERAL"/>
                 </userData>
             </ToggleButton>
-            <ToggleButton text="Server" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$preferencesMenu">
+            <ToggleButton fx:id="serverPrefsBtn" text="Server" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$preferencesMenu">
                 <graphic>
                     <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="SERVER" />
                 </graphic>

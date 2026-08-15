@@ -22,6 +22,7 @@ public class ToolsController implements Initializable {
     @FXML private ToggleGroup toolsMenu;
     @FXML private ToggleButton bip47VerifierButton;
     @FXML private ToggleButton statsButton;
+    @FXML private ToggleButton tourButton;
     @FXML private StackPane toolsPane;
 
     @Override
@@ -36,10 +37,18 @@ public class ToolsController implements Initializable {
                 setToolPane("bip47-message-verifier.fxml");
             } else if(selectedToggle == statsButton) {
                 setToolPane("stats.fxml");
+            } else if(selectedToggle == tourButton) {
+                setToolPane("tour-launcher.fxml");
             }
         });
 
-        Platform.runLater(() -> toolsMenu.selectToggle(bip47VerifierButton));
+        // Select whichever tool is listed first rather than naming one, so the highlight follows
+        // the sidebar order. getToggles() is in FXML declaration order.
+        Platform.runLater(() -> {
+            if(!toolsMenu.getToggles().isEmpty()) {
+                toolsMenu.selectToggle(toolsMenu.getToggles().get(0));
+            }
+        });
     }
 
     private void setToolPane(String fxmlName) {

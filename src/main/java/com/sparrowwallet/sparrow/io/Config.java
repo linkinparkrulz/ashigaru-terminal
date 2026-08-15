@@ -53,6 +53,7 @@ public class Config {
     private boolean showDeprecatedImportExport = false;
     private boolean signBsmsExports = false;
     private boolean preventSleep = false;
+    private boolean tourShown = false;
     private List<File> recentWalletFiles;
     private Integer keyDerivationPeriod;
     private long dustAttackThreshold = DUST_ATTACK_THRESHOLD_SATS;
@@ -149,6 +150,15 @@ public class Config {
 
     public void setFirstRun(boolean isFirstRun) {
         this.isFirstRun = isFirstRun;
+    }
+
+    public boolean isTourShown() {
+        return tourShown;
+    }
+
+    public void setTourShown(boolean tourShown) {
+        this.tourShown = tourShown;
+        flush();
     }
 
     public BitcoinUnit getBitcoinUnit() {
@@ -542,6 +552,17 @@ public class Config {
         }
 
         return false;
+    }
+
+    /**
+     * Clears all discovered Dojo Electrum servers and block explorers. Discovered listings are
+     * ephemeral — wiped on shutdown (and on startup) so the list is always freshly re-verified by
+     * discovery and stale/removed dojos never linger.
+     */
+    public void clearDiscoveredServers() {
+        discoveredServers = null;
+        discoveredExplorers = null;
+        flush();
     }
 
     public List<Server> getDiscoveredExplorers() {

@@ -28,7 +28,7 @@ public class SeedEntryDialog extends Dialog<List<String>> {
         AnchorPane anchorPane = new AnchorPane();
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.getStyleClass().add("edge-to-edge");
-        scrollPane.setPrefHeight(104 + height);
+        scrollPane.setPrefHeight(144 + height);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         anchorPane.getChildren().add(scrollPane);
@@ -59,7 +59,7 @@ public class SeedEntryDialog extends Dialog<List<String>> {
         });
 
         dialogPane.setPrefWidth(500);
-        dialogPane.setPrefHeight(180 + height);
+        dialogPane.setPrefHeight(220 + height);
         AppServices.moveToActiveWindowScreen(this);
 
         Platform.runLater(() -> keystoreAccordion.setExpandedPane(keystorePane));

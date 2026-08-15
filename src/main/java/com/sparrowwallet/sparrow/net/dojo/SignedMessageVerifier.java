@@ -41,6 +41,23 @@ public class SignedMessageVerifier {
      * cannot be replayed over an unrelated payload. Returns false on any parsing/verification error.
      */
     public static boolean verify(String signedBlock, String mustContain) {
+        return verify(signedBlock, mustContain, null);
+    }
+
+    /**
+     * Verifies a signed block against the BIP47 payment code embedded within it, and — when
+     * {@code expectedPaymentCode} is supplied — additionally binds the signed identity to the payment
+     * code the directory advertises for this node. Without that binding a valid signature only proves
+     * the block is <em>self-consistent</em> (the embedded code signed it); a hostile directory could
+     * still display an honest operator's identity while embedding a block validly signed by an
+     * attacker's own payment code. Requiring the advertised code to resolve to the same notification
+     * address as the embedded/recovered one closes that identity spoof.
+     *
+     * <p>{@code mustContain} (e.g. the node's pairing url) ties the payload the caller will act on to
+     * the signed content, so a valid signature cannot be replayed over an unrelated payload. Returns
+     * false on any parsing/verification error, including an unparseable {@code expectedPaymentCode}.
+     */
+    public static boolean verify(String signedBlock, String mustContain, String expectedPaymentCode) {
         try {
             if(signedBlock == null || signedBlock.isBlank()) {
                 return false;
@@ -57,7 +74,18 @@ public class SignedMessageVerifier {
 
             Address notificationAddress = paymentCode.getNotificationAddress();
             Address recoveredAddress = recoverAddress(parsed.message(), parsed.signature());
-            return notificationAddress.equals(recoveredAddress);
+            if(!notificationAddress.equals(recoveredAddress)) {
+                return false;
+            }
+
+            if(expectedPaymentCode != null && !expectedPaymentCode.isBlank()) {
+                Address advertisedNotificationAddress = new PaymentCode(expectedPaymentCode).getNotificationAddress();
+                if(!notificationAddress.equals(advertisedNotificationAddress)) {
+                    return false;
+                }
+            }
+
+            return true;
         } catch(Exception e) {
             return false;
         }

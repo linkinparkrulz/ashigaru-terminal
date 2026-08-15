@@ -81,7 +81,7 @@
             </Field>
             <Field text="Discover:">
                 <Hyperlink fx:id="discoverNodesLink" text="Discover Dojo Electrum servers" onAction="#discoverNodes" />
-                <HelpLabel helpText="Fetches the Dojo directory (dojobay.pw) over Tor and adds the Electrum (Fulcrum) server of each reachable, cryptographically verified Dojo running version 1.28 or later to the list above. Runs automatically in the background at startup." />
+                <HelpLabel helpText="Fetches the Dojo directory (dojobay.pw) over Tor and adds the Electrum (Fulcrum) server of each cryptographically verified Dojo to the list above, labelled by operator paynym. A Dojo is verified when its signed listing matches its advertised BIP47 payment code. Runs automatically in the background at startup." />
             </Field>
             <Field text="">
                 <Label fx:id="discoverNodesStatus" wrapText="true" />

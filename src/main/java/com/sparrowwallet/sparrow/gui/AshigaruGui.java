@@ -51,6 +51,9 @@ public class AshigaruGui extends Application {
         AppServices.initialize(this, new AshigaruInteractionServices());
         instance = this;
         EventManager.get().register(this);
+        // Start each session with no discovered Dojo listings (covers an unclean prior shutdown);
+        // discovery re-populates them once connected.
+        Config.get().clearDiscoveredServers();
     }
 
     @Override
@@ -191,6 +194,9 @@ public class AshigaruGui extends Application {
         for (File walletFile : toLoad) {
             mainController.addRecentWalletFile(walletFile);
         }
+
+        // First-run guided tour, once the main window is visible and wallets are loaded.
+        Platform.runLater(mainController::maybeShowFirstRunTour);
     }
 
     private static boolean isWalletFile(File file) {
@@ -201,6 +207,9 @@ public class AshigaruGui extends Application {
     @Override
     public void stop() throws Exception {
         AppServices.get().stop();
+        // Discovered Dojo listings are ephemeral: drop them on shutdown so they don't persist on disk
+        // while closed and are re-discovered fresh next launch.
+        Config.get().clearDiscoveredServers();
         Config.get().setAppWidth(mainStage.getWidth());
         Config.get().setAppHeight(mainStage.getHeight());
         mainStage.close();

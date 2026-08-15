@@ -194,13 +194,39 @@ public class ServerPreferencesController extends PreferencesDetailController {
     public void initializeView(Config config) {
         EventManager.get().register(this);
 
-        //Cap the wrapping labels at the detail pane width so their wrapText actually wraps (inside a
-        //tornadofx Field the input container otherwise sizes to the label's unwrapped width and clips
-        //to an ellipsis). The binding tracks resizes, so the text stays fully visible responsively.
-        javafx.beans.binding.DoubleBinding wrapWidth = serverDetailPane.widthProperty().subtract(120);
-        warningBodyShort.maxWidthProperty().bind(wrapWidth);
-        warningBodyLong.maxWidthProperty().bind(wrapWidth);
-        discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+        //These labels wrap but were still ellipsizing — that is a HEIGHT problem, not a width one. A
+        //wrapText Label asked for its preferred height without a width (prefHeight(-1)) reports the
+        //height of a SINGLE line, so the enclosing row/field only allocates one line of vertical
+        //space; the label then wraps at its real width and everything past that is clipped. Setting
+        //minHeight to USE_PREF_SIZE makes the parent query minHeight(width) at the actual layout
+        //width, which returns the true wrapped height and forces the warning box to grow.
+        warningBodyShort.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        warningBodyLong.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        discoverNodesStatus.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+        //Cap the width off the SCENE (window), not serverDetailPane's own width: the detail GridPane
+        //is inflated by its content, so a self-referential binding never bounds anything. The scene
+        //width is content-independent and tracks the window, so the text re-flows on resize.
+        Runnable bindWrap = () -> {
+            javafx.scene.Scene scene = serverDetailPane.getScene();
+            if(scene == null) {
+                return;
+            }
+            javafx.beans.binding.NumberBinding wrapWidth =
+                    javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(80));
+            warningBodyShort.maxWidthProperty().bind(wrapWidth);
+            warningBodyLong.maxWidthProperty().bind(wrapWidth);
+            discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
+        };
+        if(serverDetailPane.getScene() != null) {
+            bindWrap.run();
+        } else {
+            serverDetailPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+                if(newScene != null) {
+                    bindWrap.run();
+                }
+            });
+        }
 
         getMasterController().closingProperty().addListener((observable, oldValue, newValue) -> {
             EventManager.get().unregister(this);
@@ -964,7 +990,7 @@ public class ServerPreferencesController extends PreferencesDetailController {
         task.setOnSucceeded(e -> {
             DojoNodeDiscovery.DiscoveryResult result = task.getValue();
             int verified = 0;
-            int unverified = 0;
+            int unverified = result.getUnverified();
             for(DojoNodeDiscovery.DiscoveredNode node : result.getNodes()) {
                 if(node.isVerified()) {
                     Config.get().addDiscoveredServer(node.getIndexerServer());
@@ -972,18 +998,16 @@ public class ServerPreferencesController extends PreferencesDetailController {
                         Config.get().addDiscoveredExplorer(node.getExplorerServer());
                     }
                     verified++;
-                } else {
-                    unverified++;
                 }
             }
 
             refreshPublicServerList();
 
-            if(verified == 0 && unverified == 0 && result.getUnreachable() == 0) {
-                discoverNodesStatus.setText("No Dojos found (need version 1.28+ on this network).");
+            if(verified == 0 && unverified == 0) {
+                discoverNodesStatus.setText("No Dojos found for this network.");
             } else {
                 discoverNodesStatus.setText("Added " + verified + " Dojo Electrum server" + (verified == 1 ? "" : "s")
-                        + "; " + unverified + " unverified, " + result.getUnreachable() + " unreachable. Directory courtesy of dojobay.pw");
+                        + "; " + unverified + " unverified. Directory courtesy of dojobay.pw");
             }
             discoverNodesLink.setDisable(false);
         });

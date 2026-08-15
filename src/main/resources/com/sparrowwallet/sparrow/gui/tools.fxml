@@ -8,10 +8,15 @@
     <left>
         <VBox styleClass="preferences-sidebar" spacing="6">
             <Label text="TOOLS" styleClass="preferences-sidebar-title" />
-            <ToggleButton fx:id="bip47VerifierButton" text="Verify BIP47 Message" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$toolsMenu">
+            <ToggleButton fx:id="tourButton" text="Guided Tour" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$toolsMenu">
                 <toggleGroup>
                     <ToggleGroup fx:id="toolsMenu" />
                 </toggleGroup>
+                <graphic>
+                    <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="QUESTION_CIRCLE" />
+                </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="bip47VerifierButton" text="Verify BIP47 Message" contentDisplay="LEFT" graphicTextGap="10" styleClass="preferences-nav-item" maxWidth="Infinity" toggleGroup="$toolsMenu">
                 <graphic>
                     <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="13" icon="CHECK_CIRCLE" />
                 </graphic>
