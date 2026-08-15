@@ -20,6 +20,7 @@ A graphical Bitcoin wallet and desktop GUI front-end for [Ashigaru Terminal](htt
 - **Whirlpoolstats.xyz Tool** — Want to know the latest Tx0? Pool totals? Unspent Capacity? It's all available as a tool now h/t to Black Coffee.
 - **AmIExposed or BitHypha UTXO analysis** — Do analysis on your own UTXO's
 - **Dojo Bay Integration** — Connect to geographically dispersed electrum servers with BIP47 Verified reputations. 
+- **Logs** — See under the hood and share application logs with developers, with addresses, keys and wallet names redacted by default
 
 ### Future Features
 
