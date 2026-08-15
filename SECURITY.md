@@ -5,10 +5,10 @@
 Only the latest release receives security updates. Please make sure you are
 running an up-to-date build before reporting an issue.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.1.x   | :white_check_mark: |
-| < 1.1   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 1.1.x   | ✔        |
+| < 1.1   | :x:       |
 
 ## Reporting a Vulnerability
 
