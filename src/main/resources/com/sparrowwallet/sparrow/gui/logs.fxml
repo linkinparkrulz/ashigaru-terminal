@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.sparrowwallet.sparrow.gui.LogsController"
+      stylesheets="@ashigaru.css"
+      styleClass="verifier-panel"
+      spacing="16">
+    <padding><Insets top="22" right="22" bottom="22" left="22"/></padding>
+
+    <!-- Hero -->
+    <HBox spacing="16" alignment="CENTER_LEFT" styleClass="verifier-hero">
+        <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
+        <StackPane styleClass="verifier-hero-icon">
+            <Label text="📄" styleClass="verifier-hero-glyph"/>
+        </StackPane>
+        <VBox spacing="3" HBox.hgrow="ALWAYS">
+            <Label text="Application Logs" styleClass="verifier-hero-title"/>
+            <Label text="Recent activity from ashigaru.log. Addresses, keys and wallet names are redacted — copy or save this when reporting a problem to the developers."
+                   wrapText="true" styleClass="verifier-hero-sub"/>
+        </VBox>
+    </HBox>
+
+    <!-- Controls -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <HBox styleClass="view-toggle-bar">
+            <fx:define><ToggleGroup fx:id="levelGroup"/></fx:define>
+            <ToggleButton fx:id="allToggle" text="All" selected="true" toggleGroup="$levelGroup" styleClass="view-toggle"/>
+            <ToggleButton fx:id="warnToggle" text="Warnings" toggleGroup="$levelGroup" styleClass="view-toggle"/>
+            <ToggleButton fx:id="errorToggle" text="Errors" toggleGroup="$levelGroup" styleClass="view-toggle"/>
+        </HBox>
+        <TextField fx:id="searchField" promptText="Search…" prefWidth="220"/>
+        <CheckBox fx:id="rawCheck" text="Show raw log"/>
+        <Region HBox.hgrow="ALWAYS"/>
+        <Button fx:id="refreshBtn" text="Refresh" onAction="#onRefresh" styleClass="secondary-btn"/>
+        <Button text="Copy" onAction="#onCopy" styleClass="secondary-btn"/>
+        <Button text="Save…" onAction="#onSave" styleClass="secondary-btn"/>
+        <Button text="Open Folder" onAction="#onOpenFolder" styleClass="secondary-btn"/>
+    </HBox>
+
+    <Label fx:id="warningLabel" visible="false" managed="false" wrapText="true" styleClass="field-label"
+           text="Raw mode is on: this log may contain your addresses, extended public keys and wallet names. Review it before sharing."/>
+
+    <Label fx:id="statusLabel" visible="false" managed="false" wrapText="true" styleClass="field-label"/>
+
+    <TextArea fx:id="logArea" editable="false" wrapText="false" styleClass="mono-area" VBox.vgrow="ALWAYS" minHeight="320"/>
+</VBox>

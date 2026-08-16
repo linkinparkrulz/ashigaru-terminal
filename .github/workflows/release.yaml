@@ -102,7 +102,18 @@ jobs:
 
       - name: Rename headless artifacts
         if: ${{ runner.os == 'Linux' }}
-        run: for f in build/jpackage/ashigaru*; do mv -v "$f" "${f/ashigaru/ashigaru-server}"; done
+        run: |
+          set -euo pipefail
+          for f in build/jpackage/ashigaru*; do
+            [ -e "$f" ] || continue
+            mv -v "$f" "${f/ashigaru/ashigaru-server}"
+          done
+          # packageTarDistribution writes the same filename for the desktop and headless builds, so
+          # the merged download would otherwise have one silently overwrite the other
+          for f in build/distributions/Ashigaru-*.tar.gz; do
+            [ -e "$f" ] || continue
+            mv -v "$f" "${f/Ashigaru-/Ashigaru-server-}"
+          done
 
       - name: Upload headless artifacts
         if: ${{ runner.os == 'Linux' }}
@@ -190,8 +201,36 @@ jobs:
 
       - name: Generate SHA256SUMS
         run: |
+          set -euo pipefail
           cd release-assets
-          find . -maxdepth 1 -type f | sort | xargs sha256sum > SHA256SUMS
+
+          # upload-artifact roots each artifact at the least common ancestor of its path patterns,
+          # so downloads arrive under distributions/ and jpackage/ rather than at the top level.
+          # Release assets are flat, so record basenames - that is what a user downloads.
+          tmp=$(mktemp)
+          while IFS= read -r -d '' file; do
+            name=${file##*/}
+            case $name in
+              SHA256SUMS|MESSAGE.txt|RELEASE-SIGNING-INSTRUCTIONS.txt|RELEASE-BIP47-SIGNATURE.txt) continue ;;
+            esac
+            printf '%s  %s\n' "$(sha256sum "$file" | awk '{print $1}')" "$name" >> "$tmp"
+          done < <(find . -type f -print0)
+
+          if [ ! -s "$tmp" ]; then
+            echo "No release artifacts found under release-assets/ to checksum" >&2
+            exit 1
+          fi
+
+          dupes=$(awk '{print $2}' "$tmp" | sort | uniq -d)
+          if [ -n "$dupes" ]; then
+            echo "Artifacts share a basename and would collide as release assets:" >&2
+            echo "$dupes" >&2
+            exit 1
+          fi
+
+          sort -k2 "$tmp" > SHA256SUMS
+          rm -f "$tmp"
+          cat SHA256SUMS
 
       - name: Generate MESSAGE.txt
         run: |
