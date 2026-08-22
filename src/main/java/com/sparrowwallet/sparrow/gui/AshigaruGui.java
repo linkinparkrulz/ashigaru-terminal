@@ -115,6 +115,7 @@ public class AshigaruGui extends Application {
 
         if (Config.get().getMode() != Mode.ONLINE) {
             setSplashStatus(splashStage, "Offline mode enabled. Opening workspace...");
+            skipRemainingSplashSteps(splashStage);
             PauseTransition offlineDelay = new PauseTransition(Duration.seconds(3));
             offlineDelay.setOnFinished(e -> revealMain.run());
             offlineDelay.play();
@@ -165,6 +166,14 @@ public class AshigaruGui extends Application {
         Object userData = splashStage.getUserData();
         if (userData instanceof AshigaruSplashController ctrl) {
             Platform.runLater(() -> ctrl.setStatus(message));
+        }
+    }
+
+    private void skipRemainingSplashSteps(Stage splashStage) {
+        if (splashStage == null) return;
+
+        if (splashStage.getUserData() instanceof AshigaruSplashController ctrl) {
+            ctrl.skipRemaining();
         }
     }
 

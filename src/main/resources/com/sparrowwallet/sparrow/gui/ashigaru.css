@@ -745,6 +745,14 @@
     -fx-text-fill: -ag-text;
     -fx-font-size: 13px;
 }
+/* Startup steps. Pending is deliberately quiet so the eye lands on whatever is happening now. */
+.splash-step {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 12px;
+}
+.splash-step-active { -fx-text-fill: -ag-text; }
+.splash-step-done   { -fx-text-fill: -ag-green; }
+.splash-step-failed { -fx-text-fill: -ag-accent; -fx-font-weight: bold; }
 .splash-progress .track {
     -fx-background-color: -ag-bg-raised;
     -fx-background-radius: 999;
