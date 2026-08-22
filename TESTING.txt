@@ -1,6 +1,6 @@
 ====================================================================
  ASHIGARU DESKTOP - TESTING CHECKLIST
- Branch: claude/beautiful-fermi-inpod9
+ Release: 1.3.0  (branch v1.3.0)
 ====================================================================
 
 HOW TO USE
@@ -197,6 +197,85 @@ HOW TO USE
   [ ] Disconnect Tor/network, then click "Start Mixing" so the start
       attempt fails -> button recovers to a clickable state instead
       of staying on "Starting..." forever.
+
+
+--------------------------------------------------------------------
+ 13. LOGS TOOL                                            (new in 1.3.0)
+--------------------------------------------------------------------
+  [ ] Tools -> Logs opens and shows recent activity within a second,
+      even with a large ashigaru.log. No UI freeze while it loads.
+  [ ] Horizontal scrollbar sits hard LEFT on open; each visible line
+      starts with its timestamp. View is scrolled to the newest lines.
+  [ ] Level toggles (All / Warnings / Errors) filter correctly, and a
+      stack trace stays whole under Errors rather than showing only
+      its first line.
+  [ ] Search filters lines; clearing it restores the full view. After
+      each filter change the view is still left-aligned and at the
+      bottom.
+  [ ] Open a wallet first, then Logs: the wallet name, any addresses
+      and any xpubs read as [wallet] / [address] / [xpub].
+  [ ] Tick "Show raw log" -> real values appear, and the warning about
+      what raw mode exposes is shown.
+  [ ] Copy -> paste elsewhere: diagnostics header present (version, OS,
+      Java, network, proxy) and redaction matches what was on screen.
+  [ ] Save -> file written; contents identical to the copied text.
+  [ ] Open Folder opens the Ashigaru home directory.
+  [ ] Rotation: with a >10MB ashigaru.log, logback rolls to
+      ashigaru.<date>.0.log and the viewer still reads the active file.
+
+
+--------------------------------------------------------------------
+ 14. UPDATE: CHECKING                                     (new in 1.3.0)
+--------------------------------------------------------------------
+  NOTE: use a throwaway profile to get the first-run prompt, e.g.
+        ./gradlew run -Dashigaru.home=/tmp/ag-update-test
+
+  [ ] First run asks once whether to check for updates, AFTER the tour
+      rather than at the same time.
+  [ ] Dismissing that dialog without answering leaves it unanswered -
+      it asks again next launch rather than counting as consent.
+  [ ] Answering No means no update request is made at all.
+  [ ] Settings -> Update is the third sidebar entry, and its icon
+      renders (not a blank space).
+  [ ] Current version and latest release are both shown.
+  [ ] "Check now" works even with the toggle off.
+  [ ] With a proxy configured, the request goes over it - confirm in
+      Tools -> Logs that no clearnet call was made.
+  [ ] Toggling the setting starts/stops the daily check and persists
+      across a restart.
+  [ ] When the newest release is not newer, it reports being up to
+      date and offers no download.
+
+
+--------------------------------------------------------------------
+ 15. UPDATE: VERIFICATION & INSTALL                       (new in 1.3.0)
+--------------------------------------------------------------------
+  NOTE: needs a published release newer than the running build. Until
+        1.4.0 exists, set APP_VERSION lower in a local build to make an
+        existing release appear as an update.
+
+  [ ] The package matching this install is preselected; the others are
+      still selectable. On Linux check the guess per install method:
+      AppImage -> .AppImage, Debian/Ubuntu -> .deb, Fedora -> .rpm.
+  [ ] The headless "ashigaru-server" build is never preselected, but
+      can still be chosen manually.
+  [ ] Download shows progress and can be cancelled; after cancelling,
+      no stray .part file is left in <app home>/updates/.
+  [ ] All four verification links show as they pass: signature,
+      checksum commitment, version, artifact hash.
+  [ ] A release whose SHA256SUMS does not list the artifact fails at
+      the ARTIFACT link, the earlier links still show as passed, and
+      the downloaded file is DELETED.
+  [ ] Wrong key: temporarily pin a different payment code -> fails at
+      the SIGNATURE link with the key-rotation message, nothing offered.
+  [ ] Downgrade: an older release is refused at the VERSION link rather
+      than offered.
+  [ ] A release missing RELEASE-BIP47-SIGNATURE.txt is refused with a
+      message pointing at the releases page.
+  [ ] Windows/macOS: Install hands the file to the system installer and
+      Ashigaru quits. On macOS expect the Gatekeeper quarantine step
+      described in the README.
+  [ ] Linux: the file is revealed in the file manager, not launched.
 
 
 --------------------------------------------------------------------

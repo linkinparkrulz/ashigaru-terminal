@@ -7,8 +7,8 @@ running an up-to-date build before reporting an issue.
 
 | Version | Supported |
 | ------- | --------- |
-| 1.1.x   | ✔        |
-| < 1.1   | :x:       |
+| 1.3.x   | ✔        |
+| < 1.3   | :x:       |
 
 ## Reporting a Vulnerability
 

@@ -21,6 +21,7 @@ A graphical Bitcoin wallet and desktop GUI front-end for [Ashigaru Terminal](htt
 - **AmIExposed or BitHypha UTXO analysis** — Do analysis on your own UTXO's
 - **Dojo Bay Integration** — Connect to geographically dispersed electrum servers with BIP47 Verified reputations. 
 - **Logs** — See under the hood and share application logs with developers, with addresses, keys and wallet names redacted by default
+- **Verified In-App Updates** — Ashigaru finds new releases and checks them against the release signing key before you install, so you never have to go looking for a download again
 
 ### Future Features
 
@@ -78,6 +79,8 @@ After a blocked launch attempt, go to **System Settings → Privacy & Security**
 ### Verifying a release
 
 Every release is signed by the maintainer using the private key for the notification address derived from the Ashigaru release-signing BIP47 Payment Code. This lets users verify that the release message was signed by the owner of the payment code, without exposing private keys.
+
+From 1.3.0, **Settings → Update** performs every check below for you and shows each one as it passes, refusing and deleting anything that fails. The manual steps remain here for anyone verifying a download obtained outside the app, or checking the app's own work.
 
 **Release signing identity**
 
