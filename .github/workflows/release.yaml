@@ -46,6 +46,10 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
+      - name: Install rpm tooling (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
       - name: Build with Gradle (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: pwsh
@@ -60,6 +64,11 @@ jobs:
         shell: pwsh
         run: .\gradlew.bat packageZipDistribution
 
+      - name: Package MSI distribution (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: .\gradlew.bat packageMsiDistribution
+
       - name: Package zip distribution (macOS)
         if: ${{ runner.os == 'macOS' }}
         run: ./gradlew packageZipDistribution
@@ -71,6 +80,10 @@ jobs:
       - name: Package AppImage distribution (Linux)
         if: ${{ runner.os == 'Linux' }}
         run: ./gradlew packageAppImage
+
+      - name: Package RPM distribution (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: ./gradlew packageRpmDistribution
 
       - name: Rename macOS DMG (arm64)
         if: ${{ matrix.artifact-name == 'macOS-arm64' }}
@@ -99,6 +112,10 @@ jobs:
       - name: Package headless tar distribution
         if: ${{ runner.os == 'Linux' }}
         run: ./gradlew -Djava.awt.headless=true packageTarDistribution
+
+      - name: Package headless RPM distribution
+        if: ${{ runner.os == 'Linux' }}
+        run: ./gradlew -Djava.awt.headless=true packageRpmDistribution
 
       - name: Rename headless artifacts
         if: ${{ runner.os == 'Linux' }}

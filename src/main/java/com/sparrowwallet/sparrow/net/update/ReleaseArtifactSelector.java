@@ -57,7 +57,8 @@ public class ReleaseArtifactSelector {
     private static boolean matchesFamily(String name, Family family) {
         String lower = name.toLowerCase(Locale.ROOT);
         return switch(family) {
-            case WINDOWS -> lower.endsWith(".exe") || lower.endsWith(".msi");
+            //-windows.zip is the portable build; the macOS zips are named -osx-* and must not match here
+            case WINDOWS -> lower.endsWith(".exe") || lower.endsWith(".msi") || lower.endsWith("-windows.zip");
             case MACOS -> lower.endsWith(".dmg") || lower.endsWith("-osx-x86_64.zip") || lower.endsWith("-osx-aarch64.zip");
             case LINUX -> lower.endsWith(".deb") || lower.endsWith(".rpm")
                     || lower.endsWith(".appimage") || lower.endsWith(".tar.gz");

@@ -259,6 +259,10 @@ HOW TO USE
       AppImage -> .AppImage, Debian/Ubuntu -> .deb, Fedora -> .rpm.
   [ ] The headless "ashigaru-server" build is never preselected, but
       can still be chosen manually.
+  [ ] Fedora/RHEL/openSUSE preselects the .rpm rather than falling back
+      to the tarball (needs a release that actually ships one).
+  [ ] Windows lists the portable -windows.zip alongside the .exe and
+      .msi, with the .exe still preselected.
   [ ] Download shows progress and can be cancelled; after cancelling,
       no stray .part file is left in <app home>/updates/.
   [ ] All four verification links show as they pass: signature,
