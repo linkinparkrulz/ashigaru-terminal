@@ -716,15 +716,17 @@
     -fx-padding: 10;
     -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.22), 18, 0, 0, 0);
 }
+/* Nikkyou Sans ships a single weight, so no -fx-font-weight here: JavaFX would synthesise a fake
+   bold and smear the letterforms. The display face also needs more size than the old 30px to read. */
 .splash-title {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-accent;
-    -fx-font-size: 30px;
-    -fx-font-weight: bold;
+    -fx-font-size: 46px;
 }
 .splash-subtitle {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-text-dim;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-size: 20px;
 }
 .splash-caption {
     -fx-text-fill: -ag-text-faint;

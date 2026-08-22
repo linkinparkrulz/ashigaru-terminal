@@ -61,6 +61,10 @@ public class AshigaruGui extends Application {
         this.mainStage = stage;
 
         Font.loadFont(AppServices.class.getResourceAsStream("/font/RobotoMono-Regular.ttf"), 13);
+        //Registers the family name "Nikkyou Sans" for the splash title. Loaded here rather than
+        //lazily because the splash is built further down this same method and would otherwise
+        //fall back to the default face without any error.
+        Font.loadFont(AppServices.class.getResourceAsStream("/font/NikkyouSans.ttf"), 13);
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ashigaru-main.fxml"));
         Parent root = loader.load();
