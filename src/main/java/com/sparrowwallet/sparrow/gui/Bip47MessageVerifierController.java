@@ -3,6 +3,7 @@ package com.sparrowwallet.sparrow.gui;
 import com.sparrowwallet.drongo.address.Address;
 import com.sparrowwallet.drongo.bip47.PaymentCode;
 import com.sparrowwallet.sparrow.net.dojo.SignedMessageVerifier;
+import com.sparrowwallet.sparrow.net.update.ReleaseTrust;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
@@ -11,7 +12,6 @@ import javafx.scene.layout.VBox;
 import java.security.SignatureException;
 
 public class Bip47MessageVerifierController {
-    private static final String RELEASE_SIGNING_PAYMENT_CODE = "PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1";
 
     @FXML private TextArea paymentCodeArea;
     @FXML private TextArea signedBlockArea;
@@ -24,7 +24,7 @@ public class Bip47MessageVerifierController {
 
     @FXML
     private void onUseReleaseCode() {
-        paymentCodeArea.setText(RELEASE_SIGNING_PAYMENT_CODE);
+        paymentCodeArea.setText(ReleaseTrust.RELEASE_SIGNING_PAYMENT_CODE);
     }
 
     @FXML
