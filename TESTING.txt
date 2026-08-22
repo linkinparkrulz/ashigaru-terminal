@@ -314,6 +314,14 @@ HOW TO USE
   [ ] On Fedora/RHEL/openSUSE, Settings -> Update preselects the .rpm
       rather than falling back to the tarball.
 
+  CRITICAL - must be run against a PACKAGED build, never ./gradlew run.
+  A development run uses the full JDK and cannot reproduce this:
+  [ ] Settings -> Update -> "Check now" reaches GitHub and reports a
+      version, rather than "Received fatal alert: handshake_failure".
+      This confirms jdk.crypto.ec made it into the jlink runtime image.
+  [ ] Tools -> Whirlpool Stats loads with NO proxy configured, which
+      exercises its clearnet HTTPS path rather than the onion mirror.
+
 --------------------------------------------------------------------
  NOTES
 --------------------------------------------------------------------

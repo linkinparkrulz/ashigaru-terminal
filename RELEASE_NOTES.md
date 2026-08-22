@@ -2,9 +2,23 @@
 
 *Released 2026-08-22*
 
-A short release about first impressions and finishing what 1.3.0 started: the startup screen now
-tells you what it is doing instead of spinning, and the packages the download table has always
-advertised are finally being built.
+This release fixes a fault that broke every clearnet HTTPS request in released builds, including the
+update check that 1.3.0 introduced. It also makes the startup screen report what it is doing, and
+finally builds the packages the download table has long advertised.
+
+## Connectivity
+
+- **Released builds could not make an HTTPS connection.** Anything reaching a normal `https://`
+  address failed with `Received fatal alert: handshake_failure` — the update check most visibly, but
+  the cause was general. The packaged runtime is assembled with `jlink`, and it was being built
+  without `jdk.crypto.ec`, the module providing the SunEC security provider. Without it the runtime
+  cannot complete the elliptic-curve handshake that essentially every modern server requires. Onion
+  addresses were unaffected, which is why mixing, fee rates and server connections kept working and
+  this went unnoticed for so long. Running from source was unaffected too, since that uses the full
+  JDK — the fault only ever appeared in the builds published here.
+
+  **If you are on 1.3.0, its update checker cannot reach GitHub, so this release has to be installed
+  by hand.** From 1.4.0 onward in-app updates work.
 
 ## Startup
 

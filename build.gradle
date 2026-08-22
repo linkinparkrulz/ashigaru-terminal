@@ -204,8 +204,14 @@ jlink {
                          'javafx-fxml', 'javafx-swing', 'javax.servlet-api',
                          'slf4j-api', 'gson', 'kotlin-stdlib', 'annotations',
                          'kotlinx-coroutines-core')
+    //jdk.crypto.ec provides the SunEC security provider. It is a service provider, so jlink does
+    //not pull it in from the module graph - nothing 'requires' it - and without it the packaged
+    //runtime cannot complete an ECDHE handshake. Every clearnet HTTPS request then fails with
+    //"Received fatal alert: handshake_failure", in packaged builds only: a development run uses the
+    //full JDK and works, which is why this went unnoticed.
     options = ['--strip-debug', '--no-header-files', '--no-man-pages',
-               '--ignore-signing-information', '--compress=1']
+               '--ignore-signing-information', '--compress=1',
+               '--add-modules', 'jdk.crypto.ec']
     launcher {
         name = 'Ashigaru'
         noConsole = os.windows
