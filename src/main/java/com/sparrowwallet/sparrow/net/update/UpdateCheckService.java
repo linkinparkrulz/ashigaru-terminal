@@ -48,7 +48,7 @@ public class UpdateCheckService extends ScheduledService<UpdateAvailableEvent> {
         };
     }
 
-    static boolean isNewer(String candidate) {
+    public static boolean isNewer(String candidate) {
         try {
             return new Version(candidate).compareTo(new Version(AshigaruTerminal.APP_VERSION)) > 0;
         } catch(IllegalArgumentException e) {

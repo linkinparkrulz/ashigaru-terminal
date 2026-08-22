@@ -296,7 +296,7 @@ public class ReleaseVerifier {
         return tag == null ? "" : stripLeadingV(tag.trim()).toLowerCase(Locale.ROOT);
     }
 
-    static String stripLeadingV(String value) {
+    public static String stripLeadingV(String value) {
         if(value == null) {
             return "";
         }

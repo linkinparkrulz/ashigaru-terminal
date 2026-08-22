@@ -142,7 +142,7 @@ public class ReleaseArtifactSelector {
         return name.toLowerCase(Locale.ROOT).contains("ashigaru-server");
     }
 
-    static Family currentFamily() {
+    public static Family currentFamily() {
         String os = System.getProperty("os.name");
         if(os == null) {
             return Family.UNKNOWN;
