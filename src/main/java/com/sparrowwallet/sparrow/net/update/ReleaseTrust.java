@@ -17,6 +17,13 @@ public class ReleaseTrust {
      * The BIP47 payment code whose notification address signs every release. Releases are accepted
      * only if the signature over MESSAGE.txt resolves to this identity; if the signing key is ever
      * rotated, builds pinned to the old code fail closed and their users must re-download manually.
+     *
+     * <p>This code derives to notification address
+     * {@code 1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ}, which is the address that signed the v1.1.2
+     * release. Recorded here so the pin can be audited by eye: the address is <em>not</em> used as a
+     * second trust anchor, since it is derived from the code above at verification time. If you
+     * change this constant, confirm the new code derives to the address you actually sign with -
+     * Tools -&gt; Verify BIP47 Message against a published RELEASE-BIP47-SIGNATURE.txt does it.
      */
     public static final String RELEASE_SIGNING_PAYMENT_CODE =
             "PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1";

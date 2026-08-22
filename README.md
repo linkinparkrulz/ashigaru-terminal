@@ -91,6 +91,12 @@ From 1.3.0, **Settings → Update** performs every check below for you and shows
 PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1
 ```
 
+- **Notification address:** `1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ`
+
+That address is derived from the payment code above, and is what every release signature must
+recover to. It is published here so you can confirm the recovered signer without deriving it
+yourself.
+
 **Step 1 — Verify the file hash**
 
 ```bash
@@ -109,13 +115,15 @@ Compare the output against the `SHA256(SHA256SUMS): ...` line inside `MESSAGE.tx
 
 **Step 3 — Verify the Bitcoin message signature**
 
-Open `RELEASE-BIP47-SIGNATURE.txt`. The file contains the release signing payment code, PayNym, and a base64 Bitcoin message signature. Verify using Ashigaru Mobile or a BIP47 message verifier such as https://paymentcode.io/lab with:
+Open `RELEASE-BIP47-SIGNATURE.txt`. It is a standard Bitcoin signed message block: the contents of `MESSAGE.txt` between `-----BEGIN BITCOIN SIGNED MESSAGE-----` and `-----BEGIN BITCOIN SIGNATURE-----`, then the signing address and a base64 signature.
+
+The simplest check is in Ashigaru itself — **Tools → Verify BIP47 Message**, use the release signing code, paste the whole file into the signed message block, then parse and verify. You can also use Ashigaru Mobile or a BIP47 message verifier such as https://paymentcode.io/lab with:
 
 - **Payment Code**: the release signing payment code above
 - **Message**: the exact contents of `MESSAGE.txt`
 - **Signature**: the base64 value from `RELEASE-BIP47-SIGNATURE.txt`
 
-The verifier derives the notification address from the payment code and checks the Bitcoin message signature against that address. Make sure the payment code in `RELEASE-BIP47-SIGNATURE.txt` matches the payment code published here.
+The verifier derives the notification address from the payment code and checks the signature against it. Confirm the recovered signer is the notification address published above — that is what ties the release to the maintainer's key.
 
 ---
 
