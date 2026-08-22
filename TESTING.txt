@@ -1,6 +1,6 @@
 ====================================================================
  ASHIGARU DESKTOP - TESTING CHECKLIST
- Release: 1.3.0  (branch v1.3.0)
+ Release: 1.4.0  (branch v1.4.0)
 ====================================================================
 
 HOW TO USE
@@ -281,6 +281,38 @@ HOW TO USE
       described in the README.
   [ ] Linux: the file is revealed in the file manager, not launched.
 
+
+--------------------------------------------------------------------
+ 16. SPLASH / STARTUP PROGRESS                            (new in 1.4.0)
+--------------------------------------------------------------------
+  [ ] Splash title renders in Nikkyou Sans, not the system font.
+      A wrong family name falls back silently, so check the shape.
+  [ ] Cold start with Tor: the bar advances with a visible bootstrap
+      percentage rather than spinning, and the Tor step ticks to done.
+  [ ] Server step ticks when connected; wallets step ticks when the
+      history finishes loading.
+  [ ] Status line does NOT flicker with raw Tor debug text - only
+      bootstrap progress should reach it.
+  [ ] Break Tor deliberately (bad bridge / no network): the Tor step
+      shows as failed with a reason, instead of spinning until timeout.
+  [ ] Offline mode: steps show as skipped rather than three stalled
+      bullets, and the workspace still opens.
+  [ ] Splash closes when the main window appears, and no splash-related
+      errors appear in Tools -> Logs afterwards (the controller should
+      have unregistered from the event bus).
+
+
+--------------------------------------------------------------------
+ 17. PACKAGING                                            (new in 1.4.0)
+--------------------------------------------------------------------
+  [ ] The release carries a desktop .rpm and a headless
+      ashigaru-server .rpm, alongside the .deb packages.
+  [ ] The release carries an .msi alongside the .exe installer.
+  [ ] SHA256SUMS lists every one of them.
+  [ ] On Windows, Settings -> Update lists the portable -windows.zip
+      alongside .exe and .msi, with .exe still preselected.
+  [ ] On Fedora/RHEL/openSUSE, Settings -> Update preselects the .rpm
+      rather than falling back to the tarball.
 
 --------------------------------------------------------------------
  NOTES

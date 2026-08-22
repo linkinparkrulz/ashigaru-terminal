@@ -158,11 +158,12 @@ treat darkjar as vendored upstream (below).
 5. **Coordinator protocol version** (`WhirlpoolProtocol.PROTOCOL_VERSION = "0.23"`) must match
    the live coordinator; it is not a value to touch client-side.
 
-## 7. Current State (as of 2026-08, v1.3.0)
+## 7. Current State (as of 2026-08, v1.4.0)
 
-- Version `1.3.0` (`build.gradle`), developed on branch `v1.3.0`. v1.1.2 is the newest
-  *published* release: 1.1.3 and 1.2.0 were prepared and merged but never tagged, so 1.3.0
-  folds their notes forward. See the root `RELEASE_NOTES.md` for what changed, rather than
+- Version `1.4.0` (`build.gradle`), developed on branch `v1.4.0`. 1.3.0 is the newest
+  *published* release, and the first that a running install can discover and verify for itself
+  via Settings -> Update. 1.1.3 and 1.2.0 were prepared and merged but never tagged; their notes
+  were folded into 1.3.0. See the root `RELEASE_NOTES.md` for what changed, rather than
   duplicating it here.
 - All four original PLAN.md features are implemented (`receiveBtn`, `badbankInfoLabel`,
   `txnTable` toggle, post-Tx0 navigation all present in `AshigaruWalletController`); PLAN.md

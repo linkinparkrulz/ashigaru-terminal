@@ -1,68 +1,50 @@
-# Ashigaru Desktop 1.3.0
+# Ashigaru Desktop 1.4.0
 
-*Released 2026-08-16*
+*Released 2026-08-22*
 
-Ashigaru can now tell you when a new version exists, fetch it, and prove it came from the Ashigaru
-release key before you install it — so finding an upgrade no longer means going back to a search
-engine, where forks of this project are easy to mistake for the real one.
+A short release about first impressions and finishing what 1.3.0 started: the startup screen now
+tells you what it is doing instead of spinning, and the packages the download table has always
+advertised are finally being built.
 
-This release also carries everything from 1.2.0, which was prepared but never published: a Logs
-tool, and a fix to release verification that had been quietly failing since it was introduced.
+## Startup
 
-## Updates
+- **The splash reports real progress.** It used to show a bar that spun regardless and one of four
+  fixed messages. It now follows the startup as it happens — Tor, then the server connection, then
+  wallet loading — marking each step as it completes. During Tor bootstrap, the slow part of a cold
+  start, the bar moves with Tor's own reported percentage rather than pretending not to know.
+- **Failures are shown.** A Tor bootstrap that fails, or a server that cannot be reached, used to
+  leave the same spinning bar until something timed out. The step is now marked failed with the
+  reason kept on screen, so a stall is distinguishable from a hang.
+- **A typeface of its own.** The splash title is set in Nikkyou Sans, a display face drawn from
+  wartime propaganda poster lettering, which suits the name better than the system font did.
 
-- **Ashigaru checks for new releases.** A new **Settings → Update** screen shows the version you
-  are running and the latest published release, and can check on demand or once a day. Checking is
-  off until you say yes: you are asked once, on first run, and the request goes through your proxy
-  when one is configured. It reveals only that someone asked for a version number, never anything
-  about your wallets.
-- **Downloads are verified before you are offered them.** Choosing an update fetches it and then
-  checks four things in order, showing each as it passes: the release message was signed by the
-  Ashigaru release key, the published checksums match what that signed message commits to, the
-  release is the one being offered and is newer than the one you run, and the file you downloaded
-  matches its published checksum. These are the same checks the README asks you to perform by hand.
-- **A failed check deletes the download.** If any link in that chain does not hold, the file is
-  removed rather than left somewhere it could be opened by accident, and the screen says which
-  check failed. A release published without its signature is refused outright rather than trusted.
-- **Then you install it.** Ashigaru does not update itself. On Windows and macOS it hands the
-  verified file to the system installer and steps aside; on Linux it shows you the file, since
-  package installs need root and the right format depends on your distribution. The package
-  matching how you installed is preselected, with the rest available if the guess is wrong.
+## Packages
 
-## Tools
+- **`.rpm` packages are published.** The download table has listed `.rpm` for Linux since well
+  before this release, and it was never actually built — Fedora, RHEL and openSUSE users were
+  quietly left with the tarball. Both the desktop and headless builds now produce one.
+- **`.msi` installers are published.** Same story on Windows: advertised, never built. The `.exe`
+  installer remains the recommended route, with the `.msi` alongside it.
+- **The portable Windows build is offered in-app.** Ashigaru's updater only ever offered `.exe` and
+  `.msi`, so anyone running the portable `.zip` was shown an installer instead of the build they
+  actually use. It is now listed with the others, with the `.exe` still preselected.
 
-- **Logs.** A new **Tools → Logs** screen shows recent application activity without leaving the
-  app. Filter to warnings or errors, or search the text; either way stack traces stay attached to
-  the entry they belong to rather than being cut in half.
-- **Safe to share.** Bitcoin addresses, extended public keys, BIP47 payment codes, transaction ids,
-  onion hostnames, derivation paths and the names of your open wallets are replaced with
-  placeholders before anything is shown. That is the default, so the text you are looking at is
-  already the text that is safe to send. A **Show raw log** toggle turns redaction off and tells
-  you what it exposes.
-- **Built for bug reports.** **Copy** and **Save** emit exactly what is on screen, with a short
-  header carrying the version, operating system, Java version, network and whether a proxy is
-  active — the things a developer asks for first, and nothing about your wallets. **Open Folder**
-  takes you to the log directory if you would rather handle the file yourself.
+## Project
 
-## Interface
-
-- **The Whirlpool Stats icon appears.** Its sidebar icon was drawn from an older icon set whose
-  character position is empty in the font the app actually loads, so the space beside the label was
-  blank. It now shows.
-
-## Under the hood
-
-- **The log file no longer grows forever.** `ashigaru.log` was written to indefinitely and could
-  reach any size given enough time. It now rolls at 10 MB, keeping three files and 40 MB at most.
+- **Bundled fonts are attributed.** Roboto Mono and the two Font Awesome faces have shipped inside
+  every release without appearing in `THIRD_PARTY_NOTICES.md`, though both licences ask for their
+  notices to travel with the binaries. They are recorded now, along with the new splash typeface.
 
 ## Verifying releases
 
-- **`SHA256SUMS` now lists the release files.** Every release up to and including 1.1.2 carried a
-  `SHA256SUMS` containing exactly one line: a hash of nothing, naming the file itself. Running the
-  `sha256sum -c SHA256SUMS` check documented in the README could therefore never confirm a
-  download. It now lists every published file under the name you download it as, so the documented
-  check works as written. Thanks to the user who reported it.
-- **Both Linux tarballs ship.** The desktop and headless Linux builds were producing tarballs with
-  the same filename, so only one of the two ever reached the release page. The headless build is
-  now published as `Ashigaru-server-…`, matching the naming already used for its `.deb` and `.rpm`
-  packages.
+Unchanged from 1.3.0, and worth repeating because this is the first release an existing install can
+check for itself. `SHA256SUMS` lists every published file under the name you download it as:
+
+```bash
+sha256sum -c SHA256SUMS --ignore-missing
+sha256sum SHA256SUMS   # compare with SHA256(SHA256SUMS) in MESSAGE.txt
+```
+
+The signature in `RELEASE-BIP47-SIGNATURE.txt` must recover to `1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ`,
+the notification address of the release signing payment code published in the README. **Tools →
+Verify BIP47 Message** does this for you.
