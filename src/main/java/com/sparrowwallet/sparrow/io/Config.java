@@ -43,7 +43,11 @@ public class Config {
     private boolean groupByAddress = true;
     private boolean includeMempoolOutputs = true;
     private boolean notifyNewTransactions = true;
-    private boolean checkNewVersions = true;
+    //Deliberately a new field rather than a reuse of the old checkNewVersions flag: that one was
+    //never wired to anything but Gson has been persisting it as true, so reusing it would treat
+    //every existing install as having consented to a check it was never asked about.
+    //null means not yet asked.
+    private Boolean updateCheckConsent;
     private Theme theme;
     private boolean openWalletsInNewWindows = false;
     private boolean hideEmptyUsedAddresses = false;
@@ -299,12 +303,18 @@ public class Config {
         flush();
     }
 
-    public boolean isCheckNewVersions() {
-        return checkNewVersions;
+    /** True only once the user has actively agreed to the check. */
+    public boolean isUpdateCheckEnabled() {
+        return Boolean.TRUE.equals(updateCheckConsent);
     }
 
-    public void setCheckNewVersions(boolean checkNewVersions) {
-        this.checkNewVersions = checkNewVersions;
+    /** False until the user has answered either way, which is what triggers the first-run prompt. */
+    public boolean isUpdateCheckAnswered() {
+        return updateCheckConsent != null;
+    }
+
+    public void setUpdateCheckConsent(Boolean updateCheckConsent) {
+        this.updateCheckConsent = updateCheckConsent;
         flush();
     }
 

@@ -7,7 +7,7 @@ import com.sparrowwallet.drongo.pgp.PGPVerificationException;
 import com.sparrowwallet.drongo.pgp.PGPVerificationResult;
 import com.sparrowwallet.sparrow.AppServices;
 import com.sparrowwallet.sparrow.glyphfont.GlyphUtils;
-import com.sparrowwallet.sparrow.net.VersionCheckService;
+import com.sparrowwallet.sparrow.net.update.UpdateCheckService;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -98,7 +98,7 @@ public class DownloadVerifierDialog extends Dialog<ButtonBar.ButtonData> {
         filesFieldset.setText("Files");
         filesFieldset.setSpacing(10);
 
-        String version = VersionCheckService.getVersion() != null ? VersionCheckService.getVersion() : "x.x.x";
+        String version = UpdateCheckService.getVersion() != null ? UpdateCheckService.getVersion() : "x.x.x";
 
         Field signatureField = setupField(signature, "Signature", SIGNATURE_EXTENSIONS, false, "sparrow-" + version + "-manifest.txt", null);
         Field manifestField = setupField(manifest, "Manifest", MANIFEST_EXTENSIONS, false, "sparrow-" + version + "-manifest", null);

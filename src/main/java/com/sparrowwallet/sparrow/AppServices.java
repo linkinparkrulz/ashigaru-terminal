@@ -24,6 +24,7 @@ import com.sparrowwallet.sparrow.control.TrayManager;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.*;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.update.UpdateCheckService;
 import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import com.sparrowwallet.sparrow.soroban.SorobanServices;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolServices;
@@ -121,7 +122,7 @@ public class AppServices {
 
     private Hwi.ScheduledEnumerateService deviceEnumerateService;
 
-    private VersionCheckService versionCheckService;
+    private UpdateCheckService updateCheckService;
 
     private TorService torService;
 
@@ -166,7 +167,7 @@ public class AppServices {
             } else {
                 connectionService.cancel();
                 ratesService.cancel();
-                versionCheckService.cancel();
+                updateCheckService.cancel();
             }
         }
     };
@@ -191,7 +192,7 @@ public class AppServices {
         Config config = Config.get();
         connectionService = createConnectionService();
         ratesService = createRatesService(config.getExchangeSource(), config.getFiatCurrency());
-        versionCheckService = createVersionCheckService();
+        updateCheckService = createUpdateCheckService();
         torService = createTorService();
         preventSleepService = createPreventSleepService();
 
@@ -204,6 +205,10 @@ public class AppServices {
                 restartServices();
             }
         }
+
+        //Previously nothing ever started the version check: the only call site was reachable from an
+        //event that was never posted, so the service was dead code.
+        startUpdateCheckIfAllowed();
 
         addURIHandlers();
     }
@@ -250,8 +255,8 @@ public class AppServices {
             ratesService.cancel();
         }
 
-        if(versionCheckService != null) {
-            versionCheckService.cancel();
+        if(updateCheckService != null) {
+            updateCheckService.cancel();
         }
 
         if(httpClientService != null) {
@@ -377,20 +382,39 @@ public class AppServices {
         return ratesService;
     }
 
-    private VersionCheckService createVersionCheckService() {
-        VersionCheckService versionCheckService = new VersionCheckService();
-        versionCheckService.setDelay(Duration.seconds(10));
-        versionCheckService.setPeriod(Duration.hours(VERSION_CHECK_PERIOD_HOURS));
-        versionCheckService.setRestartOnFailure(true);
+    private UpdateCheckService createUpdateCheckService() {
+        UpdateCheckService updateCheckService = new UpdateCheckService();
+        updateCheckService.setDelay(Duration.seconds(10));
+        updateCheckService.setPeriod(Duration.hours(VERSION_CHECK_PERIOD_HOURS));
+        updateCheckService.setRestartOnFailure(true);
 
-        versionCheckService.setOnSucceeded(successEvent -> {
-            VersionUpdatedEvent event = versionCheckService.getValue();
+        updateCheckService.setOnSucceeded(successEvent -> {
+            UpdateAvailableEvent event = updateCheckService.getValue();
             if(event != null) {
                 EventManager.get().post(event);
             }
         });
 
-        return versionCheckService;
+        return updateCheckService;
+    }
+
+    /**
+     * The check runs only once the user has actively agreed to it, and never off mainnet or in
+     * offline mode. Consent starts unset, so nothing reaches the network until it is answered.
+     */
+    private static boolean isUpdateCheckAllowed() {
+        Config config = Config.get();
+        return config.isUpdateCheckEnabled() && config.getMode() != Mode.OFFLINE && Network.get() == Network.MAINNET;
+    }
+
+    public void startUpdateCheckIfAllowed() {
+        if(updateCheckService == null) {
+            updateCheckService = createUpdateCheckService();
+        }
+
+        if(isUpdateCheckAllowed() && !updateCheckService.isRunning()) {
+            restartService(updateCheckService);
+        }
     }
 
     private Hwi.ScheduledEnumerateService createDeviceEnumerateService() {
@@ -1185,11 +1209,13 @@ public class AppServices {
 
     @Subscribe
     public void versionCheckStatus(VersionCheckStatusEvent event) {
-        versionCheckService.cancel();
+        if(updateCheckService != null) {
+            updateCheckService.cancel();
+        }
 
-        if(Config.get().getMode() != Mode.OFFLINE && event.isEnabled() && Network.get() == Network.MAINNET) {
-            versionCheckService = createVersionCheckService();
-            versionCheckService.start();
+        if(event.isEnabled() && isUpdateCheckAllowed()) {
+            updateCheckService = createUpdateCheckService();
+            updateCheckService.start();
         }
     }
 
@@ -1257,7 +1283,7 @@ public class AppServices {
         Platform.runLater(() -> {
             connectionService.cancel();
             ratesService.cancel();
-            versionCheckService.cancel();
+            updateCheckService.cancel();
         });
     }
 
