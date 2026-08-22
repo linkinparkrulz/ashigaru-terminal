@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import tornadofx.control.Form?>
+<?import tornadofx.control.Fieldset?>
+<?import tornadofx.control.Field?>
+<?import com.sparrowwallet.sparrow.control.UnlabeledToggleSwitch?>
+<?import com.sparrowwallet.sparrow.control.HelpLabel?>
+
+<GridPane hgap="10.0" vgap="14.0" stylesheets="@../general.css, @../gui/ashigaru.css, @preferences.css" styleClass="preferences-detail" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml" fx:controller="com.sparrowwallet.sparrow.preferences.UpdatePreferencesController">
+    <padding>
+        <Insets left="28.0" right="32.0" top="24.0" bottom="28.0" />
+    </padding>
+    <columnConstraints>
+        <ColumnConstraints percentWidth="100" />
+    </columnConstraints>
+
+    <VBox GridPane.columnIndex="0" GridPane.rowIndex="0" spacing="6">
+        <Label text="Update" styleClass="preferences-section-title" />
+        <Label text="Check for new Ashigaru releases and verify them against the release signing key before you install."
+               wrapText="true" styleClass="preferences-section-subtitle" />
+    </VBox>
+
+    <Form GridPane.columnIndex="0" GridPane.rowIndex="1" styleClass="preferences-form">
+        <Fieldset inputGrow="SOMETIMES" text="Checking" styleClass="wideLabelFieldSet">
+            <Field text="Check for updates:">
+                <UnlabeledToggleSwitch fx:id="checkForUpdates" />
+                <HelpLabel helpText="Ask GitHub once a day whether a newer Ashigaru release has been published. The request goes through your proxy when one is configured, and reveals only that someone asked - never which wallets you hold. Turn this off and you can still check by hand below."/>
+            </Field>
+            <Field text="Current version:">
+                <Label fx:id="currentVersionLabel" text="—" styleClass="field-value" />
+            </Field>
+            <Field text="Latest release:">
+                <Label fx:id="latestVersionLabel" text="Not checked yet" styleClass="field-value" />
+                <Button fx:id="checkNowBtn" text="Check now" onAction="#onCheckNow" styleClass="secondary-btn" />
+            </Field>
+        </Fieldset>
+    </Form>
+
+    <!-- Everything below only appears once an update is actually available -->
+    <VBox fx:id="updateBox" GridPane.columnIndex="0" GridPane.rowIndex="2" spacing="14" visible="false" managed="false">
+        <VBox spacing="10" styleClass="ag-card">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <Label fx:id="updateTitleLabel" text="An update is available" styleClass="step-title" />
+            <Label wrapText="true" styleClass="card-faint"
+                   text="Choose the package that matches how you installed Ashigaru. The download is checked against the release signing key before you are offered it." />
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Label text="Package:" styleClass="field-label" />
+                <ComboBox fx:id="artifactCombo" prefWidth="360" />
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="downloadBtn" text="Download and verify" onAction="#onDownload" styleClass="primary-btn" />
+                <Button fx:id="cancelBtn" text="Cancel" onAction="#onCancel" styleClass="secondary-btn" visible="false" managed="false" />
+                <Hyperlink text="Open the releases page instead" onAction="#onOpenReleasePage" />
+            </HBox>
+
+            <ProgressBar fx:id="downloadProgress" maxWidth="Infinity" visible="false" managed="false" />
+            <Label fx:id="progressLabel" wrapText="true" styleClass="card-faint" visible="false" managed="false" />
+        </VBox>
+
+        <!-- The verification chain, shown link by link -->
+        <VBox spacing="8" styleClass="ag-card">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <Label text="Verification" styleClass="step-title" />
+            <Label fx:id="signatureStep" wrapText="true" styleClass="card-secondary" text="Signed by the Ashigaru release key" />
+            <Label fx:id="commitmentStep" wrapText="true" styleClass="card-secondary" text="Checksums match the signed message" />
+            <Label fx:id="versionStep" wrapText="true" styleClass="card-secondary" text="Release is the one offered, and is newer" />
+            <Label fx:id="artifactStep" wrapText="true" styleClass="card-secondary" text="Download matches its published checksum" />
+
+            <VBox fx:id="resultBox" spacing="4" visible="false" managed="false">
+                <padding><Insets top="10" right="12" bottom="10" left="12"/></padding>
+                <Label fx:id="resultTitleLabel" wrapText="true" styleClass="verifier-result-title" />
+                <Label fx:id="resultDetailLabel" wrapText="true" styleClass="card-faint" />
+            </VBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <Button fx:id="installBtn" text="Install" onAction="#onInstall" styleClass="primary-btn" visible="false" managed="false" />
+                <Button fx:id="revealBtn" text="Show the file" onAction="#onReveal" styleClass="secondary-btn" visible="false" managed="false" />
+            </HBox>
+        </VBox>
+    </VBox>
+</GridPane>

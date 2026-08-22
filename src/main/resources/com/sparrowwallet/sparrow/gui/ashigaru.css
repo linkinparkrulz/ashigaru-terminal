@@ -1008,6 +1008,9 @@
 .verifier-result-error .verifier-result-title {
     -fx-text-fill: -ag-accent;
 }
+/* Each link of the release verification chain, before and after it is checked */
+.verifier-step-pass { -fx-text-fill: -ag-green; }
+.verifier-step-fail { -fx-text-fill: -ag-accent; -fx-font-weight: bold; }
 
 /* ── Guided tour ──────────────────────────────────────────────────────────── */
 

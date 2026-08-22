@@ -608,6 +608,62 @@ public class AshigaruMainController implements Initializable {
             Config.get().setTourShown(true);
             startTour();
         }
+
+        //After the tour, so a first-time user is not met with two dialogs at once
+        maybeAskUpdateConsent();
+    }
+
+    /**
+     * Ask once whether Ashigaru may check for updates. Consent starts unset rather than defaulting
+     * on, because the check is a network request that reveals this install is running - a choice
+     * worth making deliberately in a wallet that otherwise stays off clearnet.
+     */
+    private void maybeAskUpdateConsent() {
+        Config config = Config.get();
+        if (config.isUpdateCheckAnswered()) {
+            return;
+        }
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                "Ashigaru can check GitHub once a day for new releases, and verify a download against the "
+                        + "release signing key before you install it. This keeps you off search results, where "
+                        + "forks of this project are easy to mistake for the real one.\n\n"
+                        + "The check reveals only that someone asked for the version number, never anything "
+                        + "about your wallets, and it goes through your proxy when one is configured.\n\n"
+                        + "You can change this any time in Settings \u2192 Update.",
+                ButtonType.NO, ButtonType.YES);
+        alert.setTitle("Check for updates?");
+        alert.setHeaderText("Check for updates?");
+        alert.initOwner(AshigaruGui.get().getMainStage());
+        AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
+
+        Optional<ButtonType> answer = alert.showAndWait();
+        //No answer means the dialog was dismissed; leave it unset so it is asked again rather than
+        //treating a dismissal as consent
+        if (answer.isEmpty()) {
+            return;
+        }
+
+        boolean enabled = answer.get() == ButtonType.YES;
+        config.setUpdateCheckConsent(enabled);
+        EventManager.get().post(new VersionCheckStatusEvent(enabled));
+    }
+
+    @Subscribe
+    public void updateAvailable(UpdateAvailableEvent event) {
+        Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION,
+                    "Ashigaru " + event.getVersion() + " has been published. Ashigaru can download it and check "
+                            + "it against the release signing key before you install it.",
+                    ButtonType.CLOSE, ButtonType.OK);
+            alert.setTitle("Update available");
+            alert.setHeaderText("Ashigaru " + event.getVersion() + " is available");
+            alert.initOwner(AshigaruGui.get().getMainStage());
+            AppServices.addAshigaruStylesheets(alert.getDialogPane().getStylesheets());
+
+            alert.showAndWait().filter(button -> button == ButtonType.OK)
+                    .ifPresent(button -> ensureSettingsTourView(PreferenceGroup.UPDATE));
+        });
     }
 
     /**
