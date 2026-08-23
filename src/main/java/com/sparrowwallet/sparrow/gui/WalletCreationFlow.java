@@ -106,6 +106,14 @@ public class WalletCreationFlow {
     private static final double WIZARD_WRAP_WIDTH = 410;
 
     /**
+     * Text width inside a .type-card: the narrower 460-wide dialog, less its 20px content padding on
+     * each side and the card's own 16px padding plus 1px border on each side. Cards appear in both
+     * the 460 and 480 dialogs, and measuring against the tighter of the two means a card in the wider
+     * one gains a little slack rather than under-reporting its height and clipping.
+     */
+    private static final double TYPE_CARD_WRAP_WIDTH = 460 - 40 - 36;
+
+    /**
      * Makes a wrapping label actually wrap instead of clipping to an ellipsis.
      *
      * <p>Two parts, and the height one is what actually matters: a wrapText Label asked for its
@@ -113,10 +121,18 @@ public class WalletCreationFlow {
      * so its parent allocates one line of vertical space, the label then wraps at its real width, and
      * everything past that first line is ellipsized. Setting minHeight to USE_PREF_SIZE makes the
      * parent query minHeight(width) at the actual layout width, which returns the true wrapped height
-     * and forces enough room. The fixed max width simply keeps the wrap inside the dialog.
+     * and forces enough room.
+     *
+     * <p>That covers layout but not measurement. A dialog decides how large to be by asking its
+     * content for a preferred size <em>before</em> anything has a width, and minHeight(USE_PREF_SIZE)
+     * contributes nothing to that pass - which is why these dialogs, once their fixed height caps
+     * were removed, sized themselves off a single line of text. Setting a concrete prefWidth as well
+     * gives computePrefHeight(-1) a width to wrap against, so the true height reaches the dialog and
+     * it sizes itself correctly with no cap to fight the text.
      */
     private static void bindWrap(Label label) {
         label.setWrapText(true);
+        label.setPrefWidth(WIZARD_WRAP_WIDTH);
         label.setMaxWidth(WIZARD_WRAP_WIDTH);
         label.setMinHeight(Region.USE_PREF_SIZE);
     }
@@ -139,24 +155,33 @@ public class WalletCreationFlow {
     private Button typeCard(String title, String desc) {
         Label t = new Label(title);
         t.getStyleClass().add("type-card-title");
-        t.setWrapText(true);
-        t.setMinHeight(Region.USE_PREF_SIZE);
+        cardWrap(t);
         Label d = new Label(desc);
         d.getStyleClass().add("type-card-desc");
-        d.setWrapText(true);
-        d.setMinHeight(Region.USE_PREF_SIZE);
+        cardWrap(d);
         VBox box = new VBox(4, t, d);
         box.setAlignment(Pos.CENTER_LEFT);
+        box.setMaxWidth(TYPE_CARD_WRAP_WIDTH);
         Button b = new Button();
         b.setGraphic(box);
         b.getStyleClass().add("type-card");
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
-        // A Button lays its graphic out at the graphic's preferred (unwrapped) width, so bind the VBox
-        // to the button's actual width to give the wrapping labels a bounded width to wrap into
-        // (otherwise long descriptions clip to an ellipsis). 36 ≈ the .type-card horizontal padding.
-        box.maxWidthProperty().bind(b.widthProperty().subtract(36));
         return b;
+    }
+
+    /**
+     * Wraps a label inside a type card. The width is a constant rather than a binding to the button:
+     * a Button lays its graphic out at the graphic's preferred width, so the obvious fix is to bind
+     * the content to b.widthProperty() - but the button has no width while the dialog is computing
+     * its preferred size, so at the one moment the height is decided the labels have nothing to wrap
+     * into and report a single line.
+     */
+    private static void cardWrap(Label label) {
+        label.setWrapText(true);
+        label.setPrefWidth(TYPE_CARD_WRAP_WIDTH);
+        label.setMaxWidth(TYPE_CARD_WRAP_WIDTH);
+        label.setMinHeight(Region.USE_PREF_SIZE);
     }
 
     /** Entry point — call from the JavaFX UI thread. */
@@ -380,6 +405,7 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
 
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(createType, ButtonType.CANCEL);
@@ -582,6 +608,7 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
         Platform.runLater(() -> dieFields.get(0).requestFocus());
@@ -650,6 +677,7 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
 
         ButtonType addType = new ButtonType("Add another word", ButtonBar.ButtonData.LEFT);
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
@@ -684,6 +712,7 @@ public class WalletCreationFlow {
         content.setPadding(new Insets(20));
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(480);
 
         ButtonType importType = new ButtonType("Import Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(importType, ButtonType.CANCEL);
