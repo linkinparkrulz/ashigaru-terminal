@@ -185,6 +185,9 @@ public class AshigaruGui extends Application {
         }
 
         mainStage.show();
+        //Must follow show(): JavaFX only centres the stage, and only knows its decorated size, once
+        //it is on screen. Before that getX/getY/getHeight have nothing useful to clamp.
+        AppServices.clampToScreen(mainStage);
 
         // Collect wallet files: recent list (preserves order) + full wallets-dir scan
         // so wallets appear in the dropdown even if never explicitly "opened" before.

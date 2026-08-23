@@ -83,15 +83,19 @@
     -fx-border-width: 0 0 1 0;
 }
 
+/* Nikkyou Sans on the display-sized text only. It ships a single weight, so -fx-font-weight is
+   deliberately absent wherever it is applied: JavaFX would synthesise a fake bold and smear the
+   letterforms. Body text, the 10px wizard eyebrow and the type-card titles keep the system face,
+   where a poster letterform costs legibility for no gain. */
 .app-title {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-text;
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
 }
 .app-title-sub {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-accent;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
     -fx-padding: 3 0 0 0;
 }
 .header-logo-frame {
@@ -510,9 +514,9 @@
 .dialog-pane .button-bar .button-bar { -fx-background-color: -ag-bg; }
 
 .section-title {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-accent;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
 }
 
 /* Tx0 broadcast animation overlay */
@@ -577,7 +581,7 @@
     -fx-border-width: 0 0 1 0;
 }
 .wizard-eyebrow  { -fx-text-fill: -ag-accent;    -fx-font-size: 10px; -fx-font-weight: bold; }
-.wizard-title    { -fx-text-fill: -ag-text;      -fx-font-size: 18px; -fx-font-weight: bold; }
+.wizard-title    { -fx-font-family: "Nikkyou Sans"; -fx-text-fill: -ag-text; -fx-font-size: 18px; }
 .wizard-subtitle { -fx-text-fill: -ag-text-dim;  -fx-font-size: 12px; -fx-padding: 2 0 0 0; }
 
 /* Large selectable choice cards (wallet type / seed length) */

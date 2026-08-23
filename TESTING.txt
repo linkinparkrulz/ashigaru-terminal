@@ -1,6 +1,6 @@
 ====================================================================
  ASHIGARU DESKTOP - TESTING CHECKLIST
- Release: 1.4.1  (branch v1.4.1)
+ Release: 1.4.5  (branch v1.4.5)
 ====================================================================
 
 HOW TO USE
@@ -354,6 +354,49 @@ HOW TO USE
       comes up on defaults, the damaged file is beside it as
       config.corrupt-<date>, and the log names that path.
   [ ] The re-created config is owner-only (600).
+
+--------------------------------------------------------------------
+ 20. WINDOW POSITION                                      (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] The main window opens fully on screen: the title bar is visible
+      and minimize/maximize/close are clickable WITHOUT dragging the
+      window down first.
+  [ ] Repeat on a screen shorter than the 800px default window height
+      (or with a large taskbar) - this is where the clamp does work.
+  [ ] Repeat with the app opening on a secondary monitor: it stays on
+      that monitor rather than jumping to the primary.
+  [ ] A window that already fits is NOT moved or resized.
+
+
+--------------------------------------------------------------------
+ 21. DICEWARE SEPARATOR                                   (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] Rolling a passphrase shows the words joined with dashes, not
+      spaces (e.g. "abandon-ability-able-about-above-absent").
+  [ ] The advisory says the dashes are part of the passphrase.
+  [ ] CRITICAL: note the master fingerprint on the review dialog,
+      finish creating the wallet, then check the wallet's own master
+      fingerprint matches. This proves the phrase shown, the string
+      hashed and the passphrase actually used are the same.
+  [ ] The SEED words are still space-separated - only the passphrase
+      changed. Check the seed display and any seed export.
+  [ ] An existing wallet created with a space-separated passphrase
+      still opens (the user types their own passphrase; nothing
+      re-derives it).
+
+
+--------------------------------------------------------------------
+ 22. NIKKYOU SANS ON HEADINGS                             (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] Sidebar wordmark ("Ashigaru" / "DESKTOP"), wizard dialog titles
+      and section headers render in Nikkyou Sans.
+  [ ] Body text, the 10px wizard eyebrow and type-card titles are
+      UNCHANGED (system face).
+  [ ] JUDGEMENT: those headings no longer carry bold, since the face
+      has a single weight. Check the hierarchy still reads - if a
+      heading looks weak, that class can go back individually.
+  [ ] No missing glyphs (tofu boxes) in any heading, including any
+      wallet name or version number shown in one.
 
 --------------------------------------------------------------------
  NOTES

@@ -439,6 +439,21 @@ public class WalletCreationFlow {
 
     private static final int DICEWARE_MIN_WORDS = 6;
 
+    /**
+     * Joins rolled words with a dash rather than a space. The passphrase has to be copied off the
+     * screen by hand and typed back in later, possibly into another wallet, and a space is the one
+     * separator a person cannot verify they reproduced: one space or two look identical on paper, and
+     * a trailing one is invisible. A dash is transcribed exactly or not at all.
+     *
+     * <p>Every use of the passphrase goes through here, so the phrase shown on screen, the string the
+     * fingerprint is derived from and the passphrase the wallet is created with cannot drift apart.
+     */
+    private static final String DICEWARE_SEPARATOR = "-";
+
+    private static String dicewarePassphrase(List<String> passWords) {
+        return String.join(DICEWARE_SEPARATOR, passWords);
+    }
+
     private enum DiceChoice { HAVE_DICE, NO_DICE }
 
     /**
@@ -537,7 +552,7 @@ public class WalletCreationFlow {
         while (true) {
             int action = reviewDicewareDialog(walletName, seedWords, passWords);
             if (action < 0) return null;                 // cancel
-            if (action == 1) return String.join(" ", passWords); // create wallet
+            if (action == 1) return dicewarePassphrase(passWords); // create wallet
             String word = rollWordDialog(walletName, passWords.size() + 1); // add another word
             if (word != null) passWords.add(word);       // null add => back to review unchanged
         }
@@ -624,7 +639,7 @@ public class WalletCreationFlow {
         styleWizardDialog(dlg, "ROLL YOUR PASSPHRASE", "Your passphrase",
                 passWords.size() + " words · " + bits + " bits of entropy");
 
-        Label phrase = new Label(String.join(" ", passWords));
+        Label phrase = new Label(dicewarePassphrase(passWords));
         phrase.getStyleClass().add("diceware-passphrase");
         bindWrap(phrase);
 
@@ -659,10 +674,12 @@ public class WalletCreationFlow {
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon);
 
         Bip39 importer = new Bip39();
-        masterFingerprint.set(computeFingerprint(importer, String.join(" ", seedWords), String.join(" ", passWords)));
+        masterFingerprint.set(computeFingerprint(importer, String.join(" ", seedWords), dicewarePassphrase(passWords)));
 
-        Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly. "
-                + "They are never stored — if you lose them, your funds cannot be recovered.");
+        Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly — "
+                + "including the dashes between the words, which are part of the passphrase. "
+                + "They are never stored — if you lose them, your funds cannot be recovered. "
+                + "The fingerprint is how you check you have typed the passphrase back correctly.");
         warning.getStyleClass().add("passphrase-warning");
         bindWrap(warning);
 

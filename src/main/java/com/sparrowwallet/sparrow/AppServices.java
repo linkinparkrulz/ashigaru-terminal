@@ -48,6 +48,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Font;
+import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -882,6 +883,43 @@ public class AppServices {
         double dialogWidth = dialogPane.getPrefWidth() > 0.0 ? dialogPane.getPrefWidth() : (dialogPane.getWidth() > 0.0 ? dialogPane.getWidth() : 360);
         double dialogHeight = dialogPane.getPrefHeight() > 0.0 ? dialogPane.getPrefHeight() : (dialogPane.getHeight() > 0.0 ? dialogPane.getHeight() : 200);
         moveToWindowScreen(currentWindow, newWindow, dialogWidth, dialogHeight);
+    }
+
+    /**
+     * Pulls a window fully onto the screen it is on, and caps it to that screen's usable area.
+     *
+     * <p>A stage with no explicit X/Y is centred by JavaFX on the primary screen using its decorated
+     * size, so where the window is taller than the usable height the computed Y is negative and the
+     * title bar sits above the top edge - leaving no way to reach minimise, maximise or close without
+     * dragging the window down first. Visual bounds rather than full bounds, so the taskbar and any
+     * menu bar are respected.
+     */
+    public static void clampToScreen(Stage stage) {
+        Screen screen = Screen.getScreensForRectangle(stage.getX(), stage.getY(), 1, 1).stream().findFirst()
+                .orElse(Screen.getPrimary());
+        Rectangle2D bounds = screen.getVisualBounds();
+
+        if(stage.getWidth() > bounds.getWidth()) {
+            stage.setWidth(bounds.getWidth());
+        }
+        if(stage.getHeight() > bounds.getHeight()) {
+            stage.setHeight(bounds.getHeight());
+        }
+
+        //Clamp the far edge first, then the near edge, so a window wider or taller than the screen
+        //ends up flush with the top left rather than pushed off the opposite side
+        if(stage.getX() + stage.getWidth() > bounds.getMaxX()) {
+            stage.setX(bounds.getMaxX() - stage.getWidth());
+        }
+        if(stage.getY() + stage.getHeight() > bounds.getMaxY()) {
+            stage.setY(bounds.getMaxY() - stage.getHeight());
+        }
+        if(stage.getX() < bounds.getMinX()) {
+            stage.setX(bounds.getMinX());
+        }
+        if(stage.getY() < bounds.getMinY()) {
+            stage.setY(bounds.getMinY());
+        }
     }
 
     public static void moveToWindowScreen(Window currentWindow, Window newWindow, double newWindowWidth, double newWindowHeight) {
