@@ -106,14 +106,6 @@ public class WalletCreationFlow {
     private static final double WIZARD_WRAP_WIDTH = 410;
 
     /**
-     * Text width inside a .type-card: the narrower 460-wide dialog, less its 20px content padding on
-     * each side and the card's own 16px padding plus 1px border on each side. Cards appear in both
-     * the 460 and 480 dialogs, and measuring against the tighter of the two means a card in the wider
-     * one gains a little slack rather than under-reporting its height and clipping.
-     */
-    private static final double TYPE_CARD_WRAP_WIDTH = 460 - 40 - 36;
-
-    /**
      * Makes a wrapping label actually wrap instead of clipping to an ellipsis.
      *
      * <p>Two parts, and the height one is what actually matters: a wrapText Label asked for its
@@ -132,7 +124,6 @@ public class WalletCreationFlow {
      */
     private static void bindWrap(Label label) {
         label.setWrapText(true);
-        label.setPrefWidth(WIZARD_WRAP_WIDTH);
         label.setMaxWidth(WIZARD_WRAP_WIDTH);
         label.setMinHeight(Region.USE_PREF_SIZE);
     }
@@ -161,7 +152,6 @@ public class WalletCreationFlow {
         cardWrap(d);
         VBox box = new VBox(4, t, d);
         box.setAlignment(Pos.CENTER_LEFT);
-        box.setMaxWidth(TYPE_CARD_WRAP_WIDTH);
         Button b = new Button();
         b.setGraphic(box);
         b.getStyleClass().add("type-card");
@@ -171,16 +161,14 @@ public class WalletCreationFlow {
     }
 
     /**
-     * Wraps a label inside a type card. The width is a constant rather than a binding to the button:
-     * a Button lays its graphic out at the graphic's preferred width, so the obvious fix is to bind
-     * the content to b.widthProperty() - but the button has no width while the dialog is computing
-     * its preferred size, so at the one moment the height is decided the labels have nothing to wrap
-     * into and report a single line.
+     * Wraps a label inside a type card. Deliberately imposes no width: binding the card content to
+     * b.widthProperty() looks like the right fix for a Button laying its graphic out at the graphic's
+     * preferred width, but the button has no width while the dialog is measuring, so the binding
+     * resolves to zero and the labels report a line per character. The dialog's own preferred height
+     * is what keeps these compact; minHeight is what stops them clipping.
      */
     private static void cardWrap(Label label) {
         label.setWrapText(true);
-        label.setPrefWidth(TYPE_CARD_WRAP_WIDTH);
-        label.setMaxWidth(TYPE_CARD_WRAP_WIDTH);
         label.setMinHeight(Region.USE_PREF_SIZE);
     }
 
@@ -223,6 +211,7 @@ public class WalletCreationFlow {
             content.setPrefWidth(460);
             dlg.getDialogPane().setContent(content);
             dlg.getDialogPane().setPrefWidth(460);
+            dlg.getDialogPane().setPrefHeight(180);
             AppServices.moveToActiveWindowScreen(dlg);
 
             Button continueNode = (Button) dlg.getDialogPane().lookupButton(continueType);
@@ -270,6 +259,7 @@ public class WalletCreationFlow {
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -330,6 +320,7 @@ public class WalletCreationFlow {
         content.setPrefWidth(460);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -490,6 +481,7 @@ public class WalletCreationFlow {
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -518,6 +510,7 @@ public class WalletCreationFlow {
         content.setPrefWidth(480);
         dlg.getDialogPane().setContent(content);
         dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
