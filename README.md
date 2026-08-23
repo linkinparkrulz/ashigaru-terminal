@@ -80,7 +80,7 @@ After a blocked launch attempt, go to **System Settings → Privacy & Security**
 
 Every release is signed by the maintainer using the private key for the notification address derived from the Ashigaru release-signing BIP47 Payment Code. This lets users verify that the release message was signed by the owner of the payment code, without exposing private keys.
 
-From 1.3.0, **Settings → Update** performs every check below for you and shows each one as it passes, refusing and deleting anything that fails. The manual steps remain here for anyone verifying a download obtained outside the app, or checking the app's own work.
+From 1.4.1, **Settings → Update** performs every check below for you and shows each one as it passes, refusing and deleting anything that fails. (1.3.0 shipped the updater but cannot reach GitHub — see the 1.4.1 release notes — so it has to be replaced by hand.) The manual steps remain here for anyone verifying a download obtained outside the app, or checking the app's own work.
 
 **Release signing identity**
 
