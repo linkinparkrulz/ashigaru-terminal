@@ -1,6 +1,6 @@
 ====================================================================
  ASHIGARU DESKTOP - TESTING CHECKLIST
- Release: 1.4.0  (branch v1.4.0)
+ Release: 1.4.1  (branch v1.4.1)
 ====================================================================
 
 HOW TO USE
@@ -321,6 +321,29 @@ HOW TO USE
       This confirms jdk.crypto.ec made it into the jlink runtime image.
   [ ] Tools -> Whirlpool Stats loads with NO proxy configured, which
       exercises its clearnet HTTPS path rather than the onion mirror.
+
+--------------------------------------------------------------------
+ 18. SINGLE INSTANCE & CONFIG INTEGRITY               (new in 1.4.1)
+--------------------------------------------------------------------
+  [ ] With Ashigaru running, launch it again with no arguments. The
+      second launch EXITS instead of starting a second process, and
+      the running window comes to the front.
+  [ ] The log of the second launch reads "Ashigaru is already
+      running, exiting..." rather than the files/URIs message.
+  [ ] No second Tor starts: no "another Tor process is running with
+      the same data directory" warning appears anywhere.
+  [ ] REGRESSION: with Ashigaru running, open a .psbt file and a
+      bitcoin: URI. Both still open in the running window, and that
+      launch logs the files/URIs message.
+  [ ] Launch with no arguments when Ashigaru is NOT running. It
+      starts normally - the lock is free, so nothing exits.
+
+  [ ] Change a setting, then confirm ~/.ashigaru/config still parses
+      and no config.tmp is left beside it.
+  [ ] Truncate ~/.ashigaru/config mid-value and start Ashigaru. It
+      comes up on defaults, the damaged file is beside it as
+      config.corrupt-<date>, and the log names that path.
+  [ ] The re-created config is owner-only (600).
 
 --------------------------------------------------------------------
  NOTES

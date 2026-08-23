@@ -845,6 +845,23 @@ public class AppServices {
         return Stage.getWindows().stream().filter(Window::isFocused).findFirst().orElse(get().walletWindows.keySet().iterator().hasNext() ? get().walletWindows.keySet().iterator().next() : (Stage.getWindows().iterator().hasNext() ? Stage.getWindows().iterator().next() : null));
     }
 
+    /**
+     * Brings the window already on screen to the front. Used when a second launch exits and hands
+     * over to the running instance, so the user sees a window rather than nothing happening.
+     */
+    public static void raiseActiveWindow() {
+        Platform.runLater(() -> raise(getActiveWindow()));
+    }
+
+    private static void raise(Window window) {
+        if(window instanceof Stage) {
+            //Toggling always-on-top is the portable way to pull a window forward; requestFocus alone
+            //is ignored by several window managers when the request comes from another process
+            ((Stage)window).setAlwaysOnTop(true);
+            ((Stage)window).setAlwaysOnTop(false);
+        }
+    }
+
     public static void moveToActiveWindowScreen(Dialog<?> dialog) {
         Window activeWindow = getActiveWindow();
         if(activeWindow != null) {
@@ -967,10 +984,7 @@ public class AppServices {
                 openWindow = getActiveWindow();
             }
 
-            if(openWindow instanceof Stage) {
-                ((Stage)openWindow).setAlwaysOnTop(true);
-                ((Stage)openWindow).setAlwaysOnTop(false);
-            }
+            raise(openWindow);
 
             for(File file : openFiles) {
                 if(isWalletFile(file)) {
