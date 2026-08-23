@@ -386,17 +386,32 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
- 22. NIKKYOU SANS ON HEADINGS                             (new in 1.4.5)
+ 22. NIKKYOU SANS ON CHROME                               (new in 1.4.5)
 --------------------------------------------------------------------
-  [ ] Sidebar wordmark ("Ashigaru" / "DESKTOP"), wizard dialog titles
-      and section headers render in Nikkyou Sans.
-  [ ] Body text, the 10px wizard eyebrow and type-card titles are
-      UNCHANGED (system face).
-  [ ] JUDGEMENT: those headings no longer carry bold, since the face
-      has a single weight. Check the hierarchy still reads - if a
-      heading looks weak, that class can go back individually.
-  [ ] No missing glyphs (tofu boxes) in any heading, including any
-      wallet name or version number shown in one.
+  NOTE: the app's base font is RobotoMono (.root), so the UI has been
+        monospaced throughout. This puts a proportional display face
+        on the chrome while data stays monospaced - the mix is the
+        thing to judge.
+
+  [ ] Sidebar: wordmark, "CURRENT WALLET", Open Wallet, + New /
+      Restore, Tools, Settings all in Nikkyou Sans.
+  [ ] Settings and Tools: page titles, nav buttons, back button and
+      every action button.
+  [ ] Wizard: dialog titles, card titles, and the Cancel / Continue /
+      Create Wallet buttons.
+  [ ] UNCHANGED, still monospaced: addresses, xpubs, amounts, the
+      Logs view, the fingerprint field, table contents, text fields.
+      If any of these changed face, a rule leaked.
+  [ ] Copy buttons (Receive screen, and the wizard fingerprint):
+      clicking swaps the copy glyph to a tick and back with NO change
+      in size or position. A jump means .copy-icon-btn lost its
+      "System" font override and the glyph is falling back.
+  [ ] No tofu boxes anywhere, including wallet names and the version
+      number in the title bar.
+  [ ] JUDGEMENT: nothing given this face carries bold any more, since
+      it has a single weight. Check the hierarchy still reads, and
+      that proportional chrome next to monospaced data looks
+      deliberate. Any class can be reverted on its own.
 
 --------------------------------------------------------------------
  NOTES

@@ -134,9 +134,9 @@
 }
 
 .sidebar-section-title {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
 }
 
 .wallet-list {
@@ -163,7 +163,11 @@
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
+/* Nikkyou Sans on the chrome. Every Button carries .button, so this covers the sidebar nav, Tools,
+   Settings, the wizard and the dialog button bars in one place. Data keeps the RobotoMono base set
+   on .root - addresses, xpubs, amounts and the log view stay monospaced and aligned. */
 .button {
+    -fx-font-family: "Nikkyou Sans";
     -fx-background-color: -ag-bg-light;
     -fx-text-fill: -ag-text;
     -fx-border-color: -ag-border;
@@ -597,11 +601,12 @@
     -fx-background-color: -ag-bg-raised;
     -fx-border-color: -ag-accent;
 }
-.type-card-title { -fx-text-fill: -ag-text;     -fx-font-size: 14px; -fx-font-weight: bold; }
+.type-card-title { -fx-font-family: "Nikkyou Sans"; -fx-text-fill: -ag-text; -fx-font-size: 14px; }
 .type-card-desc  { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
 
 /* ── Toggle buttons ───────────────────────────────────────────────────────── */
 .toggle-button {
+    -fx-font-family: "Nikkyou Sans";
     -fx-background-color: -ag-bg-light;
     -fx-text-fill: -ag-text-dim;
     -fx-border-color: -ag-border;
@@ -927,9 +932,9 @@
     -fx-text-fill: -ag-accent;
 }
 .prefs-page-title {
+    -fx-font-family: "Nikkyou Sans";
     -fx-text-fill: -ag-text;
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
 }
 
 /* ── ControlsFX ToggleSwitch: override blue from darktheme.css ──────────── */
