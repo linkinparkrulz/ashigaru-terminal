@@ -388,10 +388,14 @@ HOW TO USE
 --------------------------------------------------------------------
  22. NIKKYOU SANS ON CHROME                               (new in 1.4.5)
 --------------------------------------------------------------------
-  NOTE: the app's base font is RobotoMono (.root), so the UI has been
-        monospaced throughout. This puts a proportional display face
-        on the chrome while data stays monospaced - the mix is the
-        thing to judge.
+  NOTE: Nikkyou Sans is now the application default (.root). Data
+        that must stay monospaced pins the family back explicitly.
+        So the question is no longer "did this screen get the font"
+        but "did anything lose its monospace that needed it".
+
+        Bold is gone from everything except the four monospaced value
+        classes: no bold face is bundled for either family, so it was
+        always synthesised or falling back to a system face.
 
   [ ] Sidebar: wordmark, "CURRENT WALLET", Open Wallet, + New /
       Restore, Tools, Settings all in Nikkyou Sans.
@@ -399,9 +403,12 @@ HOW TO USE
       every action button.
   [ ] Wizard: dialog titles, card titles, and the Cancel / Continue /
       Create Wallet buttons.
-  [ ] UNCHANGED, still monospaced: addresses, xpubs, amounts, the
-      Logs view, the fingerprint field, table contents, text fields.
-      If any of these changed face, a rule leaked.
+  [ ] CRITICAL - still monospaced AND still aligned: wallet balance,
+      the amount column in the UTXO and transaction lists (digits
+      must line up vertically down the column), addresses, xpubs,
+      txids, dates, the fingerprint field, the seed word grid, the
+      Logs view, text fields and combo boxes.
+      A ragged column of numbers means that class needs pinning.
   [ ] Copy buttons (Receive screen, and the wizard fingerprint):
       clicking swaps the copy glyph to a tick and back with NO change
       in size or position. A jump means .copy-icon-btn lost its
