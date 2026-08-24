@@ -434,6 +434,29 @@ HOW TO USE
       deliberate. Any class can be reverted on its own.
 
 --------------------------------------------------------------------
+ 23. FORM LAYOUT AFTER THE FONT CHANGE                    (new in 1.4.5)
+--------------------------------------------------------------------
+  The app face draws Latin lowercase as capitals, so labels run wider
+  than the monospace these columns were measured against.
+
+  [ ] Settings -> General: every label reads in full, no ellipsis,
+      under Bitcoin, Wallet and Coin Selection. "Load recent
+      wallets:" and "Validate derivations:" are the longest.
+  [ ] Settings -> Server: the public-server warning sits inside its
+      own box with the URL row clear beneath it - not painted over.
+  [ ] Drag the Settings window narrow and wide. The warning re-flows
+      and never overlaps at either extreme; below ~540px wide it
+      stops shrinking (220px floor), above ~780px it stops growing
+      (460px cap).
+  [ ] Settings -> Update still lays out correctly (shares the form
+      styling).
+  [ ] Not reported but changed for the same reason - check no label
+      truncates and the wider column does not look odd:
+        - a wallet's Settings tab (keystore fields)
+        - the Receive form
+        - the Send form
+
+--------------------------------------------------------------------
  NOTES
 --------------------------------------------------------------------
   - Needs Tor + a mainnet wallet with real history for the passphrase

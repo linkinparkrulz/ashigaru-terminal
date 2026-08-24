@@ -3,7 +3,7 @@
 }
 
 .receive-form .form .fieldset:horizontal .label-container {
-    -fx-pref-width: 90px;
+    -fx-pref-width: 115px;
 }
 
 .qr-code {

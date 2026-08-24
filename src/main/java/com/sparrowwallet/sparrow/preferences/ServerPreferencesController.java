@@ -27,6 +27,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -68,6 +69,9 @@ public class ServerPreferencesController extends PreferencesDetailController {
 
     @FXML
     private Label warningBodyLong;
+
+    @FXML
+    private VBox publicServerWarningBox;
 
     @FXML
     private ToggleGroup serverTypeToggleGroup;
@@ -203,17 +207,29 @@ public class ServerPreferencesController extends PreferencesDetailController {
         warningBodyShort.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         warningBodyLong.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         discoverNodesStatus.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        //The box itself too, or the field row keeps the height of a single line and the warning
+        //paints over the URL field below it rather than pushing it down.
+        if(publicServerWarningBox != null) {
+            publicServerWarningBox.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+        }
 
         //Cap the width off the SCENE (window), not serverDetailPane's own width: the detail GridPane
         //is inflated by its content, so a self-referential binding never bounds anything. The scene
         //width is content-independent and tracks the window, so the text re-flows on resize.
+        //
+        //It needs an upper bound as well as a lower one. The scene includes the preferences sidebar,
+        //so scene width alone overstates what the detail pane actually has: the labels were being
+        //told they could wrap wider than the space they get, laid out taller than the row allowed,
+        //and painted over the field beneath. 320 covers the sidebar and the pane padding, and the
+        //460 ceiling keeps the text inside the pane however wide the window is dragged.
         Runnable bindWrap = () -> {
             javafx.scene.Scene scene = serverDetailPane.getScene();
             if(scene == null) {
                 return;
             }
             javafx.beans.binding.NumberBinding wrapWidth =
-                    javafx.beans.binding.Bindings.max(220, scene.widthProperty().subtract(80));
+                    javafx.beans.binding.Bindings.max(220,
+                            javafx.beans.binding.Bindings.min(460, scene.widthProperty().subtract(320)));
             warningBodyShort.maxWidthProperty().bind(wrapWidth);
             warningBodyLong.maxWidthProperty().bind(wrapWidth);
             discoverNodesStatus.maxWidthProperty().bind(wrapWidth);

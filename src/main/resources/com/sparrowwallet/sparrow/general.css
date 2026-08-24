@@ -6,17 +6,19 @@
 }
 
 .form .wideLabelFieldSet.fieldset:horizontal .label-container {
-    -fx-pref-width: 170px;
+    /* Sized for the app face, which draws Latin lowercase as capitals and so runs wider than the
+       monospace this was originally measured against. Too narrow and the label ellipsizes. */
+    -fx-pref-width: 210px;
     -fx-pref-height: 25px;
 }
 
 .form .relaxedLabelFieldSet.fieldset:horizontal .label-container {
-    -fx-pref-width: 130px;
+    -fx-pref-width: 165px;
     -fx-pref-height: 25px;
 }
 
 .form .fieldset:horizontal .label-container {
-    -fx-pref-width: 110px;
+    -fx-pref-width: 140px;
     -fx-pref-height: 25px;
 }
 
