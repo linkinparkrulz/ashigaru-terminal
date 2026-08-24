@@ -457,6 +457,30 @@ HOW TO USE
         - the Send form
 
 --------------------------------------------------------------------
+ 24. BIP47 VERIFIER: CODE FIELD + PAYNYM LOOKUP           (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] The payment code field is a single line, and the step 1 card is
+      shorter for it. Paste a full 116-character code: it is accepted
+      and scrolls rather than wrapping, and Verify still works.
+  [ ] Look up "+linkinparkrulz". STRONG CHECK: the filled-in code
+      must be character-for-character the release signing code. Press
+      "Use Release Signing Code" after and confirm the field does not
+      change. If they differ, either the lookup or the pinned code in
+      ReleaseTrust is wrong - stop and find out which.
+  [ ] Verify a real signed message using the looked-up code: it must
+      recover 1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ.
+  [ ] Typing a bare handle without the + still resolves.
+  [ ] Failure paths each say something specific, and NONE of them
+      change the payment code field:
+        - a handle that does not exist
+        - an empty handle field
+        - the app offline / Tor down
+  [ ] The button disables while a lookup is in flight (no double
+      firing) and re-enables on both success and failure.
+  [ ] With Tor on, ashigaru.log shows the lookup going to the
+      paynym25chf...onion host, NOT https://paynym.rs.
+
+--------------------------------------------------------------------
  NOTES
 --------------------------------------------------------------------
   - Needs Tor + a mainnet wallet with real history for the passphrase

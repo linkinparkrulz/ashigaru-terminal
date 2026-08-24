@@ -37,8 +37,14 @@
                     <Button fx:id="releaseCodeBtn" text="Use Release Signing Code"
                             onAction="#onUseReleaseCode" styleClass="secondary-btn"/>
                 </HBox>
-                <TextArea fx:id="paymentCodeArea" prefRowCount="3" wrapText="true"
-                          promptText="PM8T..." styleClass="mono-area"/>
+                <TextField fx:id="paymentCodeArea" promptText="PM8T..." styleClass="address-field"/>
+                <HBox alignment="CENTER_LEFT" spacing="8">
+                    <TextField fx:id="payNymHandleField" promptText="+handle" HBox.hgrow="ALWAYS"/>
+                    <Button fx:id="payNymLookupBtn" text="Look up" onAction="#onLookupPayNym"
+                            styleClass="secondary-btn"/>
+                </HBox>
+                <Label fx:id="payNymLookupStatus" wrapText="true" styleClass="field-label"
+                       visible="false" managed="false"/>
             </VBox>
 
             <!-- Step 2 — signed message block (optional) -->
