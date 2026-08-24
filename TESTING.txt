@@ -250,9 +250,9 @@ HOW TO USE
 --------------------------------------------------------------------
  15. UPDATE: VERIFICATION & INSTALL                       (new in 1.3.0)
 --------------------------------------------------------------------
-  NOTE: needs a published release newer than the running build. Until
-        1.4.0 exists, set APP_VERSION lower in a local build to make an
-        existing release appear as an update.
+  NOTE: needs a published release newer than the running build. When
+        testing the newest release itself, set APP_VERSION lower in a
+        local build to make an existing release appear as an update.
 
   [ ] The package matching this install is preselected; the others are
       still selectable. On Linux check the guess per install method:
@@ -283,7 +283,7 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
- 16. SPLASH / STARTUP PROGRESS                            (new in 1.4.1)
+ 16. SPLASH / STARTUP PROGRESS                            (new in 1.4.5)
 --------------------------------------------------------------------
   [ ] Splash title renders in Nikkyou Sans, not the system font.
       A wrong family name falls back silently, so check the shape.
@@ -303,7 +303,7 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
- 17. PACKAGING                                            (new in 1.4.1)
+ 17. PACKAGING                                            (new in 1.4.5)
 --------------------------------------------------------------------
   [ ] The release carries a desktop .rpm and a headless
       ashigaru-server .rpm, alongside the .deb packages.
@@ -316,7 +316,7 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
- 18. CLEARNET TLS                                         (new in 1.4.1)
+ 18. CLEARNET TLS                                         (new in 1.4.5)
 --------------------------------------------------------------------
   CRITICAL - must be run against a PACKAGED build, never ./gradlew run.
   A development run uses the full JDK, always has SunEC, and therefore
@@ -333,7 +333,7 @@ HOW TO USE
 
 
 --------------------------------------------------------------------
- 19. SINGLE INSTANCE & CONFIG INTEGRITY                   (new in 1.4.1)
+ 19. SINGLE INSTANCE & CONFIG INTEGRITY                   (new in 1.4.5)
 --------------------------------------------------------------------
   [ ] With Ashigaru running, launch it again with no arguments. The
       second launch EXITS instead of starting a second process, and
