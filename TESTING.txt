@@ -413,8 +413,21 @@ HOW TO USE
       clicking swaps the copy glyph to a tick and back with NO change
       in size or position. A jump means .copy-icon-btn lost its
       "System" font override and the glyph is falling back.
+  [ ] Transaction / UTXO cells: the user's label, PayNym name, mix
+      badge and explorer links are in the app face; ONLY the amount
+      and the address/txid stay monospaced. Amounts still line up
+      down the column.
+  [ ] Guided tour (replay from Settings): every coach-mark is in the
+      app face, and every bubble looks the SAME as every other one
+      whatever control it points at. A bubble with a different size
+      or face means #tourPopover stopped terminating inheritance.
+  [ ] Tools -> Whirlpool Stats: "TOTAL BTC IN POOLS" matches the
+      other headings, with the figure under it still monospaced.
   [ ] No tofu boxes anywhere, including wallet names and the version
-      number in the title bar.
+      number in the title bar. Watch the mix badge in particular -
+      it renders a tick the app face does not have, so that glyph
+      falls back inline. If it reads badly, pin .mix-badge-text to
+      "System" the way .copy-icon-btn is.
   [ ] JUDGEMENT: nothing given this face carries bold any more, since
       it has a single weight. Check the hierarchy still reads, and
       that proportional chrome next to monospaced data looks

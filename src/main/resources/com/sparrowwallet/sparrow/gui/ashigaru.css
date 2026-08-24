@@ -358,7 +358,6 @@
 .utxo-table .table-row-cell:hover { -fx-background-color: -ag-bg-raised; }
 .utxo-table .table-row-cell:selected { -fx-background-color: derive(-ag-accent, -45%); }
 .utxo-table .table-cell {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* table data */
     -fx-text-fill: -ag-text;
     -fx-padding: 6 10 6 10;
     -fx-font-size: 12px;
@@ -373,7 +372,6 @@
     -fx-padding: 0;
 }
 .utxo-list .list-cell {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* list data */
     -fx-background-color: -ag-bg;
     -fx-text-fill: -ag-text;
     -fx-padding: 12 16 12 16;
@@ -387,12 +385,14 @@
     -fx-border-color: transparent;
 }
 
-.card-value     {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* transaction and UTXO amounts, pool totals */ -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
-.card-secondary {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* txids and addresses */ -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
-.card-faint     {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* dates and meta */ -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
+/* Amounts and hashes keep the monospace: the amount column has to line up down the list, and
+   an address or txid is read character by character. Everything else in these cells - the
+   user's label, the PayNym, the mix badge, the date - is prose and takes the app face. */
+.card-value     { -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+                  -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-secondary { -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+                  -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
+.card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
 /* Whirlpool Stats chart: orange (first pool) + yellow (second pool) series */
 .stats-chart .default-color0.chart-series-line { -fx-stroke: #ff9500; -fx-stroke-width: 2px; }
@@ -1088,7 +1088,7 @@
     -ag-accent-hover: #e11414;
     -ag-accent-dark:  #991010;
 
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: "Nikkyou Sans";
     -fx-font-size: 13px;
     /* The card paints its own background rather than relying on the skin's border shape being
        themed in time — the arrow is the only part the skin must draw. */
