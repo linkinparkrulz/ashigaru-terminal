@@ -16,7 +16,7 @@ import java.security.SignatureException;
 
 public class Bip47MessageVerifierController {
 
-    @FXML private TextField paymentCodeArea;
+    @FXML private TextField paymentCodeField;
     @FXML private TextField payNymHandleField;
     @FXML private Button payNymLookupBtn;
     @FXML private Label payNymLookupStatus;
@@ -30,7 +30,7 @@ public class Bip47MessageVerifierController {
 
     @FXML
     private void onUseReleaseCode() {
-        paymentCodeArea.setText(ReleaseTrust.RELEASE_SIGNING_PAYMENT_CODE);
+        paymentCodeField.setText(ReleaseTrust.RELEASE_SIGNING_PAYMENT_CODE);
     }
 
     /**
@@ -62,7 +62,7 @@ public class Bip47MessageVerifierController {
         //compact: this needs the payment code, not the follower and following lists
         PayNymService.getPayNym(nymIdentifier, true).subscribe(payNym -> {
             payNymLookupBtn.setDisable(false);
-            paymentCodeArea.setText(payNym.paymentCode().toString());
+            paymentCodeField.setText(payNym.paymentCode().toString());
             showLookupStatus("Filled in the payment code for " + payNym.nymName());
         }, error -> {
             payNymLookupBtn.setDisable(false);
@@ -103,7 +103,7 @@ public class Bip47MessageVerifierController {
     @FXML
     private void onVerify() {
         try {
-            String paymentCodeText = paymentCodeArea.getText() == null ? "" : paymentCodeArea.getText().trim();
+            String paymentCodeText = paymentCodeField.getText() == null ? "" : paymentCodeField.getText().trim();
             if(paymentCodeText.isEmpty()) {
                 throw new IllegalArgumentException("BIP47 payment code is required");
             }

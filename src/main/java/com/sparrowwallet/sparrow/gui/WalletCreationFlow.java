@@ -61,6 +61,7 @@ import java.util.*;
  * mirroring what the TUI does in MasterActionListBox + NewWalletDialog.
  */
 public class WalletCreationFlow {
+    private static final double WIZARD_DIALOG_WIDTH = 480;
     private static final Logger log = LoggerFactory.getLogger(WalletCreationFlow.class);
 
     private final Stage owner;
@@ -208,9 +209,9 @@ public class WalletCreationFlow {
             nameField.setPromptText("e.g. Savings");
             VBox content = new VBox(8, lbl, nameField);
             content.setPadding(new Insets(20));
-            content.setPrefWidth(460);
+            content.setPrefWidth(WIZARD_DIALOG_WIDTH);
             dlg.getDialogPane().setContent(content);
-            dlg.getDialogPane().setPrefWidth(460);
+            dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
             dlg.getDialogPane().setPrefHeight(180);
             AppServices.moveToActiveWindowScreen(dlg);
 
@@ -256,9 +257,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, hot, watch);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(460);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
@@ -317,9 +318,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, w12, w24);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(460);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
@@ -366,8 +367,7 @@ public class WalletCreationFlow {
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().add("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((obs, oldVal, newVal) ->
                 fingerprintHex.setText(newVal != null ? Utils.bytesToHex(newVal) : ""));
         LifeHashIcon lifeHashIcon = new LifeHashIcon();
@@ -394,9 +394,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, passLabel, passField, passConfirmLabel, passConfirmField, weaknessLabel, fingerprintBox);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(createType, ButtonType.CANCEL);
@@ -493,9 +493,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(14, body, yes, no);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
@@ -522,9 +522,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, wait, cont);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
@@ -614,9 +614,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(14, resolvedRow, hint);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
         Platform.runLater(() -> dieFields.get(0).requestFocus());
@@ -651,25 +651,16 @@ public class WalletCreationFlow {
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().add("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((obs, oldVal, newVal) ->
                 fingerprintHex.setText(newVal != null ? Utils.bytesToHex(newVal) : ""));
         LifeHashIcon lifeHashIcon = new LifeHashIcon();
         lifeHashIcon.dataProperty().bind(masterFingerprint);
-        Button copyFpBtn = new Button("⎘");
-        copyFpBtn.getStyleClass().add("copy-icon-btn");
-        copyFpBtn.setPrefSize(28, 28);
+        CopyButton copyFpBtn = new CopyButton();
         copyFpBtn.disableProperty().bind(masterFingerprint.isNull());
         copyFpBtn.setOnAction(e -> {
             if (fingerprintHex.getText().isEmpty()) return;
-            ClipboardContent cc = new ClipboardContent();
-            cc.putString(fingerprintHex.getText());
-            Clipboard.getSystemClipboard().setContent(cc);
-            copyFpBtn.setText("✓");
-            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
-            pause.setOnFinished(ev -> copyFpBtn.setText("⎘"));
-            pause.play();
+            copyFpBtn.copy(fingerprintHex.getText());
         });
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon);
 
@@ -685,9 +676,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(14, phrase, fingerprintBox, warning);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType addType = new ButtonType("Add another word", ButtonBar.ButtonData.LEFT);
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
@@ -720,9 +711,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(10, hint, descriptorArea);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType importType = new ButtonType("Import Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(importType, ButtonType.CANCEL);

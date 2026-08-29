@@ -37,7 +37,7 @@
                     <Button fx:id="releaseCodeBtn" text="Use Release Signing Code"
                             onAction="#onUseReleaseCode" styleClass="secondary-btn"/>
                 </HBox>
-                <TextField fx:id="paymentCodeArea" promptText="PM8T..." styleClass="address-field"/>
+                <TextField fx:id="paymentCodeField" promptText="PM8T..." styleClass="address-field"/>
                 <HBox alignment="CENTER_LEFT" spacing="8">
                     <TextField fx:id="payNymHandleField" promptText="+handle" HBox.hgrow="ALWAYS"/>
                     <Button fx:id="payNymLookupBtn" text="Look up" onAction="#onLookupPayNym"

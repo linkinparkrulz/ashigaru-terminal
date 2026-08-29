@@ -18,7 +18,6 @@ import com.sparrowwallet.sparrow.wallet.*;
 import com.sparrowwallet.sparrow.whirlpool.Whirlpool;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolException;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolServices;
-import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -29,11 +28,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -833,25 +828,9 @@ public class AshigaruWalletController implements Initializable {
     // Helpers
     // -------------------------------------------------------------------------
 
-    static Button makeCopyButton(String textToCopy) {
-        final String defaultStyle = "-fx-text-fill: #A0A0A0; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;";
-        final String successStyle = "-fx-text-fill: #4CAF50; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;";
-        Button btn = new Button("⎘");
-        btn.getStyleClass().add("copy-icon-btn");
-        btn.setMinSize(28, 28);
-        btn.setPrefSize(28, 28);
-        btn.setMaxSize(28, 28);
-        btn.setStyle(defaultStyle);
-        btn.setOnAction(e -> {
-            ClipboardContent content = new ClipboardContent();
-            content.putString(textToCopy);
-            Clipboard.getSystemClipboard().setContent(content);
-            btn.setText("✓");
-            btn.setStyle(successStyle);
-            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
-            pause.setOnFinished(ev -> { btn.setText("⎘"); btn.setStyle(defaultStyle); });
-            pause.play();
-        });
+    static CopyButton makeCopyButton(String textToCopy) {
+        CopyButton btn = new CopyButton();
+        btn.setOnAction(e -> btn.copy(textToCopy));
         return btn;
     }
 

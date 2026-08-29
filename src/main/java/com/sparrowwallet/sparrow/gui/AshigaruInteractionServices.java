@@ -116,8 +116,7 @@ public class AshigaruInteractionServices implements InteractionServices {
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().addAll("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((obs, oldVal, newVal) -> {
             if(newVal != null) {
                 fingerprintHex.setText(Utils.bytesToHex(newVal));

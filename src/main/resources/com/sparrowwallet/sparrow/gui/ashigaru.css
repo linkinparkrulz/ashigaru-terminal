@@ -694,6 +694,7 @@
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
+.copy-icon-btn.success { -fx-text-fill: -ag-green; }
 .copy-icon-btn .glyph-font { -fx-opacity: 0.6; }
 .copy-icon-btn:hover .glyph-font { -fx-opacity: 1.0; }
 
@@ -767,7 +768,7 @@
 
 /* ── Receive dialog ───────────────────────────────────────────────────────── */
 .address-field {
-    -fx-font-family: monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 14px;
     -fx-text-fill: -ag-text;
 }

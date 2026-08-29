@@ -533,6 +533,7 @@ extraJavaModuleInfo {
     module('hummingbird-1.7.3.jar', 'com.sparrowwallet.hummingbird', '1.7.3') {
         exports('com.sparrowwallet.hummingbird')
         exports('com.sparrowwallet.hummingbird.registry')
+        exports('com.sparrowwallet.hummingbird.registry.pathcomponent')
         requires('co.nstant.in.cbor')
     }
     module('cbor-0.9.jar', 'co.nstant.in.cbor', '0.9') {
