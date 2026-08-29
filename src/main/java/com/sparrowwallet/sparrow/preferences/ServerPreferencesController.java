@@ -208,41 +208,33 @@ public class ServerPreferencesController extends PreferencesDetailController {
         warningBodyLong.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         discoverNodesStatus.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
         //The box itself too, or the field row keeps the height of a single line and the warning
-        //paints over the URL field below it rather than pushing it down.
-        if(publicServerWarningBox != null) {
-            publicServerWarningBox.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
-        }
+        //paints over the URL field below it rather than pushing it down. Not null-guarded: it is an
+        //@FXML node of server.fxml, the only FXML this controller backs, and the wrap width below is
+        //bound to it - if it ever went missing that should fail here rather than silently mis-wrap.
+        publicServerWarningBox.setMinHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
 
-        //Cap the width off the SCENE (window), not serverDetailPane's own width: the detail GridPane
-        //is inflated by its content, so a self-referential binding never bounds anything. The scene
-        //width is content-independent and tracks the window, so the text re-flows on resize.
+        //Wrap at the width the text is actually laid out at, which is the warning box itself. The
+        //minHeight above only returns a true height when the width it measures at is the width the
+        //label ends up with; if the two disagree the row is sized for one wrap and the text wraps at
+        //another, and the difference overflows the row. Nothing clips it - JavaFX Regions do not clip
+        //children - and the input container centres its content vertically, so an over-tall box
+        //spills over the fields both below AND above it.
         //
-        //It needs an upper bound as well as a lower one. The scene includes the preferences sidebar,
-        //so scene width alone overstates what the detail pane actually has: the labels were being
-        //told they could wrap wider than the space they get, laid out taller than the row allowed,
-        //and painted over the field beneath. 320 covers the sidebar and the pane padding, and the
-        //460 ceiling keeps the text inside the pane however wide the window is dragged.
-        Runnable bindWrap = () -> {
-            javafx.scene.Scene scene = serverDetailPane.getScene();
-            if(scene == null) {
-                return;
-            }
-            javafx.beans.binding.NumberBinding wrapWidth =
-                    javafx.beans.binding.Bindings.max(220,
-                            javafx.beans.binding.Bindings.min(460, scene.widthProperty().subtract(320)));
-            warningBodyShort.maxWidthProperty().bind(wrapWidth);
-            warningBodyLong.maxWidthProperty().bind(wrapWidth);
-            discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
-        };
-        if(serverDetailPane.getScene() != null) {
-            bindWrap.run();
-        } else {
-            serverDetailPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
-                if(newScene != null) {
-                    bindWrap.run();
-                }
-            });
-        }
+        //This was previously derived from the scene width less a constant standing in for the
+        //sidebars and padding. That is a guess at the column width rather than the column width: at
+        //the 800px minimum window it resolved to roughly twice the space the labels really get, and
+        //the warning painted over the server type and URL rows.
+        //
+        //The box is a maxWidth=Infinity VBox filling the input column, so its width is exactly the
+        //space available, less its own 12+12 padding. Its width comes from its parent and the labels
+        //only affect height, so there is no horizontal feedback. discoverNodesStatus sits in an
+        //identical input column a row down and takes the same width. The floor only covers the frame
+        //before first layout, where the box still reports zero.
+        javafx.beans.binding.NumberBinding wrapWidth =
+                javafx.beans.binding.Bindings.max(120, publicServerWarningBox.widthProperty().subtract(24));
+        warningBodyShort.maxWidthProperty().bind(wrapWidth);
+        warningBodyLong.maxWidthProperty().bind(wrapWidth);
+        discoverNodesStatus.maxWidthProperty().bind(wrapWidth);
 
         getMasterController().closingProperty().addListener((observable, oldValue, newValue) -> {
             EventManager.get().unregister(this);
