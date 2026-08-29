@@ -40,7 +40,6 @@ version "${ashigaruTerminalVersion}"
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven { url 'https://code.sparrowwallet.com/api/packages/sparrowwallet/maven' }
     maven { url 'https://oss.sonatype.org/content/groups/public' }
     maven { url 'https://mymavenrepo.com/repo/29EACwkkGcoOKnbx3bxN/' }
@@ -53,7 +52,9 @@ tasks.withType(AbstractArchiveTask) {
 }
 
 javafx {
-    version = "21"
+    // Pinned: a floating "21" resolves the newest 21.0.x at build time, which
+    // breaks reproducibility between builds.
+    version = "21.0.11"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing', 'javafx.graphics' ]
 }
 
@@ -324,6 +325,18 @@ if (os.linux) {
             if (!appImageTool.exists()) {
                 new URL("https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${appImageArch}.AppImage")
                     .withInputStream { input -> appImageTool.withOutputStream { output -> output << input } }
+            }
+            // AppImageKit only publishes a "continuous" release, so pin the expected checksum
+            // with -PappImageToolSha256=... to keep this download trustworthy. Build fails on mismatch.
+            String expected = findProperty('appImageToolSha256')
+            if(expected != null) {
+                String actual = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(appImageTool.bytes).encodeHex().toString()
+                if(!expected.equalsIgnoreCase(actual)) {
+                    throw new GradleException("appimagetool checksum mismatch: expected ${expected}, got ${actual}. Delete ${appImageTool} to re-download.")
+                }
+            } else {
+                logger.warn("Building AppImage with unverified appimagetool from the 'continuous' channel. Pass -PappImageToolSha256 to pin a checksum.")
             }
             appImageTool.setExecutable(true)
         }
