@@ -165,6 +165,12 @@ application {
     mainClass = 'com.sparrowwallet.sparrow.AshigaruTerminal'
 
     applicationDefaultJvmArgs = ["-XX:+HeapDumpOnOutOfMemoryError",
+                                 // Bound the heap: without -Xmx the JVM scales the max to 25% of
+                                 // system RAM (~4 GB here), which reads as heavy memory use in
+                                 // system monitors. 1g is generous headroom over the ~150 MB
+                                 // actually used; packaged launchers get the same cap below.
+                                 "-Xms256m",
+                                 "-Xmx1g",
                                  "--add-opens=javafx.graphics/com.sun.javafx.css=org.controlsfx.controls",
                                  "--add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls",
                                  "--add-opens=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
@@ -222,6 +228,8 @@ jlink {
         installerName = 'Ashigaru'
         appVersion    = ashigaruTerminalVersion
         resourceDir   = file("src/main/deploy/package/${osName}")
+        // Keep the packaged launcher's heap bounded the same way as ./gradlew run (see above).
+        jvmArgs       = ['-Xms256m', '-Xmx1g']
 
         if (os.windows) {
             icon             = 'src/main/deploy/package/windows/ashigaru.ico'
