@@ -8,6 +8,6 @@
 #grid .spreadsheet-cell.selection:focused:selected,
 #grid .spreadsheet-cell.selection:focused:selected:hover,
 #grid .spreadsheet-cell.selection {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
     -fx-content-display: RIGHT;
 }

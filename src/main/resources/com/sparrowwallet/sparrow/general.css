@@ -18,6 +18,7 @@
     -ag-red:           #cc1111;
     -ag-blue:          #42a5f5;
     -ag-testnet:       #e57c00;
+    -ag-warn:          #e5a00c;
     -ag-mainnet:       #4caf50;
     -ag-radius-sm:     4px;
     -ag-radius:        6px;
@@ -162,7 +163,7 @@
 }
 
 .copyable-text-field .copy-button:hover > .graphic {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
 }
 
 .copyable-text-field .copy-button:pressed > .graphic {
@@ -181,7 +182,7 @@
 }
 
 .combo-text-field .combo-button:hover > .graphic {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
 }
 
 .combo-text-field .combo-button:pressed > .graphic {
@@ -203,7 +204,7 @@
 }
 
 .view-password-text-field .view-password-button:hover > .graphic, .view-password-text-field .hide-password-button:hover > .graphic {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
 }
 
 .view-password-text-field .view-password-button:pressed > .graphic, .view-password-text-field .hide-password-button:pressed > .graphic {

@@ -41,12 +41,12 @@
     -fx-pref-height: 50;
     -fx-pref-width: 90;
     -fx-alignment: CENTER;
-    -fx-background-color: #1E2026;
+    -fx-background-color: -ag-bg-light;
     -fx-background-insets: 0 1 0 1,0,0;
 }
 
 .wallet-subtabs > .tab-header-area .tab:selected {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
 }
 
 .wallet-subtabs > .tab-header-area .tab-label {
