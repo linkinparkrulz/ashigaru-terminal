@@ -978,7 +978,10 @@
     -fx-border-color: derive(-ag-accent, -35%);
     -fx-border-radius: 999;
 }
-.verifier-hero-glyph { -fx-text-fill: -ag-accent; -fx-font-size: 22px;}
+/* No font properties here: CSS font rules re-derive the font from the inherited family
+   (Nikkyou Sans), which has none of the icon codepoints — the Glyph would render invisible.
+   The Glyph's own fontSize attribute sizes the icon instead. */
+.verifier-hero-glyph { -fx-text-fill: -ag-accent; }
 .verifier-hero-title { -fx-text-fill: -ag-text;   -fx-font-size: 18px;}
 .verifier-hero-sub   { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
 
