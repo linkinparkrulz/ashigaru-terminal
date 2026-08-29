@@ -1,5 +1,8 @@
 # Ashigaru GUI — Whirlpool Coinjoin Flow Plan
 
+> **Historical.** All four features in this plan shipped (see `docs/DEVELOPMENT.md` §7).
+> Preserved for context; the current roadmap lives in the root README "Future Features" section.
+
 ## Current state
 
 - 4 account tabs (Deposit, Premix, Postmix, Badbank) — tabs exist and are functional

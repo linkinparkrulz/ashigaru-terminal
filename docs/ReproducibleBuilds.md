@@ -1,48 +1,61 @@
 # Reproducible Builds
 
-The purpose of this guide is to aid you in confirming the [official release of Ashigaru Terminal Linux Standalone Binary](http://ashicodepbnpvslzsl2bz7l2pwrjvajgumgac423pp3y2deprbnzz7id.onion/Ashigaru/Ashigaru-Terminal/releases) file can be independently reproduced, therefore confirming the Ashigaru Open Source Project has released a binary built **only** using source code from the [Ashigaru-Terminal repository](http://ashicodepbnpvslzsl2bz7l2pwrjvajgumgac423pp3y2deprbnzz7id.onion/Ashigaru/Ashigaru-Terminal).
+The purpose of this guide is to aid you in confirming that the official Ashigaru Desktop release
+binaries can be independently reproduced — that the Ashigaru Open Source Project released binaries
+built **only** from the source code in this repository.
 
-The general goal is for you to independently build your own unsigned production binary using the [Ashigaru-Terminal source code](http://ashicodepbnpvslzsl2bz7l2pwrjvajgumgac423pp3y2deprbnzz7id.onion/Ashigaru/Ashigaru-Terminal).
+Every release publishes `SHA256SUMS`, `MESSAGE.txt`, and `RELEASE-BIP47-SIGNATURE.txt` alongside
+the binaries (see **Verifying a release** in the [README](../README.md) for the signature side).
+This guide covers rebuilding a binary from source and comparing its hash.
 
-## Building reproducible builds
+## Environment
 
-### Version information
+The release binaries are built with Temurin JDK **21.0.7** (see `java-version` in
+`.github/workflows/release.yaml`) and the Gradle wrapper checked into this repository (Gradle 8.5).
+Building with a different JDK vendor/version or Gradle version will likely yield different hashes:
+jlink/jpackage embed toolchain paths and class file versions into the output.
 
-These instructions are valid for officially released Ashigaru Terminal APKs from version 1.0.0
+The examples below build the Linux x86_64 tar distribution inside a clean container so the
+filesystem timestamps/order are the only remaining variables. The Gradle build normalizes archive
+timestamps and file order (`reproducibleFileOrder` in `build.gradle`).
 
-### Environment
+## Build inside a clean container
 
-Intel x86_64 architecture. Using other architecture may yield different results.
+```bash
+sudo docker pull eclipse-temurin:21.0.7_6-jdk
+sudo docker run -it --name ashigaru-desktop eclipse-temurin:21.0.7_6-jdk bash
+```
 
-### Download image
-`sudo docker pull eclipse-temurin:21.0.7_6-jdk`
+Inside the container (or copy a checked-out source tree in with `docker cp`):
 
-### Start the container
-`sudo docker run -it --name ashigaru eclipse-temurin:21.0.7_6-jdk bash`
+```bash
+apt update && apt install -y git
+git clone --recursive https://github.com/linkinparkrulz/ashigaru-desktop.git
+cd ashigaru-desktop
+git checkout v1.4.5   # the tag you are reproducing
 
-### Exit the container
-`exit` (or Ctrl + D)
+./gradlew clean jpackage packageTarDistribution
+```
 
-### Download source code
-Use `torsocks wget` with Source Code (ZIP) for the latest release tag
+Note that the build downloads its dependencies from Maven Central and several other configured
+repositories at build time; network access is required and the resolved artifacts must match those
+used for the official build (see `build.gradle` `repositories`).
 
-### Copy the project to it
-`docker cp path/to/Ashigaru-terminal-development ashigaru:/root`
+## Check the hash
 
-### Start the container again and go inside it
-`docker start -ai ashigaru`
+```bash
+sha256sum build/distributions/Ashigaru-1.4.5-x86_64.tar.gz
+```
 
-### Install dependencies and compile the project
-`apt update && apt install -y rpm fakeroot`
+Compare the output against the `Ashigaru-1.4.5-x86_64.tar.gz` line in the official `SHA256SUMS`.
+They must match byte-for-byte.
 
-`cd /root/Ashigaru-terminal-development`
+## Notes
 
-`./gradlew -Djava.awt.headless=true clean jpackage`
-
-`./gradlew packageTarDistribution`
-
-### Check hash
-`sha256sum build/jpackage/ashigaru-terminal-1.0.0-x86_64.tar.gz`
-
-### Compare result
-Compare the SHA256 output of the binary you have created against the binary file officially released by the Ashigaru Open Source Project.
+- The `.exe`/`.msi` (Windows), `.dmg` (macOS) and `.deb`/`.rpm` (Linux) installers embed
+  platform-packager metadata; reproduce those on the matching OS using the same workflow commands
+  shown in `.github/workflows/release.yaml`.
+- The AppImage build downloads `appimagetool` at build time. Pin its checksum with
+  `-PappImageToolSha256=...` (recorded per release) so the tool itself is verified.
+- If a build does not reproduce, double-check the JDK build number first — it is the most common
+  source of drift.

@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a reproducible problem with Ashigaru Desktop
+title: "[Bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Do not file security vulnerabilities here** — report those privately via the
+        channels in [SECURITY.md](../../blob/main/SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what actually happened?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Ashigaru version, OS and version, network (Tor/Dojo/public server)
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Attach logs from the in-app Logs tool if relevant. Logs are redacted by default;
+        do not paste addresses, keys or wallet names here even so.
+    validations:
+      required: false

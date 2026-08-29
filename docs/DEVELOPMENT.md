@@ -42,14 +42,11 @@ Monocle software rendering (`build.gradle` `headless` conditional) — this is h
 **Build quirks:**
 
 - **Module definitions must mirror dependencies.** The build uses `extra-java-module-info` to
-  modularize non-modular jars: every dependency change must be reflected in the `module()` /
-  `mergedModule` blocks in the lower half of `build.gradle`. Miss this and jlink fails (or
-  worse, fails at runtime). The darkjar project jar is deliberately modularized as
-  `com.sparrowwallet.nightjar` version `0.2.41` (`build.gradle:504`) — keep name and version
-  in sync with `darkjar/build.gradle` if either changes.
-- **`ssl-workaround.gradle`** is a one-time init script for a Maven mirror with a broken SSL
-  hostname (`./gradlew dependencies --init-script ssl-workaround.gradle` to warm the cache).
-  It trusts all certs — only use it for that one purpose, never permanently.
+  modularize non-modular jars: every dependency change must be reflected in the `module()` blocks
+  in the lower half of `build.gradle`, keyed by the resolved jar's exact filename. Miss one (or
+  export too little) and jlink fails. The darkjar project jar is deliberately modularized as
+  `com.sparrowwallet.nightjar` version `0.2.41` — keep name and version in sync with
+  `darkjar/build.gradle` if either changes.
 - Reproducible-build flags are set on all archive tasks; don't add tasks that break
   `preserveFileTimestamps=false` / `reproducibleFileOrder=true`.
 
@@ -158,24 +155,23 @@ treat darkjar as vendored upstream (below).
 5. **Coordinator protocol version** (`WhirlpoolProtocol.PROTOCOL_VERSION = "0.23"`) must match
    the live coordinator; it is not a value to touch client-side.
 
-## 7. Current State (as of 2026-08, v1.4.0)
+## 7. Current State (as of 2026-08, v1.4.5)
 
-- Version `1.4.0` (`build.gradle`), developed on branch `v1.4.0`. 1.3.0 is the newest
-  *published* release, and the first that a running install can discover and verify for itself
-  via Settings -> Update. 1.1.3 and 1.2.0 were prepared and merged but never tagged; their notes
-  were folded into 1.3.0. See the root `RELEASE_NOTES.md` for what changed, rather than
+- Version `1.4.5` (`build.gradle`), developed on branch `v1.4.5`. 1.4.1 is the newest
+  *published* release. See the root `RELEASE_NOTES.md` for what changed, rather than
   duplicating it here.
 - All four original PLAN.md features are implemented (`receiveBtn`, `badbankInfoLabel`,
   `txnTable` toggle, post-Tx0 navigation all present in `AshigaruWalletController`); PLAN.md
-  itself is historical.
+  itself is historical (kept at `docs/PLAN.md`).
 - See the root `README.md` "Future Features" section for the current roadmap (not duplicated
   here to avoid this doc drifting out of sync with it).
 - Known code TODOs: zeroleak change-index revert and BIP69 output sorting remain unimplemented
   in the vendored darkjar Tx0 construction path (inherited from upstream Samourai code, not
   fixable in-tree without diverging from the vendored source); the `TESTNET4` enum mismatch
   (§4) is still present as of this release.
-- Docs: `docs/ARCHITECTURE.md` (system breakdown), this file, and
-  `docs/ReproducibleBuilds.md`.
+- Docs: `docs/ARCHITECTURE.md` (system breakdown), this file,
+  `docs/ReproducibleBuilds.md`, `docs/SeedEntropyAnalysis.md`, the historical `docs/PLAN.md`,
+  and the release checklist at `docs/TESTING.txt`.
 
 ## 8. Using the Whirlpool Client in Other Applications
 

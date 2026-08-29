@@ -6,7 +6,8 @@ firmware ([Block engineering write-up](https://engineering.block.xyz/blog/predic
 
 *Reviewed against Ashigaru Desktop v1.1.2 (`0592608`), with cross-checks against Ashigaru Terminal
 and Ashigaru Mobile as noted in [§7](#7-cross-check-terminal-and-mobile). Line references are
-accurate as of that revision and may drift as the code changes.*
+accurate as of that revision and may drift as the code changes. The seed-handling and storage
+paths it describes were unchanged through v1.4.5 (`0c3356f`).*
 
 ---
 
