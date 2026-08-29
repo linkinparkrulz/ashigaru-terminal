@@ -14,13 +14,6 @@ This project bundles third-party data files, listed here with their attributions
 The wordlist is included verbatim. Its integrity is verified at load time against a bundled SHA-256
 digest.
 
-## Dice image
-
-- **File:** `src/main/resources/image/dice.png`
-- **Used by:** the "Do you have dice?" step of wallet creation (`WalletCreationFlow`)
-- **Attribution/license:** _to be confirmed by the maintainer_ — replace this line with the image's
-  source and license before release.
-
 ## Nikkyou Sans (splash typeface)
 
 - **Files:** `src/main/resources/font/NikkyouSans.ttf`, `src/main/resources/font/NikkyouSans-read.txt`
