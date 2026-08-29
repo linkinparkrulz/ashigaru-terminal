@@ -64,4 +64,14 @@ open module com.sparrowwallet.sparrow {
     requires com.sparrowwallet.bokmakierie;
     requires java.smartcardio;
     requires com.jcraft.jzlib;
+
+    //ControlsFX populates GlyphFontRegistry solely from ServiceLoader.load(GlyphFont.class), and
+    //this is a named module on the module path, where ServiceLoader reads module descriptors and
+    //ignores META-INF/services. Without these directives FontAwesome5 and FontAwesome5Brands are
+    //never constructed, so the registry holds only ControlsFX's own "FontAwesome" and every
+    //fontFamily="Font Awesome 5 ..." Glyph in the FXML renders as an empty label - Glyph.updateIcon
+    //returns without setting any text when the family is unregistered, so it fails silently.
+    provides org.controlsfx.glyphfont.GlyphFont with
+            com.sparrowwallet.sparrow.glyphfont.FontAwesome5,
+            com.sparrowwallet.sparrow.glyphfont.FontAwesome5Brands;
 }
