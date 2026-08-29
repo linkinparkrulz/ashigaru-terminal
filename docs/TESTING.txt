@@ -72,7 +72,7 @@ HOW TO USE
 --------------------------------------------------------------------
  4. WHIRLPOOL STATS TOOL
 --------------------------------------------------------------------
-  [ ] Tools -> Whirlpool Stats opens, correctly themed.
+  [ ] Tools -> Statistics opens, correctly themed.
   [ ] Sync status, chart metrics, and actionable transactions render.
   [ ] Chart uses the orange/yellow palette.
   [ ] Stats data loads over the Tor onion endpoint.
@@ -150,7 +150,7 @@ HOW TO USE
 --------------------------------------------------------------------
  10. BIP47 MESSAGE VERIFIER
 --------------------------------------------------------------------
-  [ ] Tools -> BIP47 message verifier opens, themed / inviting layout.
+  [ ] Tools -> Verifier opens, themed / inviting layout.
   [ ] A valid signed message verifies successfully.
   [ ] An invalid message fails clearly.
       (This verifier also backs Dojo pairing verification.)
@@ -328,7 +328,7 @@ HOW TO USE
       This confirms jdk.crypto.ec made it into the jlink runtime image.
   [ ] ashigaru.log carries no handshake_failure line for the startup
       update check.
-  [ ] Tools -> Whirlpool Stats loads with NO proxy configured, which
+  [ ] Tools -> Statistics loads with NO proxy configured, which
       exercises its clearnet HTTPS path rather than the onion mirror.
 
 
@@ -421,7 +421,7 @@ HOW TO USE
       app face, and every bubble looks the SAME as every other one
       whatever control it points at. A bubble with a different size
       or face means #tourPopover stopped terminating inheritance.
-  [ ] Tools -> Whirlpool Stats: "TOTAL BTC IN POOLS" matches the
+  [ ] Tools -> Statistics: "TOTAL BTC IN POOLS" matches the
       other headings, with the figure under it still monospaced.
   [ ] No tofu boxes anywhere, including wallet names and the version
       number in the title bar. Watch the mix badge in particular -

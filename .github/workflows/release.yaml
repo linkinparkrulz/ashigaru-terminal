@@ -296,8 +296,8 @@ jobs:
              Paste the block exactly as the tool emits it. Do not retype or reflow the message: the
              signature covers it byte for byte, and a single changed character breaks verification.
 
-          4. Verify your own signature before publishing. In Ashigaru, open Tools -> Verify BIP47
-             Message, click "Use Release Signing Code", paste the whole block into the signed message
+          4. Verify your own signature before publishing. In Ashigaru, open Tools -> Verifier,
+             click "Use Release Signing Code", paste the whole block into the signed message
              box, then parse and verify. It must report the recovered signer as
              1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ.
 

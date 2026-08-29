@@ -66,7 +66,7 @@ connection at all, which is why 1.3.0 cannot find this release on its own.
 
 ## Tools
 
-- **Verify BIP47 Message takes a PayNym handle.** Enter `+linkinparkrulz` and press **Look up** to
+- **The BIP47 verifier takes a PayNym handle.** Enter `+linkinparkrulz` and press **Look up** to
   fill in the payment code, instead of pasting 116 characters from somewhere. The lookup goes over
   Tor when it is configured, runs only when you press the button, and shows the name it resolved
   rather than changing the field silently. For checking an Ashigaru release, **Use Release Signing
@@ -104,6 +104,6 @@ sha256sum SHA256SUMS   # compare with SHA256(SHA256SUMS) in MESSAGE.txt
 ```
 
 The signature in `RELEASE-BIP47-SIGNATURE.txt` must recover to `1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ`,
-the notification address of the release signing payment code published in the README. **Tools →
-Verify BIP47 Message** does this for you, and from this release **Settings → Update** checks the
+the notification address of the release signing payment code published in the README.
+**Tools → Verifier** does this for you, and from this release **Settings → Update** checks the
 whole chain automatically.

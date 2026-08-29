@@ -11,7 +11,7 @@ import java.util.regex.Pattern;
 
 /**
  * Parses and verifies Bitcoin signed message blocks that embed a BIP47 payment code, as used by
- * the Ashigaru/Dojo node directory and the Tools &rarr; BIP47 message verifier.
+ * the Ashigaru/Dojo node directory and the Tools &rarr; Verifier.
  *
  * <p>A block looks like:
  * <pre>
