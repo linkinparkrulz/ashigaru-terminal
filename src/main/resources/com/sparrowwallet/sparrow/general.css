@@ -1,3 +1,29 @@
+/* Ashigaru identity tokens (mirror of gui/ashigaru.css — keep in sync) */
+.root {
+    -ag-bg:            #0E0F12;
+    -ag-bg-mid:        #16171C;
+    -ag-bg-light:      #1E2026;
+    -ag-bg-raised:     #282A32;
+    -ag-border:        #2E3038;
+    -ag-border-strong: #3A3D47;
+    -ag-text:          #ECECEC;
+    -ag-text-dim:      #A6A7AD;
+    -ag-text-faint:    #6E7077;
+    -ag-accent:        #cc1111;
+    -ag-accent-hover:  #e11414;
+    -ag-accent-dark:   #991010;
+    -ag-accent-tint:   derive(#cc1111, -62%);
+    -ag-accent-faint:  derive(#cc1111, -74%);
+    -ag-green:         #4caf50;
+    -ag-red:           #cc1111;
+    -ag-blue:          #42a5f5;
+    -ag-testnet:       #e57c00;
+    -ag-mainnet:       #4caf50;
+    -ag-radius-sm:     4px;
+    -ag-radius:        6px;
+    -ag-radius-lg:     10px;
+}
+
 .copyable-label, .copyable-label:focused {
     -fx-background-color: transparent ;
     -fx-background-insets: 0px ;

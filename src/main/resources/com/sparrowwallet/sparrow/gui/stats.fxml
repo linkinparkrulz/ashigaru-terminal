@@ -9,7 +9,7 @@
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.sparrowwallet.sparrow.gui.StatsController"
-            stylesheets="@ashigaru.css"
+            stylesheets="@ashigaru.css, @../darktheme.css"
             styleClass="wallet-panel"
             fitToWidth="true">
     <content>

@@ -530,7 +530,7 @@ extraJavaModuleInfo {
         requires('javafx.graphics')
     }
     module('jai-imageio-core-1.4.0.jar', 'com.github.jai.imageio.jai.imageio.core', '1.4.0')
-    module('hummingbird-1.6.3.jar', 'com.sparrowwallet.hummingbird', '1.6.3') {
+    module('hummingbird-1.7.3.jar', 'com.sparrowwallet.hummingbird', '1.7.3') {
         exports('com.sparrowwallet.hummingbird')
         exports('com.sparrowwallet.hummingbird.registry')
         requires('co.nstant.in.cbor')
@@ -607,7 +607,7 @@ extraJavaModuleInfo {
     module('java-jwt-3.8.1.jar', 'com.auth0.jwt', '3.8.1') {
         exports('com.auth0.jwt')
     }
-    module('json-20180130.jar', 'org.json', '1.0') {
+    module('json-20180130.jar', 'org.json', '20180130') {
         exports('org.json')
     }
     module('scrypt-1.4.0.jar', 'com.lambdaworks.scrypt', '1.4.0') {

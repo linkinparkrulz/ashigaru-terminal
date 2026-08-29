@@ -12,6 +12,18 @@
     -ag-accent:        #cc1111;
     -ag-accent-hover:  #e11414;
     -ag-accent-dark:   #991010;
+    -ag-accent-tint:   derive(#cc1111, -62%);
+    -ag-accent-faint:  derive(#cc1111, -74%);
+    -ag-green:         #4caf50;
+    -ag-red:           #cc1111;
+    -ag-blue:          #42a5f5;
+    -ag-testnet:       #e57c00;
+    -ag-mainnet:       #4caf50;
+
+    /* Shape scale */
+    -ag-radius-sm:     4px;
+    -ag-radius:        6px;
+    -ag-radius-lg:     10px;
 
     /* Drive Modena from the Ashigaru palette: red accent, deep neutral base */
     -fx-accent: -ag-accent;

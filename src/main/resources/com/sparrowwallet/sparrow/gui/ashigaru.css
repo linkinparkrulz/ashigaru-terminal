@@ -117,7 +117,7 @@
 .network-label.testnet  { -fx-background-color: derive(-ag-testnet, -50%); -fx-text-fill: -ag-testnet; }
 
 .header-info {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* block height */
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* block height */
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 12px;
 }
@@ -328,10 +328,10 @@
     -fx-font-size: 10px;
 }
 .balance-value           {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* wallet balance */ -fx-text-fill: -ag-text;     -fx-font-size: 20px; -fx-font-weight: bold; }
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* wallet balance */ -fx-text-fill: -ag-text;     -fx-font-size: 20px; -fx-font-weight: bold; }
 .balance-card.primary .balance-value { -fx-text-fill: #fff; }
 .balance-value.secondary {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* secondary balance */ -fx-text-fill: -ag-text-dim; -fx-font-size: 16px; }
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* secondary balance */ -fx-text-fill: -ag-text-dim; -fx-font-size: 16px; }
 
 /* ── UTXO table ───────────────────────────────────────────────────────────── */
 .utxo-table {
@@ -388,9 +388,9 @@
 /* Amounts and hashes keep the monospace: the amount column has to line up down the list, and
    an address or txid is read character by character. Everything else in these cells - the
    user's label, the PayNym, the mix badge, the date - is prose and takes the app face. */
-.card-value     { -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+.card-value     { -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
                   -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
-.card-secondary { -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+.card-secondary { -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
                   -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
@@ -417,7 +417,7 @@
 }
 .paynym-code {
     -fx-text-fill: -ag-text-dim;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 11px;
 }
 /* Neutral disc shown behind the avatar while it loads (and if unavailable) */
@@ -449,7 +449,7 @@
     -fx-border-color: -ag-border;
     -fx-border-radius: 4;
     -fx-background-radius: 4;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
 }
 .fingerprint-hex:disabled { -fx-opacity: 1.0; }
 
@@ -551,7 +551,7 @@
 
 /* ── TextField / ComboBox / Spinner ──────────────────────────────────────── */
 .text-field, .combo-box, .spinner {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* typed input, including addresses */
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* typed input, including addresses */
     -fx-background-color: -ag-bg;
     -fx-text-fill: -ag-text;
     -fx-border-color: -ag-border;
@@ -563,14 +563,14 @@
     -fx-border-color: -ag-accent;
 }
 .combo-box .list-cell {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* server URLs */ -fx-text-fill: -ag-text; -fx-background-color: -ag-bg; }
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* server URLs */ -fx-text-fill: -ag-text; -fx-background-color: -ag-bg; }
 .combo-box-popup .list-view { -fx-background-color: -ag-bg-light; -fx-border-color: -ag-border; }
 .combo-box-popup .list-cell:hover { -fx-background-color: -ag-bg-raised; }
 .combo-box-popup .list-cell:selected { -fx-background-color: derive(-ag-accent, -60%); -fx-text-fill: -ag-accent; }
 
 /* Monospace text area (seed / descriptor entry) */
 .mono-area {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 13px;
 }
 .mono-area .content { -fx-background-color: -ag-bg; }
@@ -944,7 +944,7 @@
     -fx-padding: 4 2 4 2;
 }
 .seed-word-grid .label {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* seed word numbering */
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* seed word numbering */
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 12px;
 }
@@ -954,7 +954,7 @@
     -fx-border-color: -ag-border;
     -fx-border-radius: -ag-radius-sm;
     -fx-background-radius: -ag-radius-sm;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 13px;
     -fx-padding: 5 8 5 8;
 }
@@ -987,7 +987,7 @@
 .verify-btn { -fx-font-size: 14px; -fx-padding: 10 16 10 16; }
 
 .verifier-panel .text-area {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 12px;
 }
 .verifier-result-box {
@@ -1169,7 +1169,7 @@
 
 /* Five per-word dice-roll inputs (1–6) on the dice path */
 .dice-die-input {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;  /* typed dice digits */
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* typed dice digits */
     -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-alignment: center;
