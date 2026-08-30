@@ -198,6 +198,10 @@ updates work.
   the same filename, so only one of the two ever reached the release page. The headless build is
   now published as `Ashigaru-server-…`, matching the naming already used for its `.deb` and `.rpm`
   packages.
+- **The Linux launcher shows its icon.** The desktop entry asked for the icon by bare name, which
+  only resolves if the icon has been installed into the system icon theme — it is not, so app
+  menus, docks and launchers showed a placeholder or nothing at all. It now points at the file
+  where the package actually puts it. Thanks to 91xTx93x3 for the fix.
 
 ## Under the hood
 
