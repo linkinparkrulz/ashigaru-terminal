@@ -22,6 +22,16 @@ public class HelpLabel extends Label {
         tooltip.graphicProperty().bind(helpGraphicProperty());
         tooltip.setShowDuration(Duration.seconds(15));
         tooltip.setShowDelay(Duration.millis(500));
+        //Help text is prose, and a Tooltip does not wrap by default - the longest of these runs to
+        //310 characters, which lays out as one line roughly 2100px wide and leaves the screen.
+        //
+        //This cannot move to a .tooltip stylesheet rule. Tooltip exposes -fx-wrap-text but neither
+        //it nor PopupControl exposes any width property to CSS, so a rule could turn wrapping on
+        //while giving it no width to wrap against, which changes nothing. Both have to be set here.
+        //TooltipSkin binds its inner Label's wrapText and maxWidth to the Tooltip's own, so setting
+        //them on the Tooltip reaches the node that renders the text.
+        tooltip.setWrapText(true);
+        tooltip.setMaxWidth(400);
         getStyleClass().add("help-label");
 
         Platform.runLater(() -> setTooltip(tooltip));

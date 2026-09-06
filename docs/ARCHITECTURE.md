@@ -5,7 +5,7 @@ coinjoin architecture. Ashigaru Desktop is a fork of [Sparrow Wallet](https://sp
 re-oriented around a single purpose: providing a full Whirlpool coinjoin experience on desktop,
 backed by the Ashigaru Terminal ecosystem.
 
-Reviewed against `main` @ `abab2a4` (v1.1.2).
+Reviewed against `v1.4.5` @ `0c3356f`.
 
 ---
 
@@ -524,7 +524,7 @@ long-term cold storage.
 
 The Whirlpool client is **not** consumed as a Maven artifact — all of it is vendored source
 inside `darkjar` (633 Java files), compiled to a single jar that the root build re-badges as
-the Java module `com.sparrowwallet.nightjar` version `0.2.41` (`build.gradle:504`). That
+the Java module `com.sparrowwallet.nightjar` version `0.2.41`. That
 version/name impersonates the original `nightjar` Maven artifact upstream Sparrow depended on,
 so Sparrow-side imports (`com.sparrowwallet.nightjar.http/stomp/tor`) work unchanged.
 

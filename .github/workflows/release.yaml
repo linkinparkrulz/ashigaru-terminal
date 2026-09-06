@@ -46,6 +46,10 @@ jobs:
         if: ${{ runner.os != 'Windows' }}
         run: echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
 
+      - name: Install rpm tooling (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: sudo apt-get update && sudo apt-get install -y rpm
+
       - name: Build with Gradle (Windows)
         if: ${{ runner.os == 'Windows' }}
         shell: pwsh
@@ -60,6 +64,11 @@ jobs:
         shell: pwsh
         run: .\gradlew.bat packageZipDistribution
 
+      - name: Package MSI distribution (Windows)
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: .\gradlew.bat packageMsiDistribution
+
       - name: Package zip distribution (macOS)
         if: ${{ runner.os == 'macOS' }}
         run: ./gradlew packageZipDistribution
@@ -71,6 +80,10 @@ jobs:
       - name: Package AppImage distribution (Linux)
         if: ${{ runner.os == 'Linux' }}
         run: ./gradlew packageAppImage
+
+      - name: Package RPM distribution (Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: ./gradlew packageRpmDistribution
 
       - name: Rename macOS DMG (arm64)
         if: ${{ matrix.artifact-name == 'macOS-arm64' }}
@@ -99,6 +112,10 @@ jobs:
       - name: Package headless tar distribution
         if: ${{ runner.os == 'Linux' }}
         run: ./gradlew -Djava.awt.headless=true packageTarDistribution
+
+      - name: Package headless RPM distribution
+        if: ${{ runner.os == 'Linux' }}
+        run: ./gradlew -Djava.awt.headless=true packageRpmDistribution
 
       - name: Rename headless artifacts
         if: ${{ runner.os == 'Linux' }}
@@ -251,27 +268,49 @@ jobs:
           cat > RELEASE-SIGNING-INSTRUCTIONS.txt <<'EOF'
           Release signing instructions
 
+          These steps produce RELEASE-BIP47-SIGNATURE.txt, which Ashigaru checks before it will install
+          an update. From 1.3.0 onward a release published without it, or with a signature that does not
+          verify, is refused by every user's in-app updater. Upload the signature BEFORE publishing.
+
           1. Download MESSAGE.txt from this draft release.
-          2. Sign the exact contents of MESSAGE.txt using the private key for the notification address derived from this BIP47 Payment Code:
+
+          2. Sign the exact contents of MESSAGE.txt with the private key for the notification address
+             derived from this BIP47 Payment Code:
 
              PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1
 
-          3. Create RELEASE-BIP47-SIGNATURE.txt with this format:
+             That code derives to notification address 1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ. Your signing
+             tool should report that same address.
 
-             BIP47 Payment Code:
-             PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1
+          3. Save the signed message block your tool produces as RELEASE-BIP47-SIGNATURE.txt. It looks
+             like this:
 
-             PayNym:
-             https://paynym.rs/+linkinparkrulz
+             -----BEGIN BITCOIN SIGNED MESSAGE-----
+             (the exact contents of MESSAGE.txt)
+             -----BEGIN BITCOIN SIGNATURE-----
+             Address: 1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ
 
-             Signature:
-             <base64 signature>
+             (base64 signature)
+             -----END BITCOIN SIGNATURE-----
 
-             Signed message:
-             The exact contents of MESSAGE.txt.
+             Paste the block exactly as the tool emits it. Do not retype or reflow the message: the
+             signature covers it byte for byte, and a single changed character breaks verification.
 
-          4. Upload RELEASE-BIP47-SIGNATURE.txt to this draft release.
-          5. Publish the release.
+          4. Verify your own signature before publishing. In Ashigaru, open Tools -> Verifier,
+             click "Use Release Signing Code", paste the whole block into the signed message
+             box, then parse and verify. It must report the recovered signer as
+             1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ.
+
+          5. Upload RELEASE-BIP47-SIGNATURE.txt to this draft release.
+
+          6. Confirm the release carries SHA256SUMS, MESSAGE.txt and RELEASE-BIP47-SIGNATURE.txt, then
+             publish it. A draft is invisible to the updater, which only sees published, non-prerelease
+             releases.
+
+          If your signing tool emits only a bare base64 signature rather than a whole block, a file
+          containing the message followed by a "Signature:" line and the signature is also accepted.
+          Prefer the block above: it carries the message and the signature together, so the two cannot
+          be mismatched.
           EOF
 
       - name: Create draft GitHub release

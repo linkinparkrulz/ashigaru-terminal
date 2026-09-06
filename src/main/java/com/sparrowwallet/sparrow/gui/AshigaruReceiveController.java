@@ -14,17 +14,13 @@ import com.sparrowwallet.drongo.wallet.Wallet;
 import com.sparrowwallet.drongo.wallet.WalletNode;
 import com.sparrowwallet.sparrow.wallet.NodeEntry;
 import com.sparrowwallet.sparrow.wallet.WalletForm;
-import javafx.animation.PauseTransition;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.Clipboard;
-import javafx.scene.input.ClipboardContent;
 import javafx.stage.Modality;
-import javafx.util.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +47,7 @@ public class AshigaruReceiveController implements Initializable {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     @FXML private TextField addressField;
-    @FXML private Button copyBtn;
+    @FXML private CopyButton copyBtn;
     @FXML private ImageView qrCodeView;
     @FXML private Label derivationLabel;
     @FXML private Label lastUsedLabel;
@@ -181,15 +177,7 @@ public class AshigaruReceiveController implements Initializable {
     @FXML
     private void onCopy() {
         if (currentEntry == null) return;
-        ClipboardContent content = new ClipboardContent();
-        content.putString(currentEntry.getAddress().toString());
-        Clipboard.getSystemClipboard().setContent(content);
-        final String defaultStyle = "-fx-text-fill: #A0A0A0; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;";
-        copyBtn.setText("✓");
-        copyBtn.setStyle("-fx-text-fill: #4CAF50; -fx-font-family: System; -fx-font-size: 14px; -fx-text-overrun: clip;");
-        PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
-        pause.setOnFinished(e -> { copyBtn.setText("⎘"); copyBtn.setStyle(defaultStyle); });
-        pause.play();
+        copyBtn.copy(currentEntry.getAddress().toString());
     }
 
     @FXML

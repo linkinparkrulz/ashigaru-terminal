@@ -23,7 +23,7 @@ import java.util.Locale;
 public class AshigaruTerminal {
     public static final String APP_ID = "com.sparrowwallet.sparrow";
     public static final String APP_NAME = "Sparrow";
-    public static final String APP_VERSION = "1.2.0";
+    public static final String APP_VERSION = "1.4.5";
     public static final String APP_VERSION_SUFFIX = "";
     public static final String APP_HOME_PROPERTY = "sparrow.home";
     public static final String NETWORK_ENV_PROPERTY = "SPARROW_NETWORK";
@@ -97,7 +97,7 @@ public class AshigaruTerminal {
 
         try {
             instance = new Instance(fileUriArguments);
-            instance.acquireLock(); //If fileUriArguments is not empty, will exit app after sending fileUriArguments if lock cannot be acquired
+            instance.acquireLock(); //Exits this process if another instance holds the lock, after handing it any fileUriArguments
         } catch(InstanceException e) {
             getLogger().error("Could not access application lock", e);
         }
@@ -168,7 +168,10 @@ public class AshigaruTerminal {
         private final List<String> fileUriArguments;
 
         public Instance(List<String> fileUriArguments) {
-            super(AshigaruTerminal.APP_ID + "." + Network.get(), !fileUriArguments.isEmpty());
+            //Always exit a second launch. Two processes share one Tor data directory and one config
+            //file: Tor refuses to start against a directory already in use, and the config is written
+            //by truncating it in place, so concurrent writers leave it half written and unparseable.
+            super(AshigaruTerminal.APP_ID + "." + Network.get(), true);
             this.fileUriArguments = fileUriArguments;
         }
 
@@ -177,6 +180,9 @@ public class AshigaruTerminal {
             if(messageList != null && !messageList.isEmpty()) {
                 AppServices.parseFileUriArguments(messageList);
                 AppServices.openFileUriArguments(null);
+            } else {
+                //A plain second launch with nothing to open - surface the window already running
+                AppServices.raiseActiveWindow();
             }
         }
 
@@ -187,7 +193,11 @@ public class AshigaruTerminal {
 
         @Override
         protected void beforeExit() {
-            getLogger().info("Opening files/URIs in already running instance, exiting...");
+            if(fileUriArguments.isEmpty()) {
+                getLogger().info("Ashigaru is already running, exiting...");
+            } else {
+                getLogger().info("Opening files/URIs in already running instance, exiting...");
+            }
         }
     }
 }

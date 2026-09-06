@@ -7,7 +7,7 @@
 }
 
 .send-form .form .fieldset:horizontal .label-container, .buttonRowLabel {
-    -fx-pref-width: 90px;
+    -fx-pref-width: 115px;
 }
 
 #paymentTabs {
@@ -16,12 +16,6 @@
 
 .initial .tab-header-area {
     visibility: hidden;
-}
-
-.multiple-tabs {
-    -fx-background-color: derive(-fx-background, 20%);
-    -fx-border-width: 1px 0px 1px 0px;
-    -fx-border-color: derive(-fx-background, -5%);
 }
 
 .multiple-tabs .send-form {

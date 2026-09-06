@@ -21,6 +21,7 @@ A graphical Bitcoin wallet and desktop GUI front-end for [Ashigaru Terminal](htt
 - **AmIExposed or BitHypha UTXO analysis** — Do analysis on your own UTXO's
 - **Dojo Bay Integration** — Connect to geographically dispersed electrum servers with BIP47 Verified reputations. 
 - **Logs** — See under the hood and share application logs with developers, with addresses, keys and wallet names redacted by default
+- **Verified In-App Updates** — Ashigaru finds new releases and checks them against the release signing key before you install, so you never have to go looking for a download again
 
 ### Future Features
 
@@ -35,11 +36,11 @@ Pre-built binaries for every platform are published on the [Releases](../../rele
 
 | Platform | Package | Min OS | Notarized |
 |---|---|---|---|
-| Windows | `.exe` installer, `.msi` | Windows 10 | — |
-| macOS (Apple Silicon) | `Ashigaru-X.Y.Z-aarch64.dmg` | macOS 11.0 | No, ad-hoc signed |
-| macOS (Intel) | `Ashigaru-X.Y.Z-x86_64.dmg` | macOS 11.0 | No, ad-hoc signed |
+| Windows | `.exe` installer, `.msi`, portable `.zip` | Windows 10 | — |
+| macOS (Apple Silicon) | `Ashigaru-X.Y.Z-aarch64.dmg`, `-osx-aarch64.zip` | macOS 11.0 | No, ad-hoc signed |
+| macOS (Intel) | `Ashigaru-X.Y.Z-x86_64.dmg`, `-osx-x86_64.zip` | macOS 11.0 | No, ad-hoc signed |
 | Linux (desktop) | `.deb`, `.rpm`, `.tar.gz`, `.AppImage` | — | — |
-| Linux (headless / server) | `ashigaru-server` `.deb`, `.rpm` | — | — |
+| Linux (headless / server) | `ashigaru-server` `.deb`, `.rpm`, `.tar.gz` | — | — |
 
 Each release also includes `SHA256SUMS`, `MESSAGE.txt`, and `RELEASE-BIP47-SIGNATURE.txt` for verification.
 
@@ -79,6 +80,8 @@ After a blocked launch attempt, go to **System Settings → Privacy & Security**
 
 Every release is signed by the maintainer using the private key for the notification address derived from the Ashigaru release-signing BIP47 Payment Code. This lets users verify that the release message was signed by the owner of the payment code, without exposing private keys.
 
+From 1.4.5, **Settings → Update** performs every check below for you and shows each one as it passes, refusing and deleting anything that fails. (1.3.0 shipped the updater but cannot reach GitHub — see the 1.4.5 release notes — so it has to be replaced by hand.) The manual steps remain here for anyone verifying a download obtained outside the app, or checking the app's own work.
+
 **Release signing identity**
 
 - **PayNym:** https://paynym.rs/+linkinparkrulz
@@ -87,6 +90,12 @@ Every release is signed by the maintainer using the private key for the notifica
 ```text
 PM8TJM51x2mDd85CzEgVc2y7vdyB3eBj93JVjVtCt6PZtmfzhFzYPMXYBXh28zthWhVKGjVQZPT1MKxGxEtfenLYEkuc5GhoWtMzQCF8c8mrckYFM7r1
 ```
+
+- **Notification address:** `1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ`
+
+That address is derived from the payment code above, and is what every release signature must
+recover to. It is published here so you can confirm the recovered signer without deriving it
+yourself.
 
 **Step 1 — Verify the file hash**
 
@@ -106,13 +115,15 @@ Compare the output against the `SHA256(SHA256SUMS): ...` line inside `MESSAGE.tx
 
 **Step 3 — Verify the Bitcoin message signature**
 
-Open `RELEASE-BIP47-SIGNATURE.txt`. The file contains the release signing payment code, PayNym, and a base64 Bitcoin message signature. Verify using Ashigaru Mobile or a BIP47 message verifier such as https://paymentcode.io/lab with:
+Open `RELEASE-BIP47-SIGNATURE.txt`. It is a standard Bitcoin signed message block: the contents of `MESSAGE.txt` between `-----BEGIN BITCOIN SIGNED MESSAGE-----` and `-----BEGIN BITCOIN SIGNATURE-----`, then the signing address and a base64 signature.
+
+The simplest check is in Ashigaru itself — **Tools → Verifier**, use the release signing code, paste the whole file into the signed message block, then parse and verify. You can also use Ashigaru Mobile or a BIP47 message verifier such as https://paymentcode.io/lab with:
 
 - **Payment Code**: the release signing payment code above
 - **Message**: the exact contents of `MESSAGE.txt`
 - **Signature**: the base64 value from `RELEASE-BIP47-SIGNATURE.txt`
 
-The verifier derives the notification address from the payment code and checks the Bitcoin message signature against that address. Make sure the payment code in `RELEASE-BIP47-SIGNATURE.txt` matches the payment code published here.
+The verifier derives the notification address from the payment code and checks the signature against it. Confirm the recovered signer is the notification address published above — that is what ties the release to the maintainer's key.
 
 ---
 
@@ -134,10 +145,17 @@ Additional distribution archives can be built with:
 ./gradlew packageZipDistribution packageTarDistribution
 ```
 
-On Linux, an AppImage can be built with:
+On Linux, an AppImage and an RPM can be built with:
 
 ```bash
 ./gradlew packageAppImage
+./gradlew packageRpmDistribution   # needs rpmbuild on PATH
+```
+
+On Windows, an MSI can be built alongside the `.exe` installer with:
+
+```bash
+.\gradlew.bat packageMsiDistribution
 ```
 
 The AppImage task downloads `appimagetool` from the official AppImageKit continuous release and writes the package to `build/distributions/`.
@@ -146,10 +164,20 @@ For proving reproducibility, see docs [here](docs/ReproducibleBuilds.md).
 
 ___
 
+### Documentation
+
+- [Architecture](docs/ARCHITECTURE.md) — module layout, UI structure, Whirlpool deep dive
+- [Development](docs/DEVELOPMENT.md) — build, run and test workflow for contributors
+- [Reproducible Builds](docs/ReproducibleBuilds.md) — independently verify a release binary
+- [Seed Entropy Analysis](docs/SeedEntropyAnalysis.md)
+- [Release Testing Checklist](docs/TESTING.txt)
+
+---
+
 ### Software license:
 
-Ashigaru Terminal is released under the Free and Open Source license [GNU GPLv3](LICENSE).
+Ashigaru Desktop is released under the Free and Open Source license [GNU GPLv3](LICENSE).
 
-**Declaration as per Apache v2.0, section 4:** Ashigaru Terminal has been forked from/build upon [Sparrow wallet Source Code](https://web.archive.org/web/20250525130614/https://github.com/sparrowwallet/sparrow/releases/tag/1.8.4), v1.8.4 released 7th March 2024. Additionally the Sparrow wallet Source Code for [Nightjar library](https://web.archive.org/web/20250528121847/https://github.com/sparrowwallet/nightjar), including commits up to and including 14th Feburary 2024, has been imported as a module directly into this Ashigaru Terminal code repository. Original source code was released under license Apache v2.0, and changes/modifications under this Ashigaru Open Source Project code repository are done so under the GNU GPLv3 license.
+**Declaration as per Apache v2.0, section 4:** Ashigaru Desktop has been forked from/built upon [Sparrow wallet Source Code](https://web.archive.org/web/20250525130614/https://github.com/sparrowwallet/sparrow/releases/tag/1.8.4), v1.8.4 released 7th March 2024. Additionally the Sparrow wallet Source Code for [Nightjar library](https://web.archive.org/web/20250528121847/https://github.com/sparrowwallet/nightjar), including commits up to and including 14th February 2024, has been imported as a module directly into this Ashigaru Desktop code repository. Original source code was released under license Apache v2.0, and changes/modifications under this Ashigaru Open Source Project code repository are done so under the GNU GPLv3 license.
 
 <br>

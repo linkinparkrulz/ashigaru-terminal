@@ -12,6 +12,19 @@
     -ag-accent:        #cc1111;
     -ag-accent-hover:  #e11414;
     -ag-accent-dark:   #991010;
+    -ag-accent-tint:   derive(#cc1111, -62%);
+    -ag-accent-faint:  derive(#cc1111, -74%);
+    -ag-green:         #4caf50;
+    -ag-red:           #cc1111;
+    -ag-blue:          #42a5f5;
+    -ag-testnet:       #e57c00;
+    -ag-warn:          #e5a00c;
+    -ag-mainnet:       #4caf50;
+
+    /* Shape scale */
+    -ag-radius-sm:     4px;
+    -ag-radius:        6px;
+    -ag-radius-lg:     10px;
 
     /* Drive Modena from the Ashigaru palette: red accent, deep neutral base */
     -fx-accent: -ag-accent;
@@ -39,10 +52,6 @@
 
 .button{
     -fx-focus-traversable: false;
-}
-
-.button:hover{
-    -fx-text-fill: white;
 }
 
 .separator *.line {
@@ -126,10 +135,6 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
     -fx-background-color: rgb(159, 142, 0);
 }
 
-.status-bar {
-    -fx-background-color: derive(-fx-color,-15%), -fx-body-color;
-}
-
 .chart .default-color0.chart-series-line {
     -fx-stroke: rgba(135, 138, 149, 0.6);
 }
@@ -165,7 +170,7 @@ HorizontalHeaderColumn > TableColumnHeader.column-header.table-column{
 }
 
 .root .list-item:selected {
-    -fx-background-color: derive(-ag-accent, -64%);
+    -fx-background-color: derive(-ag-accent, -65%);
     -fx-border-color: -ag-accent;
 }
 

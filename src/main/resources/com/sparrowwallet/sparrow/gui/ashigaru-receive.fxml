@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.sparrowwallet.sparrow.gui.CopyButton?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.image.*?>
@@ -32,8 +33,7 @@
                 <HBox spacing="8" alignment="CENTER_LEFT"
                       GridPane.rowIndex="0" GridPane.columnIndex="1">
                     <TextField fx:id="addressField" editable="false" styleClass="address-field" HBox.hgrow="ALWAYS"/>
-                    <Button fx:id="copyBtn" text="⎘" onAction="#onCopy" styleClass="copy-icon-btn"
-                            prefWidth="28" prefHeight="28" minWidth="28" minHeight="28" maxWidth="28" maxHeight="28"/>
+                    <CopyButton fx:id="copyBtn" onAction="#onCopy"/>
                 </HBox>
 
                 <Label text="Derivation path"

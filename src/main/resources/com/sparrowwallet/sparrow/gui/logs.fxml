@@ -3,11 +3,12 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
 
 <VBox xmlns="http://javafx.com/javafx"
       xmlns:fx="http://javafx.com/fxml"
       fx:controller="com.sparrowwallet.sparrow.gui.LogsController"
-      stylesheets="@ashigaru.css"
+      stylesheets="@ashigaru.css, @../darktheme.css"
       styleClass="verifier-panel"
       spacing="16">
     <padding><Insets top="22" right="22" bottom="22" left="22"/></padding>
@@ -16,7 +17,7 @@
     <HBox spacing="16" alignment="CENTER_LEFT" styleClass="verifier-hero">
         <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
         <StackPane styleClass="verifier-hero-icon">
-            <Label text="📄" styleClass="verifier-hero-glyph"/>
+            <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="22" icon="FILE_ALT" styleClass="verifier-hero-glyph"/>
         </StackPane>
         <VBox spacing="3" HBox.hgrow="ALWAYS">
             <Label text="Application Logs" styleClass="verifier-hero-title"/>

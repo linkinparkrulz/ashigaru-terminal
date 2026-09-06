@@ -1,0 +1,495 @@
+====================================================================
+ ASHIGARU DESKTOP - TESTING CHECKLIST
+ Release: 1.4.5  (branch v1.4.5)
+====================================================================
+
+HOW TO USE
+  - Build and run locally:  ./gradlew run
+  - Most items need Tor + a live Electrum/Dojo connection on MAINNET.
+  - The passphrase-warning and discovery tests need a real wallet
+    that already has on-chain history.
+  - This is a MANUAL checklist - no automated tests were added.
+  - Mark each item [x] pass / [!] fail (add a note).
+
+
+--------------------------------------------------------------------
+ 0. BUILD & LAUNCH
+--------------------------------------------------------------------
+  [ ] ./gradlew run builds cleanly (no compile errors).
+  [ ] App launches at ~1100x800.
+  [ ] Window will NOT resize smaller than 800 x 760.
+  [ ] Splash / logo renders crisp; macOS shows the dock icon.
+  [ ] Status bar shows MAINNET | Block height | Connected once
+      Tor / Electrum connect.
+
+
+--------------------------------------------------------------------
+ 1. WALLET CREATION & RESTORE
+--------------------------------------------------------------------
+  [ ] "+ New / Restore" flow is dark-themed, step-by-step, cohesive.
+  [ ] Seed-word entry grid is numbered and theme-compliant.
+  [ ] Restore accepts a valid 12/24-word seed.
+  [ ] Create a wallet WITH a BIP39 passphrase.
+  [ ] Create a wallet WITHOUT a passphrase.
+  [ ] (Optional) Create an encrypted wallet (with a password) to
+      exercise that path separately.
+
+
+--------------------------------------------------------------------
+ 2. BIP39 PASSPHRASE HANDLING  (primary focus)
+--------------------------------------------------------------------
+  [ ] Open a passphrase wallet (with existing history) using the
+      CORRECT passphrase -> loads normally, NO warning, correct
+      UTXOs/history.
+  [ ] Open the same wallet with a WRONG passphrase -> a different/
+      empty wallet loads, then on the first full history refresh the
+      "Reopen <name>?" warning appears.
+        [ ] Reopen Wallet -> wallet unloads, passphrase prompt
+            reappears; correct passphrase then loads real history.
+        [ ] Refresh Wallet -> proceeds with clear/rescan (no reopen).
+  [ ] Cancel the passphrase prompt when opening -> wallet not opened,
+      clean "passphrase required" message, no crash.
+  [ ] Lock button shows for passphrase wallets AND encrypted wallets.
+  [ ] Click Lock -> wallet returns to locked state in the selector;
+      re-selecting prompts for the passphrase again.
+  [ ] Delete an unencrypted passphrase wallet: correct passphrase
+      deletes; wrong passphrase is rejected ("Incorrect Passphrase -
+      not deleted").
+  [ ] Delete an encrypted wallet requires the correct password.
+
+
+--------------------------------------------------------------------
+ 3. WHIRLPOOL / MIXING RACE
+--------------------------------------------------------------------
+  [ ] Open a passphrase wallet WHILE Tor is still connecting ->
+      no NullPointerException; wallet opens; Whirlpool starts once
+      connected.
+  [ ] Mixing starts normally for an open wallet after connection.
+  [ ] With the coordinator unreachable, a clear "coordinator
+      unreachable" warning is shown (not a silent failure).
+
+
+--------------------------------------------------------------------
+ 4. WHIRLPOOL STATS TOOL
+--------------------------------------------------------------------
+  [ ] Tools -> Statistics opens, correctly themed.
+  [ ] Sync status, chart metrics, and actionable transactions render.
+  [ ] Chart uses the orange/yellow palette.
+  [ ] Stats data loads over the Tor onion endpoint.
+  [ ] Tx0 broadcast overlay: checklist centered, animates, buttons
+      hidden during broadcast.
+  [ ] Explorer links from Stats use the configured explorer.
+
+
+--------------------------------------------------------------------
+ 5. TRANSACTION & UTXO CARDS
+--------------------------------------------------------------------
+  [ ] Transactions and UTXOs tabs render as card lists (not tables)
+      and are responsive to width.
+  [ ] BIP47 receive shows PayNym name + abbreviated payment code and
+      the PayNym avatar; avatars/placeholders are aligned.
+  [ ] Unlock dialog shows the master fingerprint without clipping.
+  [ ] Each transaction card shows "explorer" and "exposure" links:
+        [ ] explorer opens the configured block explorer for the txid.
+        [ ] exposure opens the configured "Am I Exposed" service for
+            the txid.
+
+
+--------------------------------------------------------------------
+ 6. "AM I EXPOSED" SETTING
+--------------------------------------------------------------------
+  [ ] Settings has an Am I Exposed option (configurable like the
+      block explorer), including a "None" choice.
+  [ ] Changing it re-routes the exposure links (and Stats links that
+      go through it).
+  [ ] With it set to None, exposure links are hidden/disabled.
+
+
+--------------------------------------------------------------------
+ 7. DOJO / PUBLIC-SERVER DISCOVERY
+--------------------------------------------------------------------
+  [ ] Settings -> Server -> Public Server: discovery runs
+      automatically in the background at startup (no manual action).
+  [ ] Discovered Dojo Electrum servers appear in the URL dropdown;
+      verified ones are marked/surfaced.
+  [ ] Status line reads like: "Added N Dojo Electrum server(s);
+      X unverified, Y unreachable. Directory courtesy of dojobay.pw".
+  [ ] The manual "Discover Dojo Electrum servers" link re-runs
+      discovery over Tor.
+  [ ] The block-explorer dropdown is populated from the same call.
+  [ ] Select a discovered server, Test Connection succeeds, and a
+      wallet can actually sync against it.
+  [ ] The dojobay.pw credit/notice is present.
+
+
+--------------------------------------------------------------------
+ 8. SERVER-SETTINGS RESPONSIVENESS
+--------------------------------------------------------------------
+  [ ] The full "Warning!" text (both lines, ending "...pick one you
+      trust.") is visible and WRAPS - no "...".
+  [ ] The discovery status wraps onto multiple lines (no truncation).
+  [ ] Narrow the window -> warning/status text re-wraps and stays
+      fully readable.
+  [ ] Shorten the window -> the settings body SCROLLS; the bottom
+      status bar stays visible.
+  [ ] General settings page and a wallet view still render correctly.
+
+
+--------------------------------------------------------------------
+ 9. WINDOW SIZING / STATUS BAR
+--------------------------------------------------------------------
+  [ ] Open a wallet so ALL sidebar buttons show (View Seed / Export /
+      Import / Lock / Delete + Deposit/Premix/Postmix/Badbank +
+      Tools/Settings).
+  [ ] Shrink the window as far as it goes -> it stops at 760px tall
+      and the status bar stays fully visible; Tools/Settings do not
+      collide past the clip point.
+  [ ] Normal use at larger sizes is unchanged.
+
+
+--------------------------------------------------------------------
+ 10. BIP47 MESSAGE VERIFIER
+--------------------------------------------------------------------
+  [ ] Tools -> Verifier opens, themed / inviting layout.
+  [ ] A valid signed message verifies successfully.
+  [ ] An invalid message fails clearly.
+      (This verifier also backs Dojo pairing verification.)
+
+
+--------------------------------------------------------------------
+ 11. THEMING / REGRESSION SWEEP
+--------------------------------------------------------------------
+  [ ] All pop-up dialogs (errors, confirmations, password/passphrase,
+      seed display, Tx0, Mix To) match the dark identity - none
+      appear light/unstyled.
+  [ ] Inherited Sparrow screens look consistent with the Ashigaru
+      identity.
+  [ ] Delete-button text is white/legible; logos are crisp.
+  [ ] Account buttons toggle the center view; wallet selector switches
+      wallets.
+
+
+--------------------------------------------------------------------
+ 12. WHIRLPOOL ENGINE CLEANUP ON DELETE / MIX BUTTON RECOVERY
+--------------------------------------------------------------------
+  [ ] Start Postmix mixing on a wallet, then Delete that wallet ->
+      no error, wallet disappears from the sidebar as normal.
+      (Can't observe the background engine directly from the UI -
+      this is really confirming the delete path doesn't hang or
+      throw; the engine teardown itself is covered by an automated
+      test, see WhirlpoolServicesTest.)
+  [ ] Configure wallet B's Mix To -> wallet A, then Delete wallet A ->
+      re-open wallet B's Mix To dialog: it should show "Mix To..."
+      (cleared), not still pointing at the deleted wallet.
+  [ ] Lock (not delete) a wallet that is actively mixing -> mixing
+      keeps running in the background as before (this is intentional,
+      NOT a regression - only Delete should stop it).
+  [ ] Click "Start Mixing" on a Premix/Postmix account with nothing
+      currently eligible to mix (e.g. right after a fresh Tx0, before
+      confirmations) -> button should NOT get stuck on "Starting...";
+      it should settle back to a normal Start/Stop state once the
+      engine actually starts.
+  [ ] Switch between wallets (or between Deposit/Premix/Postmix/
+      Badbank tabs) repeatedly while one wallet has mixing running ->
+      the Start/Stop Mixing button always reflects the correct state
+      for whichever account is currently active, never stuck from a
+      previously-viewed account.
+  [ ] Disconnect Tor/network, then click "Start Mixing" so the start
+      attempt fails -> button recovers to a clickable state instead
+      of staying on "Starting..." forever.
+
+
+--------------------------------------------------------------------
+ 13. LOGS TOOL                                            (new in 1.3.0)
+--------------------------------------------------------------------
+  [ ] Tools -> Logs opens and shows recent activity within a second,
+      even with a large ashigaru.log. No UI freeze while it loads.
+  [ ] Horizontal scrollbar sits hard LEFT on open; each visible line
+      starts with its timestamp. View is scrolled to the newest lines.
+  [ ] Level toggles (All / Warnings / Errors) filter correctly, and a
+      stack trace stays whole under Errors rather than showing only
+      its first line.
+  [ ] Search filters lines; clearing it restores the full view. After
+      each filter change the view is still left-aligned and at the
+      bottom.
+  [ ] Open a wallet first, then Logs: the wallet name, any addresses
+      and any xpubs read as [wallet] / [address] / [xpub].
+  [ ] Tick "Show raw log" -> real values appear, and the warning about
+      what raw mode exposes is shown.
+  [ ] Copy -> paste elsewhere: diagnostics header present (version, OS,
+      Java, network, proxy) and redaction matches what was on screen.
+  [ ] Save -> file written; contents identical to the copied text.
+  [ ] Open Folder opens the Ashigaru home directory.
+  [ ] Rotation: with a >10MB ashigaru.log, logback rolls to
+      ashigaru.<date>.0.log and the viewer still reads the active file.
+
+
+--------------------------------------------------------------------
+ 14. UPDATE: CHECKING                                     (new in 1.3.0)
+--------------------------------------------------------------------
+  NOTE: use a throwaway profile to get the first-run prompt, e.g.
+        ./gradlew run -Dashigaru.home=/tmp/ag-update-test
+
+  [ ] First run asks once whether to check for updates, AFTER the tour
+      rather than at the same time.
+  [ ] Dismissing that dialog without answering leaves it unanswered -
+      it asks again next launch rather than counting as consent.
+  [ ] Answering No means no update request is made at all.
+  [ ] Settings -> Update is the third sidebar entry, and its icon
+      renders (not a blank space).
+  [ ] Current version and latest release are both shown.
+  [ ] "Check now" works even with the toggle off.
+  [ ] With a proxy configured, the request goes over it - confirm in
+      Tools -> Logs that no clearnet call was made.
+  [ ] Toggling the setting starts/stops the daily check and persists
+      across a restart.
+  [ ] When the newest release is not newer, it reports being up to
+      date and offers no download.
+
+
+--------------------------------------------------------------------
+ 15. UPDATE: VERIFICATION & INSTALL                       (new in 1.3.0)
+--------------------------------------------------------------------
+  NOTE: needs a published release newer than the running build. When
+        testing the newest release itself, set APP_VERSION lower in a
+        local build to make an existing release appear as an update.
+
+  [ ] The package matching this install is preselected; the others are
+      still selectable. On Linux check the guess per install method:
+      AppImage -> .AppImage, Debian/Ubuntu -> .deb, Fedora -> .rpm.
+  [ ] The headless "ashigaru-server" build is never preselected, but
+      can still be chosen manually.
+  [ ] Fedora/RHEL/openSUSE preselects the .rpm rather than falling back
+      to the tarball (needs a release that actually ships one).
+  [ ] Windows lists the portable -windows.zip alongside the .exe and
+      .msi, with the .exe still preselected.
+  [ ] Download shows progress and can be cancelled; after cancelling,
+      no stray .part file is left in <app home>/updates/.
+  [ ] All four verification links show as they pass: signature,
+      checksum commitment, version, artifact hash.
+  [ ] A release whose SHA256SUMS does not list the artifact fails at
+      the ARTIFACT link, the earlier links still show as passed, and
+      the downloaded file is DELETED.
+  [ ] Wrong key: temporarily pin a different payment code -> fails at
+      the SIGNATURE link with the key-rotation message, nothing offered.
+  [ ] Downgrade: an older release is refused at the VERSION link rather
+      than offered.
+  [ ] A release missing RELEASE-BIP47-SIGNATURE.txt is refused with a
+      message pointing at the releases page.
+  [ ] Windows/macOS: Install hands the file to the system installer and
+      Ashigaru quits. On macOS expect the Gatekeeper quarantine step
+      described in the README.
+  [ ] Linux: the file is revealed in the file manager, not launched.
+
+
+--------------------------------------------------------------------
+ 16. SPLASH / STARTUP PROGRESS                            (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] Splash title renders in Nikkyou Sans, not the system font.
+      A wrong family name falls back silently, so check the shape.
+  [ ] Cold start with Tor: the bar advances with a visible bootstrap
+      percentage rather than spinning, and the Tor step ticks to done.
+  [ ] Server step ticks when connected; wallets step ticks when the
+      history finishes loading.
+  [ ] Status line does NOT flicker with raw Tor debug text - only
+      bootstrap progress should reach it.
+  [ ] Break Tor deliberately (bad bridge / no network): the Tor step
+      shows as failed with a reason, instead of spinning until timeout.
+  [ ] Offline mode: steps show as skipped rather than three stalled
+      bullets, and the workspace still opens.
+  [ ] Splash closes when the main window appears, and no splash-related
+      errors appear in Tools -> Logs afterwards (the controller should
+      have unregistered from the event bus).
+
+
+--------------------------------------------------------------------
+ 17. PACKAGING                                            (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] The release carries a desktop .rpm and a headless
+      ashigaru-server .rpm, alongside the .deb packages.
+  [ ] The release carries an .msi alongside the .exe installer.
+  [ ] SHA256SUMS lists every one of them.
+  [ ] On Windows, Settings -> Update lists the portable -windows.zip
+      alongside .exe and .msi, with .exe still preselected.
+  [ ] On Fedora/RHEL/openSUSE, Settings -> Update preselects the .rpm
+      rather than falling back to the tarball.
+
+
+--------------------------------------------------------------------
+ 18. CLEARNET TLS                                         (new in 1.4.5)
+--------------------------------------------------------------------
+  CRITICAL - must be run against a PACKAGED build, never ./gradlew run.
+  A development run uses the full JDK, always has SunEC, and therefore
+  cannot reproduce the fault or demonstrate the fix. Published 1.3.0
+  fails every check below.
+
+  [ ] Settings -> Update -> "Check now" reaches GitHub and reports a
+      version, rather than "Received fatal alert: handshake_failure".
+      This confirms jdk.crypto.ec made it into the jlink runtime image.
+  [ ] ashigaru.log carries no handshake_failure line for the startup
+      update check.
+  [ ] Tools -> Statistics loads with NO proxy configured, which
+      exercises its clearnet HTTPS path rather than the onion mirror.
+
+
+--------------------------------------------------------------------
+ 19. SINGLE INSTANCE & CONFIG INTEGRITY                   (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] With Ashigaru running, launch it again with no arguments. The
+      second launch EXITS instead of starting a second process, and
+      the running window comes to the front.
+  [ ] The log of the second launch reads "Ashigaru is already
+      running, exiting..." rather than the files/URIs message.
+  [ ] No second Tor starts: no "another Tor process is running with
+      the same data directory" warning appears anywhere.
+  [ ] REGRESSION: with Ashigaru running, open a .psbt file and a
+      bitcoin: URI. Both still open in the running window, and that
+      launch logs the files/URIs message.
+  [ ] Launch with no arguments when Ashigaru is NOT running. It
+      starts normally - the lock is free, so nothing exits.
+
+  [ ] Change a setting, then confirm ~/.ashigaru/config still parses
+      and no config.tmp is left beside it.
+  [ ] Truncate ~/.ashigaru/config mid-value and start Ashigaru. It
+      comes up on defaults, the damaged file is beside it as
+      config.corrupt-<date>, and the log names that path.
+  [ ] The re-created config is owner-only (600).
+
+--------------------------------------------------------------------
+ 20. WINDOW POSITION                                      (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] The main window opens fully on screen: the title bar is visible
+      and minimize/maximize/close are clickable WITHOUT dragging the
+      window down first.
+  [ ] Repeat on a screen shorter than the 800px default window height
+      (or with a large taskbar) - this is where the clamp does work.
+  [ ] Repeat with the app opening on a secondary monitor: it stays on
+      that monitor rather than jumping to the primary.
+  [ ] A window that already fits is NOT moved or resized.
+
+
+--------------------------------------------------------------------
+ 21. DICEWARE SEPARATOR                                   (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] Rolling a passphrase shows the words joined with dashes, not
+      spaces (e.g. "abandon-ability-able-about-above-absent").
+  [ ] The advisory says the dashes are part of the passphrase.
+  [ ] CRITICAL: note the master fingerprint on the review dialog,
+      finish creating the wallet, then check the wallet's own master
+      fingerprint matches. This proves the phrase shown, the string
+      hashed and the passphrase actually used are the same.
+  [ ] The SEED words are still space-separated - only the passphrase
+      changed. Check the seed display and any seed export.
+  [ ] An existing wallet created with a space-separated passphrase
+      still opens (the user types their own passphrase; nothing
+      re-derives it).
+
+
+--------------------------------------------------------------------
+ 22. NIKKYOU SANS ON CHROME                               (new in 1.4.5)
+--------------------------------------------------------------------
+  NOTE: Nikkyou Sans is now the application default (.root). Data
+        that must stay monospaced pins the family back explicitly.
+        So the question is no longer "did this screen get the font"
+        but "did anything lose its monospace that needed it".
+
+        Bold is gone from everything except the four monospaced value
+        classes: no bold face is bundled for either family, so it was
+        always synthesised or falling back to a system face.
+
+  [ ] Sidebar: wordmark, "CURRENT WALLET", Open Wallet, + New /
+      Restore, Tools, Settings all in Nikkyou Sans.
+  [ ] Settings and Tools: page titles, nav buttons, back button and
+      every action button.
+  [ ] Wizard: dialog titles, card titles, and the Cancel / Continue /
+      Create Wallet buttons.
+  [ ] CRITICAL - still monospaced AND still aligned: wallet balance,
+      the amount column in the UTXO and transaction lists (digits
+      must line up vertically down the column), addresses, xpubs,
+      txids, dates, the fingerprint field, the seed word grid, the
+      Logs view, text fields and combo boxes.
+      A ragged column of numbers means that class needs pinning.
+  [ ] Copy buttons (Receive screen, and the wizard fingerprint):
+      clicking swaps the copy glyph to a tick and back with NO change
+      in size or position. A jump means .copy-icon-btn lost its
+      "System" font override and the glyph is falling back.
+  [ ] Transaction / UTXO cells: the user's label, PayNym name, mix
+      badge and explorer links are in the app face; ONLY the amount
+      and the address/txid stay monospaced. Amounts still line up
+      down the column.
+  [ ] Guided tour (replay from Settings): every coach-mark is in the
+      app face, and every bubble looks the SAME as every other one
+      whatever control it points at. A bubble with a different size
+      or face means #tourPopover stopped terminating inheritance.
+  [ ] Tools -> Statistics: "TOTAL BTC IN POOLS" matches the
+      other headings, with the figure under it still monospaced.
+  [ ] No tofu boxes anywhere, including wallet names and the version
+      number in the title bar. Watch the mix badge in particular -
+      it renders a tick the app face does not have, so that glyph
+      falls back inline. If it reads badly, pin .mix-badge-text to
+      "System" the way .copy-icon-btn is.
+  [ ] JUDGEMENT: nothing given this face carries bold any more, since
+      it has a single weight. Check the hierarchy still reads, and
+      that proportional chrome next to monospaced data looks
+      deliberate. Any class can be reverted on its own.
+
+--------------------------------------------------------------------
+ 23. FORM LAYOUT AFTER THE FONT CHANGE                    (new in 1.4.5)
+--------------------------------------------------------------------
+  The app face draws Latin lowercase as capitals, so labels run wider
+  than the monospace these columns were measured against.
+
+  [ ] Settings -> General: every label reads in full, no ellipsis,
+      under Bitcoin, Wallet and Coin Selection. "Load recent
+      wallets:" and "Validate derivations:" are the longest.
+  [ ] Settings -> Server: the public-server warning sits inside its
+      own box with the URL row clear beneath it - not painted over.
+  [ ] Drag the Settings window narrow and wide. The warning re-flows
+      and never overlaps at either extreme; below ~540px wide it
+      stops shrinking (220px floor), above ~780px it stops growing
+      (460px cap).
+  [ ] Settings -> Update still lays out correctly (shares the form
+      styling).
+  [ ] Not reported but changed for the same reason - check no label
+      truncates and the wider column does not look odd:
+        - a wallet's Settings tab (keystore fields)
+        - the Receive form
+        - the Send form
+
+--------------------------------------------------------------------
+ 24. BIP47 VERIFIER: CODE FIELD + PAYNYM LOOKUP           (new in 1.4.5)
+--------------------------------------------------------------------
+  [ ] The payment code field is a single line, and the step 1 card is
+      shorter for it. Paste a full 116-character code: it is accepted
+      and scrolls rather than wrapping, and Verify still works.
+  [ ] Look up "+linkinparkrulz". STRONG CHECK: the filled-in code
+      must be character-for-character the release signing code. Press
+      "Use Release Signing Code" after and confirm the field does not
+      change. If they differ, either the lookup or the pinned code in
+      ReleaseTrust is wrong - stop and find out which.
+  [ ] Verify a real signed message using the looked-up code: it must
+      recover 1K8CDoBYWBuaeAhejLAk5hiACAgbbPnDCJ.
+  [ ] Typing a bare handle without the + still resolves.
+  [ ] Failure paths each say something specific, and NONE of them
+      change the payment code field:
+        - a handle that does not exist
+        - an empty handle field
+        - the app offline / Tor down
+  [ ] The button disables while a lookup is in flight (no double
+      firing) and re-enables on both success and failure.
+  [ ] With Tor on, ashigaru.log shows the lookup going to the
+      paynym25chf...onion host, NOT https://paynym.rs.
+
+--------------------------------------------------------------------
+ NOTES
+--------------------------------------------------------------------
+  - Needs Tor + a mainnet wallet with real history for the passphrase
+    and discovery items.
+  - Manual testing only; no automated tests on this branch, EXCEPT:
+    WhirlpoolServicesTest (src/test/.../whirlpool/) now covers the
+    closeWallet() engine-cleanup logic exercised in section 12 above
+    via `./gradlew test`. Sections 12's UI-facing items still need
+    manual verification - the button-recovery behavior is FXML-bound
+    and not covered by that automated test.
+
+====================================================================

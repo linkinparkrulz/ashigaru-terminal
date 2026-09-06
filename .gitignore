@@ -2,9 +2,10 @@
 .gradle
 *iml
 build
-/*.properties
+/*.local.properties
 out
 *.log
 build-*.sh
 .DS_Store
 META-INF/
+ashigaru-terminal/

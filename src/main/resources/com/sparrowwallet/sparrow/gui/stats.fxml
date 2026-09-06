@@ -5,11 +5,12 @@
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.sparrowwallet.sparrow.gui.StatsController"
-            stylesheets="@ashigaru.css"
+            stylesheets="@ashigaru.css, @../darktheme.css"
             styleClass="wallet-panel"
             fitToWidth="true">
     <content>
@@ -20,7 +21,7 @@
             <HBox spacing="16" alignment="CENTER_LEFT" styleClass="verifier-hero">
                 <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
                 <StackPane styleClass="verifier-hero-icon">
-                    <Label text="📊" styleClass="verifier-hero-glyph"/>
+                    <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="22" icon="CHART_BAR" styleClass="verifier-hero-glyph"/>
                 </StackPane>
                 <VBox spacing="3" HBox.hgrow="ALWAYS">
                     <Label text="Whirlpool Statistics" styleClass="verifier-hero-title"/>

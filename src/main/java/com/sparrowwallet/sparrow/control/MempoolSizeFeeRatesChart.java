@@ -1,9 +1,7 @@
 package com.sparrowwallet.sparrow.control;
 
 import com.sparrowwallet.sparrow.AppServices;
-import com.sparrowwallet.sparrow.Theme;
 import com.sparrowwallet.sparrow.glyphfont.FontAwesome5;
-import com.sparrowwallet.sparrow.io.Config;
 import com.sparrowwallet.sparrow.net.MempoolRateSize;
 import javafx.application.Platform;
 import javafx.beans.NamedArg;
@@ -63,9 +61,6 @@ public class MempoolSizeFeeRatesChart extends StackedAreaChart<String, Number> {
 
                 scenePane.getStylesheets().add(AppServices.class.getResource("general.css").toExternalForm());
                 AppServices.addAshigaruStylesheets(scenePane.getStylesheets());
-                if(Config.get().getTheme() == Theme.DARK) {
-                    scenePane.getStylesheets().add(AppServices.class.getResource("darktheme.css").toExternalForm());
-                }
                 scenePane.getStylesheets().add(AppServices.class.getResource("wallet/wallet.css").toExternalForm());
                 scenePane.getStylesheets().add(AppServices.class.getResource("wallet/send.css").toExternalForm());
 

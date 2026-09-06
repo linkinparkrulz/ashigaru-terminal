@@ -61,13 +61,17 @@ public class AshigaruGui extends Application {
         this.mainStage = stage;
 
         Font.loadFont(AppServices.class.getResourceAsStream("/font/RobotoMono-Regular.ttf"), 13);
+        //Registers the family name "Nikkyou Sans" for the splash title. Loaded here rather than
+        //lazily because the splash is built further down this same method and would otherwise
+        //fall back to the default face without any error.
+        Font.loadFont(AppServices.class.getResourceAsStream("/font/NikkyouSans.ttf"), 13);
 
         FXMLLoader loader = new FXMLLoader(getClass().getResource("ashigaru-main.fxml"));
         Parent root = loader.load();
         mainController = loader.getController();
 
         Scene scene = new Scene(root, 1100, 800);
-        scene.getStylesheets().add(getClass().getResource("ashigaru.css").toExternalForm());
+        AppServices.addAshigaruStylesheets(scene.getStylesheets());
 
         stage.setTitle("Ashigaru Desktop " + AshigaruTerminal.APP_VERSION);
         stage.setMinWidth(800);
@@ -111,6 +115,7 @@ public class AshigaruGui extends Application {
 
         if (Config.get().getMode() != Mode.ONLINE) {
             setSplashStatus(splashStage, "Offline mode enabled. Opening workspace...");
+            skipRemainingSplashSteps(splashStage);
             PauseTransition offlineDelay = new PauseTransition(Duration.seconds(3));
             offlineDelay.setOnFinished(e -> revealMain.run());
             offlineDelay.play();
@@ -144,7 +149,7 @@ public class AshigaruGui extends Application {
             splashStage.initStyle(StageStyle.UNDECORATED);
             splashStage.setTitle("Ashigaru Desktop " + AshigaruTerminal.APP_VERSION);
             Scene splashScene = new Scene(splashRoot, 600, 400);
-            splashScene.getStylesheets().add(getClass().getResource("ashigaru.css").toExternalForm());
+            AppServices.addAshigaruStylesheets(splashScene.getStylesheets());
             splashStage.setScene(splashScene);
             splashStage.setUserData(splashCtrl);
             splashStage.show();
@@ -164,6 +169,14 @@ public class AshigaruGui extends Application {
         }
     }
 
+    private void skipRemainingSplashSteps(Stage splashStage) {
+        if (splashStage == null) return;
+
+        if (splashStage.getUserData() instanceof AshigaruSplashController ctrl) {
+            ctrl.skipRemaining();
+        }
+    }
+
     private void showMainWindow(Stage splashStage, Stage mainStage) {
         if (splashStage != null) {
             Object userData = splashStage.getUserData();
@@ -172,6 +185,9 @@ public class AshigaruGui extends Application {
         }
 
         mainStage.show();
+        //Must follow show(): JavaFX only centres the stage, and only knows its decorated size, once
+        //it is on screen. Before that getX/getY/getHeight have nothing useful to clamp.
+        AppServices.clampToScreen(mainStage);
 
         // Collect wallet files: recent list (preserves order) + full wallets-dir scan
         // so wallets appear in the dropdown even if never explicitly "opened" before.

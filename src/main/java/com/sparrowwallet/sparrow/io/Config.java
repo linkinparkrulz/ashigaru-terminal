@@ -15,6 +15,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.lang.reflect.Type;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,6 +32,7 @@ public class Config {
     private static final Logger log = LoggerFactory.getLogger(Config.class);
 
     public static final String CONFIG_FILENAME = "config";
+    private static final String CONFIG_TEMP_FILENAME = CONFIG_FILENAME + ".tmp";
 
     private Mode mode;
     private BitcoinUnit bitcoinUnit;
@@ -43,7 +49,11 @@ public class Config {
     private boolean groupByAddress = true;
     private boolean includeMempoolOutputs = true;
     private boolean notifyNewTransactions = true;
-    private boolean checkNewVersions = true;
+    //Deliberately a new field rather than a reuse of the old checkNewVersions flag: that one was
+    //never wired to anything but Gson has been persisting it as true, so reusing it would treat
+    //every existing install as having consented to a check it was never asked about.
+    //null means not yet asked.
+    private Boolean updateCheckConsent;
     private Theme theme;
     private boolean openWalletsInNewWindows = false;
     private boolean hideEmptyUsedAddresses = false;
@@ -120,11 +130,23 @@ public class Config {
                 }
             } catch(Exception e) {
                 log.error("Error opening " + configFile.getAbsolutePath(), e);
-                //Ignore and assume no config
+                //Keep the unreadable file rather than letting the next flush overwrite it - it is the
+                //only copy of the user's settings, and a truncated one can still be read by hand
+                preserveCorruptConfig(configFile);
             }
         }
 
         return new Config();
+    }
+
+    private static void preserveCorruptConfig(File configFile) {
+        String stamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss").format(LocalDateTime.now());
+        File corruptFile = new File(configFile.getParentFile(), CONFIG_FILENAME + ".corrupt-" + stamp);
+        if(configFile.renameTo(corruptFile)) {
+            log.error("Moved unreadable config to " + corruptFile.getAbsolutePath() + ", starting from defaults");
+        } else {
+            log.error("Could not move unreadable config aside, starting from defaults");
+        }
     }
 
     public static synchronized Config get() {
@@ -299,12 +321,18 @@ public class Config {
         flush();
     }
 
-    public boolean isCheckNewVersions() {
-        return checkNewVersions;
+    /** True only once the user has actively agreed to the check. */
+    public boolean isUpdateCheckEnabled() {
+        return Boolean.TRUE.equals(updateCheckConsent);
     }
 
-    public void setCheckNewVersions(boolean checkNewVersions) {
-        this.checkNewVersions = checkNewVersions;
+    /** False until the user has answered either way, which is what triggers the first-run prompt. */
+    public boolean isUpdateCheckAnswered() {
+        return updateCheckConsent != null;
+    }
+
+    public void setUpdateCheckConsent(Boolean updateCheckConsent) {
+        this.updateCheckConsent = updateCheckConsent;
         flush();
     }
 
@@ -809,18 +837,33 @@ public class Config {
         flush();
     }
 
+    /**
+     * Writes the config by building it alongside the real file and moving it into place, so that a
+     * crash or a second process writing at the same time leaves either the whole previous file or
+     * the whole new one. Writing directly truncates the file before the first byte is written, which
+     * is how a half-written config that no longer parses comes about.
+     */
     private synchronized void flush() {
         Gson gson = getGson();
         try {
             File configFile = getConfigFile();
-            if(!configFile.exists()) {
-                Storage.createOwnerOnlyFile(configFile);
+            File tempFile = new File(configFile.getParentFile(), CONFIG_TEMP_FILENAME);
+
+            //createOwnerOnlyFile fails if the path already exists, so clear anything a previous run left
+            Files.deleteIfExists(tempFile.toPath());
+            Storage.createOwnerOnlyFile(tempFile);
+
+            try(Writer writer = new FileWriter(tempFile)) {
+                gson.toJson(this, writer);
+                writer.flush();
             }
 
-            Writer writer = new FileWriter(configFile);
-            gson.toJson(this, writer);
-            writer.flush();
-            writer.close();
+            try {
+                Files.move(tempFile.toPath(), configFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            } catch(AtomicMoveNotSupportedException e) {
+                //Not every filesystem can do this; a plain replace is still better than truncating in place
+                Files.move(tempFile.toPath(), configFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
             //Ignore
         }

@@ -24,6 +24,7 @@ import com.sparrowwallet.sparrow.control.TrayManager;
 import com.sparrowwallet.sparrow.event.*;
 import com.sparrowwallet.sparrow.io.*;
 import com.sparrowwallet.sparrow.net.*;
+import com.sparrowwallet.sparrow.net.update.UpdateCheckService;
 import com.sparrowwallet.sparrow.net.dojo.DojoNodeDiscovery;
 import com.sparrowwallet.sparrow.soroban.SorobanServices;
 import com.sparrowwallet.sparrow.whirlpool.WhirlpoolServices;
@@ -47,6 +48,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.text.Font;
+import javafx.geometry.Rectangle2D;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -121,7 +123,7 @@ public class AppServices {
 
     private Hwi.ScheduledEnumerateService deviceEnumerateService;
 
-    private VersionCheckService versionCheckService;
+    private UpdateCheckService updateCheckService;
 
     private TorService torService;
 
@@ -166,7 +168,7 @@ public class AppServices {
             } else {
                 connectionService.cancel();
                 ratesService.cancel();
-                versionCheckService.cancel();
+                updateCheckService.cancel();
             }
         }
     };
@@ -191,7 +193,7 @@ public class AppServices {
         Config config = Config.get();
         connectionService = createConnectionService();
         ratesService = createRatesService(config.getExchangeSource(), config.getFiatCurrency());
-        versionCheckService = createVersionCheckService();
+        updateCheckService = createUpdateCheckService();
         torService = createTorService();
         preventSleepService = createPreventSleepService();
 
@@ -204,6 +206,10 @@ public class AppServices {
                 restartServices();
             }
         }
+
+        //Previously nothing ever started the version check: the only call site was reachable from an
+        //event that was never posted, so the service was dead code.
+        startUpdateCheckIfAllowed();
 
         addURIHandlers();
     }
@@ -250,8 +256,8 @@ public class AppServices {
             ratesService.cancel();
         }
 
-        if(versionCheckService != null) {
-            versionCheckService.cancel();
+        if(updateCheckService != null) {
+            updateCheckService.cancel();
         }
 
         if(httpClientService != null) {
@@ -377,20 +383,39 @@ public class AppServices {
         return ratesService;
     }
 
-    private VersionCheckService createVersionCheckService() {
-        VersionCheckService versionCheckService = new VersionCheckService();
-        versionCheckService.setDelay(Duration.seconds(10));
-        versionCheckService.setPeriod(Duration.hours(VERSION_CHECK_PERIOD_HOURS));
-        versionCheckService.setRestartOnFailure(true);
+    private UpdateCheckService createUpdateCheckService() {
+        UpdateCheckService updateCheckService = new UpdateCheckService();
+        updateCheckService.setDelay(Duration.seconds(10));
+        updateCheckService.setPeriod(Duration.hours(VERSION_CHECK_PERIOD_HOURS));
+        updateCheckService.setRestartOnFailure(true);
 
-        versionCheckService.setOnSucceeded(successEvent -> {
-            VersionUpdatedEvent event = versionCheckService.getValue();
+        updateCheckService.setOnSucceeded(successEvent -> {
+            UpdateAvailableEvent event = updateCheckService.getValue();
             if(event != null) {
                 EventManager.get().post(event);
             }
         });
 
-        return versionCheckService;
+        return updateCheckService;
+    }
+
+    /**
+     * The check runs only once the user has actively agreed to it, and never off mainnet or in
+     * offline mode. Consent starts unset, so nothing reaches the network until it is answered.
+     */
+    private static boolean isUpdateCheckAllowed() {
+        Config config = Config.get();
+        return config.isUpdateCheckEnabled() && config.getMode() != Mode.OFFLINE && Network.get() == Network.MAINNET;
+    }
+
+    public void startUpdateCheckIfAllowed() {
+        if(updateCheckService == null) {
+            updateCheckService = createUpdateCheckService();
+        }
+
+        if(isUpdateCheckAllowed() && !updateCheckService.isRunning()) {
+            restartService(updateCheckService);
+        }
     }
 
     private Hwi.ScheduledEnumerateService createDeviceEnumerateService() {
@@ -821,6 +846,23 @@ public class AppServices {
         return Stage.getWindows().stream().filter(Window::isFocused).findFirst().orElse(get().walletWindows.keySet().iterator().hasNext() ? get().walletWindows.keySet().iterator().next() : (Stage.getWindows().iterator().hasNext() ? Stage.getWindows().iterator().next() : null));
     }
 
+    /**
+     * Brings the window already on screen to the front. Used when a second launch exits and hands
+     * over to the running instance, so the user sees a window rather than nothing happening.
+     */
+    public static void raiseActiveWindow() {
+        Platform.runLater(() -> raise(getActiveWindow()));
+    }
+
+    private static void raise(Window window) {
+        if(window instanceof Stage) {
+            //Toggling always-on-top is the portable way to pull a window forward; requestFocus alone
+            //is ignored by several window managers when the request comes from another process
+            ((Stage)window).setAlwaysOnTop(true);
+            ((Stage)window).setAlwaysOnTop(false);
+        }
+    }
+
     public static void moveToActiveWindowScreen(Dialog<?> dialog) {
         Window activeWindow = getActiveWindow();
         if(activeWindow != null) {
@@ -841,6 +883,43 @@ public class AppServices {
         double dialogWidth = dialogPane.getPrefWidth() > 0.0 ? dialogPane.getPrefWidth() : (dialogPane.getWidth() > 0.0 ? dialogPane.getWidth() : 360);
         double dialogHeight = dialogPane.getPrefHeight() > 0.0 ? dialogPane.getPrefHeight() : (dialogPane.getHeight() > 0.0 ? dialogPane.getHeight() : 200);
         moveToWindowScreen(currentWindow, newWindow, dialogWidth, dialogHeight);
+    }
+
+    /**
+     * Pulls a window fully onto the screen it is on, and caps it to that screen's usable area.
+     *
+     * <p>A stage with no explicit X/Y is centred by JavaFX on the primary screen using its decorated
+     * size, so where the window is taller than the usable height the computed Y is negative and the
+     * title bar sits above the top edge - leaving no way to reach minimise, maximise or close without
+     * dragging the window down first. Visual bounds rather than full bounds, so the taskbar and any
+     * menu bar are respected.
+     */
+    public static void clampToScreen(Stage stage) {
+        Screen screen = Screen.getScreensForRectangle(stage.getX(), stage.getY(), 1, 1).stream().findFirst()
+                .orElse(Screen.getPrimary());
+        Rectangle2D bounds = screen.getVisualBounds();
+
+        if(stage.getWidth() > bounds.getWidth()) {
+            stage.setWidth(bounds.getWidth());
+        }
+        if(stage.getHeight() > bounds.getHeight()) {
+            stage.setHeight(bounds.getHeight());
+        }
+
+        //Clamp the far edge first, then the near edge, so a window wider or taller than the screen
+        //ends up flush with the top left rather than pushed off the opposite side
+        if(stage.getX() + stage.getWidth() > bounds.getMaxX()) {
+            stage.setX(bounds.getMaxX() - stage.getWidth());
+        }
+        if(stage.getY() + stage.getHeight() > bounds.getMaxY()) {
+            stage.setY(bounds.getMaxY() - stage.getHeight());
+        }
+        if(stage.getX() < bounds.getMinX()) {
+            stage.setX(bounds.getMinX());
+        }
+        if(stage.getY() < bounds.getMinY()) {
+            stage.setY(bounds.getMinY());
+        }
     }
 
     public static void moveToWindowScreen(Window currentWindow, Window newWindow, double newWindowWidth, double newWindowHeight) {
@@ -943,10 +1022,7 @@ public class AppServices {
                 openWindow = getActiveWindow();
             }
 
-            if(openWindow instanceof Stage) {
-                ((Stage)openWindow).setAlwaysOnTop(true);
-                ((Stage)openWindow).setAlwaysOnTop(false);
-            }
+            raise(openWindow);
 
             for(File file : openFiles) {
                 if(isWalletFile(file)) {
@@ -1185,11 +1261,13 @@ public class AppServices {
 
     @Subscribe
     public void versionCheckStatus(VersionCheckStatusEvent event) {
-        versionCheckService.cancel();
+        if(updateCheckService != null) {
+            updateCheckService.cancel();
+        }
 
-        if(Config.get().getMode() != Mode.OFFLINE && event.isEnabled() && Network.get() == Network.MAINNET) {
-            versionCheckService = createVersionCheckService();
-            versionCheckService.start();
+        if(event.isEnabled() && isUpdateCheckAllowed()) {
+            updateCheckService = createUpdateCheckService();
+            updateCheckService.start();
         }
     }
 
@@ -1257,7 +1335,7 @@ public class AppServices {
         Platform.runLater(() -> {
             connectionService.cancel();
             ratesService.cancel();
-            versionCheckService.cancel();
+            updateCheckService.cancel();
         });
     }
 

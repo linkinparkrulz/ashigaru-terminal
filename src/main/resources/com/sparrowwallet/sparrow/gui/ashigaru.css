@@ -32,6 +32,7 @@
     -ag-red:           #cc1111;
     -ag-blue:          #42a5f5;
     -ag-testnet:       #e57c00;
+    -ag-warn:          #e5a00c;
     -ag-mainnet:       #4caf50;
 
     /* Shape scale */
@@ -52,7 +53,6 @@
     -fx-background-color: -ag-bg-raised;
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-padding: 3 9 3 9;
     -fx-background-radius: 999;
 }
@@ -64,7 +64,11 @@
     -fx-background:       -ag-bg;
     -fx-control-inner-background: -ag-bg-mid;
     -fx-text-fill:        -ag-text;
-    -fx-font-family:      "RobotoMono Regular", "Monospaced", monospace;
+    /* Nikkyou Sans is the application face. Anything that must stay monospaced - amounts,
+       addresses, hashes, typed input, anything that lines up in a column - pins the family
+       back explicitly below. Defaulting this way round means a screen added later is on the
+       right font without anyone remembering to say so. */
+    -fx-font-family:      "Nikkyou Sans";
     -fx-font-size:        13px;
     /* Replace Modena's blue accent/focus with our red */
     -fx-accent:           -ag-accent;
@@ -83,15 +87,17 @@
     -fx-border-width: 0 0 1 0;
 }
 
+/* Nikkyou Sans on the display-sized text only. It ships a single weight, so -fx-font-weight is
+   deliberately absent wherever it is applied: JavaFX would synthesise a fake bold and smear the
+   letterforms. Body text, the 10px wizard eyebrow and the type-card titles keep the system face,
+   where a poster letterform costs legibility for no gain. */
 .app-title {
     -fx-text-fill: -ag-text;
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
 }
 .app-title-sub {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
     -fx-padding: 3 0 0 0;
 }
 .header-logo-frame {
@@ -105,7 +111,6 @@
 
 .network-label {
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-padding: 3 8 3 8;
     -fx-background-radius: -ag-radius;
 }
@@ -113,13 +118,14 @@
 .network-label.testnet  { -fx-background-color: derive(-ag-testnet, -50%); -fx-text-fill: -ag-testnet; }
 
 .header-info {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* block height */
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 12px;
 }
 
 .connected    { -fx-text-fill: -ag-green !important; }
 .disconnected { -fx-text-fill: -ag-red !important; }
-.connecting   { -fx-text-fill: #e5a00c !important; }
+.connecting   { -fx-text-fill: -ag-warn !important; }
 .connection-toggle { -fx-cursor: hand; }
 
 /* ── Sidebar ──────────────────────────────────────────────────────────────── */
@@ -132,7 +138,6 @@
 .sidebar-section-title {
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
 }
 
 .wallet-list {
@@ -159,6 +164,9 @@
 }
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
+/* Nikkyou Sans on the chrome. Every Button carries .button, so this covers the sidebar nav, Tools,
+   Settings, the wizard and the dialog button bars in one place. Data keeps the RobotoMono base set
+   on .root - addresses, xpubs, amounts and the log view stay monospaced and aligned. */
 .button {
     -fx-background-color: -ag-bg-light;
     -fx-text-fill: -ag-text;
@@ -176,7 +184,6 @@
     -fx-background-color: -ag-accent;
     -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
-    -fx-font-weight: bold;
 }
 .primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
 .primary-btn:armed { -fx-background-color: -ag-accent-dark; }
@@ -256,7 +263,6 @@
 .welcome-title {
     -fx-text-fill: -ag-text;
     -fx-font-size: 22px;
-    -fx-font-weight: bold;
 }
 .welcome-sub   { -fx-text-fill: -ag-text-dim;   -fx-font-size: 14px; }
 .welcome-hint  { -fx-text-fill: -ag-text-faint; -fx-font-size: 12px; -fx-text-alignment: center; }
@@ -274,7 +280,6 @@
 .wallet-name-label {
     -fx-text-fill: -ag-text;
     -fx-font-size: 15px;
-    -fx-font-weight: bold;
 }
 
 /* ── Account tabs ─────────────────────────────────────────────────────────── */
@@ -322,11 +327,12 @@
 .balance-caption {
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
 }
-.balance-value           { -fx-text-fill: -ag-text;     -fx-font-size: 20px; -fx-font-weight: bold; }
+.balance-value           {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* wallet balance */ -fx-text-fill: -ag-text;     -fx-font-size: 20px; -fx-font-weight: bold; }
 .balance-card.primary .balance-value { -fx-text-fill: #fff; }
-.balance-value.secondary { -fx-text-fill: -ag-text-dim; -fx-font-size: 16px; }
+.balance-value.secondary {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* secondary balance */ -fx-text-fill: -ag-text-dim; -fx-font-size: 16px; }
 
 /* ── UTXO table ───────────────────────────────────────────────────────────── */
 .utxo-table {
@@ -340,7 +346,6 @@
 .utxo-table .column-header-background .label {
     -fx-text-fill: -ag-text-dim;
     -fx-font-size: 11px;
-    -fx-font-weight: bold;
     -fx-alignment: CENTER_LEFT;
 }
 .utxo-table .table-row-cell {
@@ -381,8 +386,13 @@
     -fx-border-color: transparent;
 }
 
-.card-value     { -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
-.card-secondary { -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
+/* Amounts and hashes keep the monospace: the amount column has to line up down the list, and
+   an address or txid is read character by character. Everything else in these cells - the
+   user's label, the PayNym, the mix badge, the date - is prose and takes the app face. */
+.card-value     { -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
+                  -fx-text-fill: -ag-text;       -fx-font-size: 16px; -fx-font-weight: bold; }
+.card-secondary { -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
+                  -fx-text-fill: -ag-text-dim;   -fx-font-size: 12px; }
 .card-faint     { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; }
 
 /* Whirlpool Stats chart: orange (first pool) + yellow (second pool) series */
@@ -405,11 +415,10 @@
 .paynym-name {
     -fx-text-fill: -ag-text;
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
 }
 .paynym-code {
     -fx-text-fill: -ag-text-dim;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 11px;
 }
 /* Neutral disc shown behind the avatar while it loads (and if unavailable) */
@@ -428,7 +437,6 @@
     -fx-border-color: -ag-border;
     -fx-border-radius: 20;
     -fx-font-size: 16px;
-    -fx-font-weight: bold;
 }
 .tx-icon.received { -fx-text-fill: -ag-green; }
 .tx-icon.sent     { -fx-text-fill: -ag-accent; }
@@ -442,7 +450,7 @@
     -fx-border-color: -ag-border;
     -fx-border-radius: 4;
     -fx-background-radius: 4;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
 }
 .fingerprint-hex:disabled { -fx-opacity: 1.0; }
 
@@ -469,7 +477,7 @@
     -fx-background-color: -ag-bg-raised;
     -fx-background-radius: 999;
 }
-.mix-badge .mix-badge-text { -fx-text-fill: -ag-text-dim; -fx-font-size: 11px; -fx-font-weight: bold; }
+.mix-badge .mix-badge-text { -fx-text-fill: -ag-text-dim; -fx-font-size: 11px;}
 .mix-badge.active          { -fx-background-color: -ag-accent-faint; }
 .mix-badge.active .mix-badge-text { -fx-text-fill: -ag-accent; }
 .mix-badge.done            { -fx-background-color: derive(-ag-green, -65%); }
@@ -504,7 +512,6 @@
 .dialog-pane .header-panel .label {
     -fx-text-fill: -ag-text;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
 }
 .dialog-pane .content { -fx-background-color: -ag-bg-mid; }
 .dialog-pane .button-bar .button-bar { -fx-background-color: -ag-bg; }
@@ -512,7 +519,6 @@
 .section-title {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 12px;
-    -fx-font-weight: bold;
 }
 
 /* Tx0 broadcast animation overlay */
@@ -522,7 +528,6 @@
 .tx0-broadcast-status {
     -fx-text-fill: -ag-text;
     -fx-font-size: 15px;
-    -fx-font-weight: bold;
 }
 .tx0-step {
     -fx-text-fill: -ag-text-faint;
@@ -530,11 +535,10 @@
 }
 .tx0-step.done {
     -fx-text-fill: -ag-green;
-    -fx-font-weight: bold;
 }
 .field-label  { -fx-text-fill: -ag-text-dim; }
 .field-value  { -fx-text-fill: -ag-text;     -fx-font-family: monospace; }
-.total-label  { -fx-text-fill: -ag-text;     -fx-font-weight: bold; }
+.total-label  { -fx-text-fill: -ag-text;}
 .total-value  { -fx-text-fill: -ag-accent;   -fx-font-weight: bold; -fx-font-family: monospace; }
 
 /* Tx0 preview breakdown panel */
@@ -548,6 +552,7 @@
 
 /* ── TextField / ComboBox / Spinner ──────────────────────────────────────── */
 .text-field, .combo-box, .spinner {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* typed input, including addresses */
     -fx-background-color: -ag-bg;
     -fx-text-fill: -ag-text;
     -fx-border-color: -ag-border;
@@ -558,14 +563,15 @@
 .text-field:focused, .combo-box:focused, .spinner:focused {
     -fx-border-color: -ag-accent;
 }
-.combo-box .list-cell { -fx-text-fill: -ag-text; -fx-background-color: -ag-bg; }
+.combo-box .list-cell {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* server URLs */ -fx-text-fill: -ag-text; -fx-background-color: -ag-bg; }
 .combo-box-popup .list-view { -fx-background-color: -ag-bg-light; -fx-border-color: -ag-border; }
 .combo-box-popup .list-cell:hover { -fx-background-color: -ag-bg-raised; }
 .combo-box-popup .list-cell:selected { -fx-background-color: derive(-ag-accent, -60%); -fx-text-fill: -ag-accent; }
 
 /* Monospace text area (seed / descriptor entry) */
 .mono-area {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 13px;
 }
 .mono-area .content { -fx-background-color: -ag-bg; }
@@ -576,8 +582,8 @@
     -fx-border-color: -ag-border;
     -fx-border-width: 0 0 1 0;
 }
-.wizard-eyebrow  { -fx-text-fill: -ag-accent;    -fx-font-size: 10px; -fx-font-weight: bold; }
-.wizard-title    { -fx-text-fill: -ag-text;      -fx-font-size: 18px; -fx-font-weight: bold; }
+.wizard-eyebrow  { -fx-text-fill: -ag-accent;    -fx-font-size: 10px;}
+.wizard-title    { -fx-text-fill: -ag-text; -fx-font-size: 18px; }
 .wizard-subtitle { -fx-text-fill: -ag-text-dim;  -fx-font-size: 12px; -fx-padding: 2 0 0 0; }
 
 /* Large selectable choice cards (wallet type / seed length) */
@@ -593,7 +599,7 @@
     -fx-background-color: -ag-bg-raised;
     -fx-border-color: -ag-accent;
 }
-.type-card-title { -fx-text-fill: -ag-text;     -fx-font-size: 14px; -fx-font-weight: bold; }
+.type-card-title { -fx-text-fill: -ag-text; -fx-font-size: 14px; }
 .type-card-desc  { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
 
 /* ── Toggle buttons ───────────────────────────────────────────────────────── */
@@ -688,6 +694,7 @@
     -fx-border-radius: 3;
     -fx-background-radius: 3;
 }
+.copy-icon-btn.success { -fx-text-fill: -ag-green; }
 .copy-icon-btn .glyph-font { -fx-opacity: 0.6; }
 .copy-icon-btn:hover .glyph-font { -fx-opacity: 1.0; }
 
@@ -716,26 +723,24 @@
     -fx-padding: 10;
     -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.22), 18, 0, 0, 0);
 }
+/* Nikkyou Sans ships a single weight, so no -fx-font-weight here: JavaFX would synthesise a fake
+   bold and smear the letterforms. The display face also needs more size than the old 30px to read. */
 .splash-title {
     -fx-text-fill: -ag-accent;
-    -fx-font-size: 30px;
-    -fx-font-weight: bold;
+    -fx-font-size: 46px;
 }
 .splash-subtitle {
     -fx-text-fill: -ag-text-dim;
-    -fx-font-size: 13px;
-    -fx-font-weight: bold;
+    -fx-font-size: 20px;
 }
 .splash-caption {
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
 }
 .splash-chip {
     -fx-background-color: derive(-ag-accent, -70%);
     -fx-text-fill: -ag-accent;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
     -fx-padding: 3 7 3 7;
     -fx-background-radius: 3;
 }
@@ -743,6 +748,14 @@
     -fx-text-fill: -ag-text;
     -fx-font-size: 13px;
 }
+/* Startup steps. Pending is deliberately quiet so the eye lands on whatever is happening now. */
+.splash-step {
+    -fx-text-fill: -ag-text-faint;
+    -fx-font-size: 12px;
+}
+.splash-step-active { -fx-text-fill: -ag-text; }
+.splash-step-done   { -fx-text-fill: -ag-green; }
+.splash-step-failed { -fx-text-fill: -ag-accent;}
 .splash-progress .track {
     -fx-background-color: -ag-bg-raised;
     -fx-background-radius: 999;
@@ -755,7 +768,7 @@
 
 /* ── Receive dialog ───────────────────────────────────────────────────────── */
 .address-field {
-    -fx-font-family: monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 14px;
     -fx-text-fill: -ag-text;
 }
@@ -880,7 +893,6 @@
 .account-name-label {
     -fx-text-fill: -ag-text;
     -fx-font-size: 15px;
-    -fx-font-weight: bold;
 }
 
 /* ── Sidebar wallet section ─────────────────────────────────────────────── */
@@ -915,7 +927,6 @@
 .prefs-page-title {
     -fx-text-fill: -ag-text;
     -fx-font-size: 13px;
-    -fx-font-weight: bold;
 }
 
 /* ── ControlsFX ToggleSwitch: override blue from darktheme.css ──────────── */
@@ -935,6 +946,7 @@
     -fx-padding: 4 2 4 2;
 }
 .seed-word-grid .label {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* seed word numbering */
     -fx-text-fill: -ag-text-faint;
     -fx-font-size: 12px;
 }
@@ -944,7 +956,7 @@
     -fx-border-color: -ag-border;
     -fx-border-radius: -ag-radius-sm;
     -fx-background-radius: -ag-radius-sm;
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 13px;
     -fx-padding: 5 8 5 8;
 }
@@ -966,18 +978,21 @@
     -fx-border-color: derive(-ag-accent, -35%);
     -fx-border-radius: 999;
 }
-.verifier-hero-glyph { -fx-text-fill: -ag-accent; -fx-font-size: 22px; -fx-font-weight: bold; }
-.verifier-hero-title { -fx-text-fill: -ag-text;   -fx-font-size: 18px; -fx-font-weight: bold; }
+/* No font properties here: CSS font rules re-derive the font from the inherited family
+   (Nikkyou Sans), which has none of the icon codepoints — the Glyph would render invisible.
+   The Glyph's own fontSize attribute sizes the icon instead. */
+.verifier-hero-glyph { -fx-text-fill: -ag-accent; }
+.verifier-hero-title { -fx-text-fill: -ag-text;   -fx-font-size: 18px;}
 .verifier-hero-sub   { -fx-text-fill: -ag-text-dim; -fx-font-size: 12px; }
 
 .step-chip   { -fx-min-width: 22; -fx-alignment: CENTER; }
-.step-title  { -fx-text-fill: -ag-text; -fx-font-size: 13px; -fx-font-weight: bold; }
+.step-title  { -fx-text-fill: -ag-text; -fx-font-size: 13px;}
 .step-optional { -fx-text-fill: -ag-text-faint; -fx-font-size: 11px; -fx-font-style: italic; }
 
 .verify-btn { -fx-font-size: 14px; -fx-padding: 10 16 10 16; }
 
 .verifier-panel .text-area {
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;
     -fx-font-size: 12px;
 }
 .verifier-result-box {
@@ -999,7 +1014,6 @@
 }
 .verifier-result-title {
     -fx-text-fill: -ag-text;
-    -fx-font-weight: bold;
     -fx-font-size: 13px;
 }
 .verifier-result-success .verifier-result-title {
@@ -1008,6 +1022,9 @@
 .verifier-result-error .verifier-result-title {
     -fx-text-fill: -ag-accent;
 }
+/* Each link of the release verification chain, before and after it is checked */
+.verifier-step-pass { -fx-text-fill: -ag-green; }
+.verifier-step-fail { -fx-text-fill: -ag-accent;}
 
 /* ── Guided tour ──────────────────────────────────────────────────────────── */
 
@@ -1028,7 +1045,6 @@
 .tour-eyebrow {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 10px;
-    -fx-font-weight: bold;
 }
 .tour-progress {
     -fx-text-fill: -ag-text-dim;
@@ -1037,7 +1053,6 @@
 .tour-step-title {
     -fx-text-fill: -ag-text;
     -fx-font-size: 18px;
-    -fx-font-weight: bold;
 }
 .tour-step-body {
     -fx-text-fill: -ag-text-dim;
@@ -1052,8 +1067,8 @@
 /* Literals, not -ag-* lookups: the bubble skin sits outside the card, so a lookup here would
    resolve through the anchored node's subtree (see #tourPopover below). */
 .popover > .border {
-    -fx-fill: #1E2026;
-    -fx-stroke: #cc1111;
+    -fx-fill: -ag-bg-light;
+    -fx-stroke: -ag-accent;
     -fx-stroke-width: 1.25;
     -fx-effect: dropshadow(gaussian, rgba(204,17,17,0.35), 18, 0.2, 0, 4);
 }
@@ -1078,7 +1093,7 @@
     -ag-accent-hover: #e11414;
     -ag-accent-dark:  #991010;
 
-    -fx-font-family: "RobotoMono Regular", "Monospaced", monospace;
+    -fx-font-family: "Nikkyou Sans";
     -fx-font-size: 13px;
     /* The card paints its own background rather than relying on the skin's border shape being
        themed in time — the arrow is the only part the skin must draw. */
@@ -1092,7 +1107,6 @@
 #tourPopover .tour-pop-title {
     -fx-text-fill: -ag-accent;
     -fx-font-size: 14px;
-    -fx-font-weight: bold;
 }
 #tourPopover .tour-pop-body {
     -fx-text-fill: -ag-text-dim;
@@ -1115,13 +1129,12 @@
     -fx-text-fill: -ag-text;
     -fx-border-color: -ag-border;
 }
-#tourPopover .action-btn:hover { -fx-background-color: derive(#282A32, 20%); -fx-text-fill: -ag-text; }
+#tourPopover .action-btn:hover { -fx-background-color: derive(-ag-bg-raised, 20%); -fx-text-fill: -ag-text; }
 #tourPopover .action-btn:disabled { -fx-opacity: 0.45; }
 #tourPopover .primary-btn {
     -fx-background-color: -ag-accent;
     -fx-text-fill: #fff;
     -fx-border-color: -ag-accent-dark;
-    -fx-font-weight: bold;
 }
 #tourPopover .primary-btn:hover { -fx-background-color: -ag-accent-hover; -fx-text-fill: #fff; }
 #tourPopover .primary-btn:armed { -fx-background-color: -ag-accent-dark; -fx-text-fill: #fff; }
@@ -1152,7 +1165,6 @@
 }
 .diceware-entropy {
     -fx-text-fill: -ag-text;
-    -fx-font-weight: bold;
 }
 .diceware-passphrase {
     -fx-text-fill: -ag-text;
@@ -1162,6 +1174,7 @@
 
 /* Five per-word dice-roll inputs (1–6) on the dice path */
 .dice-die-input {
+    -fx-font-family: 'Roboto Mono', "Monospaced", monospace;  /* typed dice digits */
     -fx-font-size: 18px;
     -fx-font-weight: bold;
     -fx-alignment: center;
@@ -1177,7 +1190,6 @@
 .passphrase-warning {
     -fx-text-fill: -ag-testnet;
     -fx-font-size: 12.5px;
-    -fx-font-weight: bold;
     -fx-background-color: derive(-ag-testnet, -78%);
     -fx-border-color: derive(-ag-testnet, -40%);
     -fx-border-radius: -ag-radius;

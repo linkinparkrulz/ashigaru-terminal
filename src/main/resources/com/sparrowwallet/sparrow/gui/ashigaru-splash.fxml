@@ -7,9 +7,9 @@
            xmlns:fx="http://javafx.com/fxml"
            fx:controller="com.sparrowwallet.sparrow.gui.AshigaruSplashController"
            styleClass="splash-pane" prefWidth="600" prefHeight="400">
-    <VBox alignment="CENTER" spacing="22" styleClass="splash-card" maxWidth="420" maxHeight="270">
+    <VBox alignment="CENTER" spacing="20" styleClass="splash-card" maxWidth="440" maxHeight="330">
         <padding>
-            <Insets top="30" right="34" bottom="30" left="34" />
+            <Insets top="28" right="34" bottom="26" left="34" />
         </padding>
 
         <HBox alignment="CENTER_LEFT" spacing="18">
@@ -21,19 +21,22 @@
                 </ImageView>
             </StackPane>
 
-            <VBox spacing="5" alignment="CENTER_LEFT">
+            <VBox spacing="2" alignment="CENTER_LEFT">
                 <Label text="Ashigaru" styleClass="splash-title"/>
                 <Label text="Desktop Wallet" styleClass="splash-subtitle"/>
             </VBox>
         </HBox>
 
+        <!-- Startup steps. Each row is driven by the events the app already broadcasts, so the
+             splash reports what is actually happening rather than spinning regardless. -->
+        <VBox fx:id="stepBox" spacing="5" maxWidth="Infinity">
+            <Label fx:id="torStep" styleClass="splash-step" maxWidth="Infinity"/>
+            <Label fx:id="serverStep" styleClass="splash-step" maxWidth="Infinity"/>
+            <Label fx:id="walletsStep" styleClass="splash-step" maxWidth="Infinity"/>
+        </VBox>
+
         <VBox spacing="8" maxWidth="Infinity">
-            <HBox alignment="CENTER_LEFT" spacing="8">
-                <Label text="STATUS" styleClass="splash-caption"/>
-                <Region HBox.hgrow="ALWAYS"/>
-                <Label text="STARTUP" styleClass="splash-chip"/>
-            </HBox>
-            <Label fx:id="statusLabel" text="Initializing application services" styleClass="splash-status" maxWidth="Infinity"/>
+            <Label fx:id="statusLabel" text="Initializing application services" styleClass="splash-status" maxWidth="Infinity" wrapText="true"/>
             <ProgressBar fx:id="progressBar" maxWidth="Infinity" progress="-1" styleClass="splash-progress"/>
         </VBox>
     </VBox>

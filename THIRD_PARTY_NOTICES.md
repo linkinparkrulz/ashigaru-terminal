@@ -14,9 +14,38 @@ This project bundles third-party data files, listed here with their attributions
 The wordlist is included verbatim. Its integrity is verified at load time against a bundled SHA-256
 digest.
 
-## Dice image
+## Nikkyou Sans (splash typeface)
 
-- **File:** `src/main/resources/image/dice.png`
-- **Used by:** the "Do you have dice?" step of wallet creation (`WalletCreationFlow`)
-- **Attribution/license:** _to be confirmed by the maintainer_ — replace this line with the image's
-  source and license before release.
+- **Files:** `src/main/resources/font/NikkyouSans.ttf`, `src/main/resources/font/NikkyouSans-read.txt`
+- **Used by:** the splash screen title and subtitle (`.splash-title`, `.splash-subtitle`)
+- **Copyright:** `Copyright (c) 2017, Dare-Demo Iie, Japan` (read from the font's name table)
+- **Author:** daredemotypo, released 2017
+- **License:** none stated. The archive carries no license file, and the font embeds no License
+  Description (name ID 13) or License URL (name ID 14).
+
+The author distributes the font freely, ships it with the note *"公序良俗に反しない程度にご利用ください"*
+("please use it to the extent that it does not violate public order and morals" — reproduced in full
+in `NikkyouSans-read.txt`), and set the OpenType embedding permission field to the most permissive
+value available (`OS/2 fsType = 0x0000`, Installable Embedding), which places no restriction on
+embedding or installing the font.
+
+It is bundled on that basis: an inference of permissive intent from how the author distributes and
+flags the font, **not** an explicit grant of redistribution rights. Third-party font sites describe
+it as free for commercial use with redistribution permitted, but that wording does not originate
+with the author. Anyone redistributing this project should be aware of that distinction, and it
+would be worth obtaining explicit permission or an OFL release from the author.
+
+## Roboto Mono
+
+- **Files:** `src/main/resources/font/RobotoMono-Regular.ttf`, `src/main/resources/font/RobotoMono-Italic.ttf`
+- **Used by:** monospaced text throughout the interface, loaded in `AshigaruGui`
+- **License:** Apache License 2.0 — <https://www.apache.org/licenses/LICENSE-2.0>
+
+## Font Awesome Free
+
+- **Files:** `src/main/resources/font/fa-solid-900.ttf`, `src/main/resources/font/fa-brands-400.ttf`
+- **Used by:** interface icons via `FontAwesome5` and `FontAwesome5Brands`
+- **Source:** <https://fontawesome.com>
+- **License:** the icon fonts are licensed under SIL OFL 1.1 —
+  <https://scripts.sil.org/OFL>. Font Awesome Free requires attribution; see
+  <https://fontawesome.com/license/free>.

@@ -3,24 +3,40 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import org.controlsfx.glyphfont.Glyph?>
 
 <ScrollPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.sparrowwallet.sparrow.gui.TourLauncherController"
-            stylesheets="@ashigaru.css"
+            stylesheets="@ashigaru.css, @../darktheme.css"
             styleClass="wallet-panel"
             fitToWidth="true">
     <content>
-        <VBox spacing="16" styleClass="tour-launcher">
+        <VBox spacing="16" styleClass="verifier-panel">
             <padding><Insets top="22" right="22" bottom="22" left="22"/></padding>
 
-            <Label text="Guided Tour" styleClass="tour-step-title"/>
-            <Label styleClass="tour-step-body" wrapText="true"
-                   text="Take a quick walkthrough of Ashigaru — your wallets, accounts, receiving funds and balance, and collaborative CoinJoin mixing. It starts with a short intro, then highlights the real controls on screen. If you haven't opened a wallet yet, the tour continues automatically once you do."/>
-
-            <HBox>
-                <Button fx:id="startTourBtn" text="Start guided tour" onAction="#onStart" styleClass="primary-btn"/>
+            <!-- Hero -->
+            <HBox spacing="16" alignment="CENTER_LEFT" styleClass="verifier-hero">
+                <padding><Insets top="18" right="20" bottom="18" left="20"/></padding>
+                <StackPane styleClass="verifier-hero-icon">
+                    <Glyph fontFamily="Font Awesome 5 Free Solid" fontSize="22" icon="QUESTION_CIRCLE" styleClass="verifier-hero-glyph"/>
+                </StackPane>
+                <VBox spacing="3" HBox.hgrow="ALWAYS">
+                    <Label text="Guided Tour" styleClass="verifier-hero-title"/>
+                    <Label text="A quick walkthrough of Ashigaru — wallets, accounts, receiving funds and CoinJoin mixing."
+                           wrapText="true" styleClass="verifier-hero-sub"/>
+                </VBox>
             </HBox>
+
+            <!-- Body -->
+            <VBox spacing="14" styleClass="ag-card">
+                <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                <Label styleClass="tour-step-body" wrapText="true"
+                       text="The tour starts with a short intro, then highlights the real controls on screen. If you haven't opened a wallet yet, it continues automatically once you do."/>
+                <HBox>
+                    <Button fx:id="startTourBtn" text="Start guided tour" onAction="#onStart" styleClass="primary-btn"/>
+                </HBox>
+            </VBox>
         </VBox>
     </content>
 </ScrollPane>

@@ -1,11 +1,11 @@
 .list-menu {
     -fx-pref-width: 180;
-    -fx-background-color: #16171C;
+    -fx-background-color: -ag-bg-mid;
 }
 
 .list-item {
     -fx-pref-width: 180;
-    -fx-background-color: #1E2026;
+    -fx-background-color: -ag-bg-light;
 }
 
 .list-item * {
@@ -13,15 +13,15 @@
 }
 
 .list-item:hover {
-    -fx-background-color: #282A32;
+    -fx-background-color: -ag-bg-raised;
 }
 
 .list-item:selected {
-    -fx-background-color: #cc1111;
+    -fx-background-color: -ag-accent;
 }
 
 .list-item:disabled {
-    -fx-background-color: #2E3038;
+    -fx-background-color: -ag-border;
     -fx-opacity: 1;
 }
 

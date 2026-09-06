@@ -61,6 +61,7 @@ import java.util.*;
  * mirroring what the TUI does in MasterActionListBox + NewWalletDialog.
  */
 public class WalletCreationFlow {
+    private static final double WIZARD_DIALOG_WIDTH = 480;
     private static final Logger log = LoggerFactory.getLogger(WalletCreationFlow.class);
 
     private final Stage owner;
@@ -113,7 +114,14 @@ public class WalletCreationFlow {
      * so its parent allocates one line of vertical space, the label then wraps at its real width, and
      * everything past that first line is ellipsized. Setting minHeight to USE_PREF_SIZE makes the
      * parent query minHeight(width) at the actual layout width, which returns the true wrapped height
-     * and forces enough room. The fixed max width simply keeps the wrap inside the dialog.
+     * and forces enough room.
+     *
+     * <p>That covers layout but not measurement. A dialog decides how large to be by asking its
+     * content for a preferred size <em>before</em> anything has a width, and minHeight(USE_PREF_SIZE)
+     * contributes nothing to that pass - which is why these dialogs, once their fixed height caps
+     * were removed, sized themselves off a single line of text. Setting a concrete prefWidth as well
+     * gives computePrefHeight(-1) a width to wrap against, so the true height reaches the dialog and
+     * it sizes itself correctly with no cap to fight the text.
      */
     private static void bindWrap(Label label) {
         label.setWrapText(true);
@@ -139,12 +147,10 @@ public class WalletCreationFlow {
     private Button typeCard(String title, String desc) {
         Label t = new Label(title);
         t.getStyleClass().add("type-card-title");
-        t.setWrapText(true);
-        t.setMinHeight(Region.USE_PREF_SIZE);
+        cardWrap(t);
         Label d = new Label(desc);
         d.getStyleClass().add("type-card-desc");
-        d.setWrapText(true);
-        d.setMinHeight(Region.USE_PREF_SIZE);
+        cardWrap(d);
         VBox box = new VBox(4, t, d);
         box.setAlignment(Pos.CENTER_LEFT);
         Button b = new Button();
@@ -152,11 +158,19 @@ public class WalletCreationFlow {
         b.getStyleClass().add("type-card");
         b.setMaxWidth(Double.MAX_VALUE);
         b.setAlignment(Pos.CENTER_LEFT);
-        // A Button lays its graphic out at the graphic's preferred (unwrapped) width, so bind the VBox
-        // to the button's actual width to give the wrapping labels a bounded width to wrap into
-        // (otherwise long descriptions clip to an ellipsis). 36 ≈ the .type-card horizontal padding.
-        box.maxWidthProperty().bind(b.widthProperty().subtract(36));
         return b;
+    }
+
+    /**
+     * Wraps a label inside a type card. Deliberately imposes no width: binding the card content to
+     * b.widthProperty() looks like the right fix for a Button laying its graphic out at the graphic's
+     * preferred width, but the button has no width while the dialog is measuring, so the binding
+     * resolves to zero and the labels report a line per character. The dialog's own preferred height
+     * is what keeps these compact; minHeight is what stops them clipping.
+     */
+    private static void cardWrap(Label label) {
+        label.setWrapText(true);
+        label.setMinHeight(Region.USE_PREF_SIZE);
     }
 
     /** Entry point — call from the JavaFX UI thread. */
@@ -195,9 +209,10 @@ public class WalletCreationFlow {
             nameField.setPromptText("e.g. Savings");
             VBox content = new VBox(8, lbl, nameField);
             content.setPadding(new Insets(20));
-            content.setPrefWidth(460);
+            content.setPrefWidth(WIZARD_DIALOG_WIDTH);
             dlg.getDialogPane().setContent(content);
-            dlg.getDialogPane().setPrefWidth(460);
+            dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
+            dlg.getDialogPane().setPrefHeight(180);
             AppServices.moveToActiveWindowScreen(dlg);
 
             Button continueNode = (Button) dlg.getDialogPane().lookupButton(continueType);
@@ -242,9 +257,10 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, hot, watch);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(460);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
+        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -302,9 +318,10 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, w12, w24);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(460);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(460);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
+        dlg.getDialogPane().setPrefHeight(240);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -350,8 +367,7 @@ public class WalletCreationFlow {
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().add("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((obs, oldVal, newVal) ->
                 fingerprintHex.setText(newVal != null ? Utils.bytesToHex(newVal) : ""));
         LifeHashIcon lifeHashIcon = new LifeHashIcon();
@@ -378,8 +394,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, passLabel, passField, passConfirmLabel, passConfirmField, weaknessLabel, fingerprintBox);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(createType, ButtonType.CANCEL);
@@ -422,6 +439,21 @@ public class WalletCreationFlow {
 
     private static final int DICEWARE_MIN_WORDS = 6;
 
+    /**
+     * Joins rolled words with a dash rather than a space. The passphrase has to be copied off the
+     * screen by hand and typed back in later, possibly into another wallet, and a space is the one
+     * separator a person cannot verify they reproduced: one space or two look identical on paper, and
+     * a trailing one is invisible. A dash is transcribed exactly or not at all.
+     *
+     * <p>Every use of the passphrase goes through here, so the phrase shown on screen, the string the
+     * fingerprint is derived from and the passphrase the wallet is created with cannot drift apart.
+     */
+    private static final String DICEWARE_SEPARATOR = "-";
+
+    private static String dicewarePassphrase(List<String> passWords) {
+        return String.join(DICEWARE_SEPARATOR, passWords);
+    }
+
     private enum DiceChoice { HAVE_DICE, NO_DICE }
 
     /**
@@ -461,9 +493,10 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(14, body, yes, no);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -489,9 +522,10 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(12, wait, cont);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
-        dlg.getDialogPane().setPrefWidth(480);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
+        dlg.getDialogPane().setPrefHeight(300);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
 
@@ -518,7 +552,7 @@ public class WalletCreationFlow {
         while (true) {
             int action = reviewDicewareDialog(walletName, seedWords, passWords);
             if (action < 0) return null;                 // cancel
-            if (action == 1) return String.join(" ", passWords); // create wallet
+            if (action == 1) return dicewarePassphrase(passWords); // create wallet
             String word = rollWordDialog(walletName, passWords.size() + 1); // add another word
             if (word != null) passWords.add(word);       // null add => back to review unchanged
         }
@@ -580,8 +614,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(14, resolvedRow, hint);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
         AppServices.moveToActiveWindowScreen(dlg);
         styleWizardButtons(dlg.getDialogPane());
         Platform.runLater(() -> dieFields.get(0).requestFocus());
@@ -604,7 +639,7 @@ public class WalletCreationFlow {
         styleWizardDialog(dlg, "ROLL YOUR PASSPHRASE", "Your passphrase",
                 passWords.size() + " words · " + bits + " bits of entropy");
 
-        Label phrase = new Label(String.join(" ", passWords));
+        Label phrase = new Label(dicewarePassphrase(passWords));
         phrase.getStyleClass().add("diceware-passphrase");
         bindWrap(phrase);
 
@@ -616,40 +651,34 @@ public class WalletCreationFlow {
         TextField fingerprintHex = new TextField();
         fingerprintHex.setDisable(true);
         fingerprintHex.setMaxWidth(80);
-        fingerprintHex.getStyleClass().add("fixed-width");
-        fingerprintHex.setStyle("-fx-opacity: 0.6");
+        fingerprintHex.getStyleClass().addAll("fixed-width", "fingerprint-hex");
         masterFingerprint.addListener((obs, oldVal, newVal) ->
                 fingerprintHex.setText(newVal != null ? Utils.bytesToHex(newVal) : ""));
         LifeHashIcon lifeHashIcon = new LifeHashIcon();
         lifeHashIcon.dataProperty().bind(masterFingerprint);
-        Button copyFpBtn = new Button("⎘");
-        copyFpBtn.getStyleClass().add("copy-icon-btn");
-        copyFpBtn.setPrefSize(28, 28);
+        CopyButton copyFpBtn = new CopyButton();
         copyFpBtn.disableProperty().bind(masterFingerprint.isNull());
         copyFpBtn.setOnAction(e -> {
             if (fingerprintHex.getText().isEmpty()) return;
-            ClipboardContent cc = new ClipboardContent();
-            cc.putString(fingerprintHex.getText());
-            Clipboard.getSystemClipboard().setContent(cc);
-            copyFpBtn.setText("✓");
-            PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
-            pause.setOnFinished(ev -> copyFpBtn.setText("⎘"));
-            pause.play();
+            copyFpBtn.copy(fingerprintHex.getText());
         });
         fingerprintBox.getChildren().addAll(fingerprintLabel, fingerprintHex, copyFpBtn, lifeHashIcon);
 
         Bip39 importer = new Bip39();
-        masterFingerprint.set(computeFingerprint(importer, String.join(" ", seedWords), String.join(" ", passWords)));
+        masterFingerprint.set(computeFingerprint(importer, String.join(" ", seedWords), dicewarePassphrase(passWords)));
 
-        Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly. "
-                + "They are never stored — if you lose them, your funds cannot be recovered.");
+        Label warning = new Label("Write down your passphrase AND this master fingerprint, exactly — "
+                + "including the dashes between the words, which are part of the passphrase. "
+                + "They are never stored — if you lose them, your funds cannot be recovered. "
+                + "The fingerprint is how you check you have typed the passphrase back correctly.");
         warning.getStyleClass().add("passphrase-warning");
         bindWrap(warning);
 
         VBox content = new VBox(14, phrase, fingerprintBox, warning);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType addType = new ButtonType("Add another word", ButtonBar.ButtonData.LEFT);
         ButtonType createType = new ButtonType("Create Wallet", ButtonBar.ButtonData.OK_DONE);
@@ -682,8 +711,9 @@ public class WalletCreationFlow {
 
         VBox content = new VBox(10, hint, descriptorArea);
         content.setPadding(new Insets(20));
-        content.setPrefWidth(480);
+        content.setPrefWidth(WIZARD_DIALOG_WIDTH);
         dlg.getDialogPane().setContent(content);
+        dlg.getDialogPane().setPrefWidth(WIZARD_DIALOG_WIDTH);
 
         ButtonType importType = new ButtonType("Import Wallet", ButtonBar.ButtonData.OK_DONE);
         dlg.getDialogPane().getButtonTypes().addAll(importType, ButtonType.CANCEL);

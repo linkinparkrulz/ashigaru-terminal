@@ -6,7 +6,7 @@ plugins {
     id 'org.beryx.jlink'
 }
 
-def ashigaruTerminalVersion = '1.2.0'
+def ashigaruTerminalVersion = '1.4.5'
 def os = org.gradle.internal.os.OperatingSystem.current()
 def osName = os.getFamilyName()
 if(os.macOsX) {
@@ -40,7 +40,6 @@ version "${ashigaruTerminalVersion}"
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven { url 'https://code.sparrowwallet.com/api/packages/sparrowwallet/maven' }
     maven { url 'https://oss.sonatype.org/content/groups/public' }
     maven { url 'https://mymavenrepo.com/repo/29EACwkkGcoOKnbx3bxN/' }
@@ -53,7 +52,9 @@ tasks.withType(AbstractArchiveTask) {
 }
 
 javafx {
-    version = "21"
+    // Pinned: a floating "21" resolves the newest 21.0.x at build time, which
+    // breaks reproducibility between builds.
+    version = "21.0.11"
     modules = [ 'javafx.controls', 'javafx.fxml', 'javafx.swing', 'javafx.graphics' ]
 }
 
@@ -164,6 +165,12 @@ application {
     mainClass = 'com.sparrowwallet.sparrow.AshigaruTerminal'
 
     applicationDefaultJvmArgs = ["-XX:+HeapDumpOnOutOfMemoryError",
+                                 // Bound the heap: without -Xmx the JVM scales the max to 25% of
+                                 // system RAM (~4 GB here), which reads as heavy memory use in
+                                 // system monitors. 1g is generous headroom over the ~150 MB
+                                 // actually used; packaged launchers get the same cap below.
+                                 "-Xms256m",
+                                 "-Xmx1g",
                                  "--add-opens=javafx.graphics/com.sun.javafx.css=org.controlsfx.controls",
                                  "--add-opens=javafx.graphics/javafx.scene=org.controlsfx.controls",
                                  "--add-opens=javafx.controls/com.sun.javafx.scene.control.behavior=org.controlsfx.controls",
@@ -204,8 +211,14 @@ jlink {
                          'javafx-fxml', 'javafx-swing', 'javax.servlet-api',
                          'slf4j-api', 'gson', 'kotlin-stdlib', 'annotations',
                          'kotlinx-coroutines-core')
+    //jdk.crypto.ec provides the SunEC security provider. It is a service provider, so jlink does
+    //not pull it in from the module graph - nothing 'requires' it - and without it the packaged
+    //runtime cannot complete an ECDHE handshake. Every clearnet HTTPS request then fails with
+    //"Received fatal alert: handshake_failure", in packaged builds only: a development run uses the
+    //full JDK and works, which is why this went unnoticed.
     options = ['--strip-debug', '--no-header-files', '--no-man-pages',
-               '--ignore-signing-information', '--compress=1']
+               '--ignore-signing-information', '--compress=1',
+               '--add-modules', 'jdk.crypto.ec']
     launcher {
         name = 'Ashigaru'
         noConsole = os.windows
@@ -215,6 +228,8 @@ jlink {
         installerName = 'Ashigaru'
         appVersion    = ashigaruTerminalVersion
         resourceDir   = file("src/main/deploy/package/${osName}")
+        // Keep the packaged launcher's heap bounded the same way as ./gradlew run (see above).
+        jvmArgs       = ['-Xms256m', '-Xmx1g']
 
         if (os.windows) {
             icon             = 'src/main/deploy/package/windows/ashigaru.ico'
@@ -265,6 +280,39 @@ if (os.macOsX) {
     }
 }
 
+// jpackage emits a single installer type per invocation, and the jpackage {} block above can only
+// name one. The secondary formats are produced by a second invocation against the app image that
+// jpackageImage has already built, which is why these are plain Exec tasks rather than plugin config.
+def jpackageTool = "${System.getProperty('java.home')}/bin/jpackage"
+
+if (os.linux) {
+    task packageRpmDistribution(type: Exec, dependsOn: jpackageImage) {
+        commandLine jpackageTool,
+            '--type', 'rpm',
+            '--name', 'Ashigaru',
+            '--app-version', ashigaruTerminalVersion,
+            '--app-image', "${buildDir}/jpackage/Ashigaru",
+            '--dest', "${buildDir}/jpackage",
+            '--icon', 'src/main/deploy/package/linux/Ashigaru.png',
+            '--resource-dir', 'src/main/deploy/package/linux',
+            '--linux-shortcut'
+    }
+}
+
+if (os.windows) {
+    task packageMsiDistribution(type: Exec, dependsOn: jpackageImage) {
+        commandLine jpackageTool,
+            '--type', 'msi',
+            '--name', 'Ashigaru',
+            '--app-version', ashigaruTerminalVersion,
+            '--app-image', "${buildDir}/jpackage/Ashigaru",
+            '--dest', "${buildDir}/jpackage",
+            '--icon', 'src/main/deploy/package/windows/ashigaru.ico',
+            '--resource-dir', 'src/main/deploy/package/windows',
+            '--win-dir-chooser', '--win-menu', '--win-shortcut'
+    }
+}
+
 task packageTarDistribution(type: Tar, dependsOn: jpackageImage) {
     archiveFileName      = "Ashigaru-${ashigaruTerminalVersion}-${releaseArch}.tar.gz"
     destinationDirectory = file("${buildDir}/distributions")
@@ -285,6 +333,18 @@ if (os.linux) {
             if (!appImageTool.exists()) {
                 new URL("https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-${appImageArch}.AppImage")
                     .withInputStream { input -> appImageTool.withOutputStream { output -> output << input } }
+            }
+            // AppImageKit only publishes a "continuous" release, so pin the expected checksum
+            // with -PappImageToolSha256=... to keep this download trustworthy. Build fails on mismatch.
+            String expected = findProperty('appImageToolSha256')
+            if(expected != null) {
+                String actual = java.security.MessageDigest.getInstance("SHA-256")
+                    .digest(appImageTool.bytes).encodeHex().toString()
+                if(!expected.equalsIgnoreCase(actual)) {
+                    throw new GradleException("appimagetool checksum mismatch: expected ${expected}, got ${actual}. Delete ${appImageTool} to re-download.")
+                }
+            } else {
+                logger.warn("Building AppImage with unverified appimagetool from the 'continuous' channel. Pass -PappImageToolSha256 to pin a checksum.")
             }
             appImageTool.setExecutable(true)
         }
@@ -491,9 +551,10 @@ extraJavaModuleInfo {
         requires('javafx.graphics')
     }
     module('jai-imageio-core-1.4.0.jar', 'com.github.jai.imageio.jai.imageio.core', '1.4.0')
-    module('hummingbird-1.6.3.jar', 'com.sparrowwallet.hummingbird', '1.6.3') {
+    module('hummingbird-1.7.3.jar', 'com.sparrowwallet.hummingbird', '1.7.3') {
         exports('com.sparrowwallet.hummingbird')
         exports('com.sparrowwallet.hummingbird.registry')
+        exports('com.sparrowwallet.hummingbird.registry.pathcomponent')
         requires('co.nstant.in.cbor')
     }
     module('cbor-0.9.jar', 'co.nstant.in.cbor', '0.9') {
@@ -568,7 +629,7 @@ extraJavaModuleInfo {
     module('java-jwt-3.8.1.jar', 'com.auth0.jwt', '3.8.1') {
         exports('com.auth0.jwt')
     }
-    module('json-20180130.jar', 'org.json', '1.0') {
+    module('json-20180130.jar', 'org.json', '20180130') {
         exports('org.json')
     }
     module('scrypt-1.4.0.jar', 'com.lambdaworks.scrypt', '1.4.0') {
